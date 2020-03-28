@@ -4,34 +4,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.ModelAndView;
 
-import mariusz.ambroziak.kassistant.ai.enums.WordType;
-import mariusz.ambroziak.kassistant.ai.nlpclients.ner.NamedEntity;
-import mariusz.ambroziak.kassistant.ai.nlpclients.ner.NamedEntityRecognitionClientService;
-import mariusz.ambroziak.kassistant.ai.nlpclients.ner.NerResults;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.Token;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.TokenizationClientService;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.TokenizationResults;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordNotFoundException;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordsApiClient;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordsApiResult;
-
+import mariusz.ambroziak.kassistant.webapis.nlpclients.ner.NamedEntityRecognitionClientService;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationClientService;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationResults;
 
 
 @Service

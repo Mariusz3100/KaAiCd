@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 
 import mariusz.ambroziak.kassistant.ai.enums.WordType;
 import mariusz.ambroziak.kassistant.ai.logic.shops.ProductParsingProcessObject;
-import mariusz.ambroziak.kassistant.ai.nlpclients.ner.NamedEntity;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.Token;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordNotFoundException;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.ner.NamedEntity;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.Token;
+import mariusz.ambroziak.kassistant.webapis.wordsapi.WordNotFoundException;
 
 @Component
 public class ProductsWordsClasifier extends WordClasifier{

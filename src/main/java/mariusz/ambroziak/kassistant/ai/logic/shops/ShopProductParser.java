@@ -2,32 +2,29 @@ package mariusz.ambroziak.kassistant.ai.logic.shops;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import mariusz.ambroziak.kassistant.ai.edamam.nlp.LearningTuple;
-import mariusz.ambroziak.kassistant.ai.enums.ProductType;
-import mariusz.ambroziak.kassistant.ai.tesco.ProductData;
+import mariusz.ambroziak.kassistant.webapis.edamamnlp.LearningTuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import mariusz.ambroziak.kassistant.ai.logic.CalculatedResults;
-import mariusz.ambroziak.kassistant.ai.edamam.nlp.EdamanIngredientParsingService;
+import mariusz.ambroziak.kassistant.webapis.edamamnlp.EdamanIngredientParsingService;
 import mariusz.ambroziak.kassistant.ai.enums.WordType;
 import mariusz.ambroziak.kassistant.ai.logic.ParsingResult;
 import mariusz.ambroziak.kassistant.ai.logic.ParsingResultList;
 import mariusz.ambroziak.kassistant.ai.logic.ProductsWordsClasifier;
 import mariusz.ambroziak.kassistant.ai.logic.QualifiedToken;
 import mariusz.ambroziak.kassistant.ai.logic.WordClasifier;
-import mariusz.ambroziak.kassistant.ai.nlpclients.ner.NamedEntityRecognitionClientService;
-import mariusz.ambroziak.kassistant.ai.nlpclients.ner.NerResults;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.TokenizationClientService;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.TokenizationResults;
-import mariusz.ambroziak.kassistant.ai.tesco.TescoApiClientService;
-import mariusz.ambroziak.kassistant.ai.tesco.TescoDetailsApiClientService;
-import mariusz.ambroziak.kassistant.ai.tesco.Tesco_Product;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordNotFoundException;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.ner.NamedEntityRecognitionClientService;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.ner.NerResults;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationClientService;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationResults;
+import mariusz.ambroziak.kassistant.webapis.tesco.TescoApiClientService;
+import mariusz.ambroziak.kassistant.webapis.tesco.TescoDetailsApiClientService;
+import mariusz.ambroziak.kassistant.webapis.tesco.Tesco_Product;
+import mariusz.ambroziak.kassistant.webapis.wordsapi.WordNotFoundException;
 
 
 @Service

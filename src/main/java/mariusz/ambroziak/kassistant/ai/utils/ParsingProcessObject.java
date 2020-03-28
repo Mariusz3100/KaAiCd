@@ -1,7 +1,6 @@
 package mariusz.ambroziak.kassistant.ai.utils;
 
-import mariusz.ambroziak.kassistant.ai.edamam.nlp.LearningTuple;
-import mariusz.ambroziak.kassistant.ai.logic.ParsingResultList;
+import mariusz.ambroziak.kassistant.webapis.edamamnlp.LearningTuple;
 
 public class ParsingProcessObject extends AbstractParsingObject{
 	private LearningTuple learningCase;

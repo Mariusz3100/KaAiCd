@@ -2,9 +2,9 @@ package mariusz.ambroziak.kassistant.ai.logic;
 
 import java.util.List;
 
-import mariusz.ambroziak.kassistant.ai.edamam.nlp.LearningTuple;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.ConnectionEntry;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.Token;
+import mariusz.ambroziak.kassistant.webapis.edamamnlp.LearningTuple;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.ConnectionEntry;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.Token;
 //class mainly for presenting in angular
 public class ParsingResult{
 	private String originalPhrase;

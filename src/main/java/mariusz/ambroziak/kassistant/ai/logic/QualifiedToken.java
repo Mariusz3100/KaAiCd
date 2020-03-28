@@ -1,10 +1,8 @@
 package mariusz.ambroziak.kassistant.ai.logic;
 
-import org.springframework.beans.Mergeable;
-
 import mariusz.ambroziak.kassistant.ai.enums.MergeType;
 import mariusz.ambroziak.kassistant.ai.enums.WordType;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.Token;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.Token;
 
 public class QualifiedToken extends Token {
 	private WordType wordType;

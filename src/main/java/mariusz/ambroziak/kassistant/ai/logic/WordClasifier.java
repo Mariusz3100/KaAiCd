@@ -2,33 +2,32 @@ package mariusz.ambroziak.kassistant.ai.logic;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.ai.logic.shops.ProductParsingProcessObject;
-import mariusz.ambroziak.kassistant.ai.tesco.ProductData;
+import mariusz.ambroziak.kassistant.webapis.tesco.ProductData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import mariusz.ambroziak.kassistant.ai.enums.MergeType;
 import mariusz.ambroziak.kassistant.ai.enums.ProductType;
 import mariusz.ambroziak.kassistant.ai.enums.WordType;
-import mariusz.ambroziak.kassistant.ai.nlpclients.ner.NamedEntity;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.ConnectionEntry;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.Token;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.TokenizationClientService;
-import mariusz.ambroziak.kassistant.ai.nlpclients.tokenization.TokenizationResults;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.ner.NamedEntity;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.ConnectionEntry;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.Token;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationClientService;
+import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationResults;
 import mariusz.ambroziak.kassistant.ai.utils.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.ai.utils.QuantityTranslation;
-import mariusz.ambroziak.kassistant.ai.wikipedia.WikipediaApiClient;
-import mariusz.ambroziak.kassistant.ai.wordsapi.ConvertApiClient;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordNotFoundException;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordsApiClient;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordsApiResult;
-import mariusz.ambroziak.kassistant.ai.wordsapi.WordsApiResultImpostor;
+import mariusz.ambroziak.kassistant.webapis.wikipedia.WikipediaApiClient;
+import mariusz.ambroziak.kassistant.webapis.wordsapi.ConvertApiClient;
+import mariusz.ambroziak.kassistant.webapis.wordsapi.WordNotFoundException;
+import mariusz.ambroziak.kassistant.webapis.wordsapi.WordsApiClient;
+import mariusz.ambroziak.kassistant.webapis.wordsapi.WordsApiResult;
+import mariusz.ambroziak.kassistant.webapis.wordsapi.WordsApiResultImpostor;
 
 @Service
 public class WordClasifier {
