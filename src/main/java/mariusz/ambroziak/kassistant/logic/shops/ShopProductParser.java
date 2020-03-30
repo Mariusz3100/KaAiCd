@@ -190,7 +190,7 @@ public class ShopProductParser {
 	public void tescoGetResults(String param) {
 		List<Tesco_Product> inputs= tescoApiClientService.getProduktsFor(param);
 		for(Tesco_Product tp:inputs) {
-			System.out.println(tp.getName()+";"+tp.getDetailsUrl());
+			System.out.println(tp.getName()+";"+tp.getUrl());
 		}
 		
 	}
