@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import mariusz.ambroziak.kassistant.ai.logic.ParsingResultList;
-import mariusz.ambroziak.kassistant.ai.logic.ingredients.IngredientPhraseParser;
+import mariusz.ambroziak.kassistant.pojos.ParsingResultList;
+import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 
 @RestController
 public class LogicController {

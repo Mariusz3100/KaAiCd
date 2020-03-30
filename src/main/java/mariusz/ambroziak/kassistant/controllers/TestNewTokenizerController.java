@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.Token;
-import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationClientService;
-import mariusz.ambroziak.kassistant.webapis.nlpclients.tokenization.TokenizationResults;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
 
 @RestController
 public class TestNewTokenizerController {

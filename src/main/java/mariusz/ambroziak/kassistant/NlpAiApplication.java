@@ -8,6 +8,8 @@ public class NlpAiApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(NlpAiApplication.class, args);
+
+
 	}
 
 }

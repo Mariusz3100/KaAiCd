@@ -3,6 +3,7 @@ package mariusz.ambroziak.kassistant.controllers;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,10 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import mariusz.ambroziak.kassistant.ai.logic.ParsingResultList;
-import mariusz.ambroziak.kassistant.ai.logic.shops.ShopProductParser;
-import mariusz.ambroziak.kassistant.webapis.tesco.TescoApiClientService;
-import mariusz.ambroziak.kassistant.webapis.tesco.Tesco_Product;
+import mariusz.ambroziak.kassistant.pojos.ParsingResultList;
+import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
+import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
 
 @RestController
 public class TescoController {
@@ -29,11 +29,7 @@ public class TescoController {
 
 
 
-	public TescoController(TescoApiClientService tescoService, ShopProductParser productParserService) {
-		super();
-		this.tescoService = tescoService;
-		this.productParserService = productParserService;
-	}
+
 
 	@RequestMapping("/testTesco")
     public String testTesco(@RequestParam(value="param", defaultValue="empty") String param){

@@ -4,10 +4,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.0.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
+
+		<groupId>mariusz.ambroziak.kassistant</groupId>
+		<artifactId>AiMavenProject</artifactId>
+		<version>[0.0.1,)</version>
 	</parent>
 	<groupId>mariusz.ambroziak.kassistant</groupId>
 	<artifactId>NlpAi</artifactId>
@@ -15,10 +15,12 @@
 	<name>NlpAi</name>
 	<description>Project for nlp reasoning for ingredients and products</description>
 
-	<properties>
-		<java.version>1.8</java.version>
-	</properties>
 
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -68,6 +70,17 @@
 			<artifactId>jersey-client</artifactId>
 			<version>1.9.1</version>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>mariusz.ambroziak.kassistant</groupId>-->
+<!--			<artifactId>DataObjects</artifactId>-->
+<!--			<version>[0.1.0]</version>-->
+<!--		</dependency>-->
+		<dependency>
+			<groupId>mariusz.ambroziak.kassistant</groupId>
+			<artifactId>DataSourcesModule</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+
 
 		<!--		<dependency>-->
 <!--			<groupId>com.sun.jersey</groupId>-->
@@ -90,7 +103,7 @@
 		</plugins>
 	</build>
 
-	<repositories>
+<!--	<repositories>
 		<repository>
 			<id>spring-milestones</id>
 			<name>Spring Milestones</name>
@@ -103,6 +116,6 @@
 			<name>Spring Milestones</name>
 			<url>https://repo.spring.io/milestone</url>
 		</pluginRepository>
-	</pluginRepositories>
+	</pluginRepositories>-->
 
 </project>
