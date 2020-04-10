@@ -45,7 +45,7 @@ public class TescoDetailsTestCases {
 			if(!line.startsWith("#")) {
 
 				String[] elements = line.split(";");
-				Tesco_Product product = this.tescoDetailsService.getDetailAndSearchDataProductByUrl(elements[1]);
+				Tesco_Product product = this.tescoDetailsService.getFullDataFromDbOrApi(elements[1]);
 				ProductParsingProcessObject parseObj = new ProductParsingProcessObject(product);
 				String type = elements[2];
 				ProductType foundType = ProductType.parseType(type);
