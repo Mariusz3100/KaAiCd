@@ -166,7 +166,7 @@ public class WordClasifier {
 		parsingAPhrase.setProductPhrase(productPhrase);
 	}
 
-	private void initialCategorization(AbstractParsingObject parsingAPhrase) {
+	protected void initialCategorization(AbstractParsingObject parsingAPhrase) {
 		for(int i=0;i<parsingAPhrase.getEntitylessTokenized().getTokens().size();i++) {
 			Token t=parsingAPhrase.getEntitylessTokenized().getTokens().get(i);
 

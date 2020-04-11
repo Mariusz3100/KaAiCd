@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.pojos.*;
-import mariusz.ambroziak.kassistant.logic.ProductsWordsClasifier;
-import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
@@ -37,10 +35,9 @@ public class ShopProductParser {
 	private TescoDetailsTestCases tescoTestCases;
 	@Autowired
 	private EdamanIngredientParsingService edamanNlpParsingService;
+
 	@Autowired
-	private WordClasifier wordClasifier;
-	@Autowired
-	private ProductsWordsClasifier shopWordClacifier;
+	private ProductWordsClassifier shopWordClacifier;
 	
 	
 	
@@ -215,10 +212,12 @@ public class ShopProductParser {
 			parsingAPhrase.setFinalResults(new ArrayList<QualifiedToken>());
 
 
-            this.wordClasifier.calculateProductType(parsingAPhrase);
-			this.wordClasifier.calculateWordsType(parsingAPhrase);
 
-			improperlyCorrectErrors(parsingAPhrase);
+
+            this.shopWordClacifier.calculateProductType(parsingAPhrase);
+			this.shopWordClacifier.calculateWordsType(parsingAPhrase);
+
+			improperlyCorrectErrorsInFinalResults(parsingAPhrase);
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
 			
 			retValue.addResult(singleResult);
@@ -231,7 +230,7 @@ public class ShopProductParser {
 
 
 
-    private void improperlyCorrectErrors(ProductParsingProcessObject parsingAPhrase) {
+    private void improperlyCorrectErrorsInFinalResults(ProductParsingProcessObject parsingAPhrase) {
 		for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
 				if(qt.getText().toLowerCase().equals("tomatoes")) {
 					qt.setLemma("tomato");

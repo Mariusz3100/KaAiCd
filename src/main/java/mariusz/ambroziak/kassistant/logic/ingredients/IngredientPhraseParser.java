@@ -43,7 +43,7 @@ public class IngredientPhraseParser {
 
 	private EdamanIngredientParsingService edamanNlpParsingService;
 	@Autowired
-	private WordClasifier wordClasifier;
+	private IngredientWordsClasifier wordClasifier;
 
 
 	private final String csvSeparator=";";
@@ -60,7 +60,7 @@ public class IngredientPhraseParser {
 	public IngredientPhraseParser(TokenizationClientService tokenizator,
 			NamedEntityRecognitionClientService nerRecognizer, ResourceLoader resourceLoader,
 			EdamanIngredientParsingService edamanNlpParsingService,
-			WordClasifier wordClasifier) {
+			IngredientWordsClasifier wordClasifier) {
 		super();
 		this.tokenizator = tokenizator;
 		this.nerRecognizer = nerRecognizer;
