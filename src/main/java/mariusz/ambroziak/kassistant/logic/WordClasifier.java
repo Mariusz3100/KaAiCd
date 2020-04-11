@@ -327,7 +327,7 @@ public class WordClasifier {
 		addResult(parsingAPhrase,index,result);
 	}
 
-	private void addResult(AbstractParsingObject parsingAPhrase, int index, QualifiedToken qt) {
+	protected void addResult(AbstractParsingObject parsingAPhrase, int index, QualifiedToken qt) {
 		if(index<parsingAPhrase.getFinalResults().size()) {
 			parsingAPhrase.getFinalResults().set(index,qt);
 		}else{
