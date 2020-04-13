@@ -69,7 +69,7 @@ public class ShopProductParser {
 			parsingAPhrase.setEntitylessTokenized(tokens);
 			parsingAPhrase.setFinalResults(new ArrayList<QualifiedToken>());
 
-			this.shopWordClacifier.calculateWordsType(parsingAPhrase);
+			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
 
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
@@ -215,7 +215,7 @@ public class ShopProductParser {
 
 
             this.shopWordClacifier.calculateProductType(parsingAPhrase);
-			this.shopWordClacifier.calculateWordsType(parsingAPhrase);
+			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
 			improperlyCorrectErrorsInFinalResults(parsingAPhrase);
 			ParsingResult singleResult = createResultObject(parsingAPhrase);

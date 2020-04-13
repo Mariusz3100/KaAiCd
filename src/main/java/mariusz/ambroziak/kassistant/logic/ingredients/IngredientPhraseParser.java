@@ -12,7 +12,6 @@ import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.pojos.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.ParsingResultList;
-import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -93,7 +92,7 @@ public class IngredientPhraseParser {
 			initializePrimaryConnotations(parsingAPhrase);
 
 			
-			this.wordClasifier.calculateWordsType(parsingAPhrase);
+			this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 			initializeCorrectedConnotations(parsingAPhrase);
 			initializeProductPhraseConnotations(parsingAPhrase);
 

@@ -101,7 +101,7 @@ public class WordClasifier {
 	}
 
 
-	public void calculateWordsType(AbstractParsingObject parsingAPhrase) {
+	public void calculateWordTypesForWholePhrase(AbstractParsingObject parsingAPhrase) {
 		initialCategorization(parsingAPhrase);
 
 		recategorize(parsingAPhrase);
@@ -183,7 +183,7 @@ public class WordClasifier {
 				}
 			}else {
 				try {
-					classifyWord(parsingAPhrase,i);
+					classifySingleWord(parsingAPhrase,i);
 				} catch (WordNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -192,7 +192,7 @@ public class WordClasifier {
 		}
 	}
 
-	public void classifyWord(AbstractParsingObject parsingAPhrase, int index) throws WordNotFoundException {
+	public void classifySingleWord(AbstractParsingObject parsingAPhrase, int index) throws WordNotFoundException {
 		if(parsingAPhrase.getFutureTokens().containsKey(index)) {
 			return;
 		}
