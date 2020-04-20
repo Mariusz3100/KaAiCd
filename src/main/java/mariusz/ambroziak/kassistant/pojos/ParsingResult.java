@@ -24,7 +24,16 @@ public class ParsingResult{
 	private String correctedPhrase;
 	private List<Token> correctedTokens;
 	private String productTypeFound;
+	private Product product;
 
+
+	public Product getProduct() {
+		return product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
+	}
 
 	public CalculatedResults getRestrictivelyCalculatedResultForPhrase() {
 		return restrictivelyCalculatedResultForPhrase;
