@@ -67,7 +67,6 @@ public class ShopProductParser {
 
 			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
 			parsingAPhrase.setEntitylessTokenized(tokens);
-			parsingAPhrase.setFinalResults(new ArrayList<QualifiedToken>());
 
 			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
@@ -209,7 +208,6 @@ public class ShopProductParser {
 
 			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
 			parsingAPhrase.setEntitylessTokenized(tokens);
-			parsingAPhrase.setFinalResults(new ArrayList<QualifiedToken>());
 
 
 

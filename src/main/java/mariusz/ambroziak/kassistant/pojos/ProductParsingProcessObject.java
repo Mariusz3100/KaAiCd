@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ProductParsingProcessObject extends AbstractParsingObject {
 	private ProductData product;
+	private String brandlessPhrase;
 	private List<String> expectedWords;
 	private List<String> allExpectedWords;
 
@@ -44,6 +45,14 @@ public class ProductParsingProcessObject extends AbstractParsingObject {
 		this.product = product;
 	}
 
+	public String getBrandlessPhrase() {
+		return brandlessPhrase;
+	}
+
+	public void setBrandlessPhrase(String brandlessPhrase) {
+		this.brandlessPhrase = brandlessPhrase;
+	}
+
 	public ProductType getExpectedType() {
 		return expectedType;
 	}
@@ -64,6 +73,8 @@ public class ProductParsingProcessObject extends AbstractParsingObject {
 		return this.getProduct().getName();
 	}
 
-	
+	public String getEntitylessString(){
+		return  getEntitylessString(this.brandlessPhrase);
+	}
 	
 }

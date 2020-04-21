@@ -87,8 +87,7 @@ public class IngredientPhraseParser {
 
 			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
 			parsingAPhrase.setEntitylessTokenized(tokens);
-			parsingAPhrase.setFinalResults(new ArrayList<QualifiedToken>());
-			
+
 			initializePrimaryConnotations(parsingAPhrase);
 
 			
@@ -384,6 +383,7 @@ public class IngredientPhraseParser {
 		}
 
 	}
+
 
 
 }

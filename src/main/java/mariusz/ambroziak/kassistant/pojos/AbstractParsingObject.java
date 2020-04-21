@@ -135,7 +135,6 @@ public abstract class AbstractParsingObject {
 		this.permissiveFinalResults = permissiveFinalResults;
 	}
 
-
 	public List<Token> getCorrectedtokens() {
 		return this.getCorrectedToknized().getTokens();
 	}
@@ -161,9 +160,6 @@ public abstract class AbstractParsingObject {
 		return finalResults;
 	}
 
-	public void setFinalResults(List<QualifiedToken> finalResults) {
-		this.finalResults = finalResults;
-	}
 
 	public NerResults getEntities() {
 		return nerResults;
@@ -204,11 +200,11 @@ public abstract class AbstractParsingObject {
 		this.entitylessTokenized = entitylessTokenized;
 	}
 
-	public String getEntitylessString() {
+	public String getEntitylessString(String phrase) {
 		NerResults allEntities=this.getEntities();
-		String retValue=this.getOriginalPhrase();
+		String retValue=phrase;
 		if(allEntities==null||allEntities.getEntities()==null||allEntities.getEntities().isEmpty()) {
-			return retValue;
+			return retValue=phrase;
 		}else {
 			for(NamedEntity ner:allEntities.getEntities()) {
 				if(ner.getLabel().equals(PythonSpacyLabels.entitiesCardinalLabel)) {
@@ -222,6 +218,9 @@ public abstract class AbstractParsingObject {
 		}
 	}
 
+
+	public abstract String getEntitylessString();
+
 	protected abstract String getOriginalPhrase();
 
 	public String createCorrectedPhrase() {
@@ -233,6 +232,36 @@ public abstract class AbstractParsingObject {
 		LearningTuple retValue=new LearningTuple(productPhrase, 0, productPhrase, productPhrase, null);
 
 		return retValue;
+	}
+
+	public void addPermissiveResult(int index, QualifiedToken qt) {
+		if(this.getPermissiveFinalResults()==null)
+			this.permissiveFinalResults=new ArrayList<>();
+
+		if(index<this.getPermissiveFinalResults().size()) {
+			this.getPermissiveFinalResults().set(index,qt);
+		}else{
+			while(index>this.getPermissiveFinalResults().size()) {
+				this.getPermissiveFinalResults().add(QualifiedToken.createNullObject());
+			}
+			this.getPermissiveFinalResults().add(qt);
+		}
+
+	}
+
+	public void addResult(int index, QualifiedToken qt) {
+		if(this.getFinalResults()==null)
+			this.finalResults=new ArrayList<>();
+
+		if(index<this.getFinalResults().size()) {
+			this.getFinalResults().set(index,qt);
+		}else{
+			while(index>this.getFinalResults().size()) {
+				this.getFinalResults().add(QualifiedToken.createNullObject());
+			}
+			this.getFinalResults().add(qt);
+		}
+
 	}
 
 }
