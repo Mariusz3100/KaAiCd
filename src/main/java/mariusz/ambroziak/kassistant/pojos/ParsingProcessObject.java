@@ -20,6 +20,9 @@ public class ParsingProcessObject extends AbstractParsingObject {
 	protected String getOriginalPhrase() {
 		return this.getLearningTuple().getOriginalPhrase();
 	}
-	
-	
+
+
+	public String getEntitylessString(){
+		return  getEntitylessString(this.getOriginalPhrase());
+	}
 }
