@@ -259,16 +259,22 @@ public class WordClasifier {
 
 	private boolean searchForAllPossibleMeaningsInWordsApi(AbstractParsingObject parsingAPhrase,
 														   ArrayList<WordsApiResult> wordResults, int index, Token t) throws WordNotFoundException {
-		String token=t.getText();
-		String lemma=t.getLemma();
 
-		wordResults.addAll(wordsApiClient.searchFor(token));
-		ifEmptyUpdateForLemma(lemma, wordResults);
-		if(canWeFindQuantityInConvertApi(parsingAPhrase, index, t, token, lemma, wordResults))
-			return true;
+		if(t==null||t.getText()==null||t.getText().replaceAll(" ","").equals("")){
+			return false;
+		}else {
 
-		ifEmptyUpdateForWikipediaBaseWord(wordResults, token);
-		return false;
+			String token = t.getText();
+			String lemma = t.getLemma();
+
+			wordResults.addAll(wordsApiClient.searchFor(token));
+			ifEmptyUpdateForLemma(lemma, wordResults);
+			if (canWeFindQuantityInConvertApi(parsingAPhrase, index, t, token, lemma, wordResults))
+				return true;
+
+			ifEmptyUpdateForWikipediaBaseWord(wordResults, token);
+			return false;
+		}
 	}
 
 	private void ifEmptyUpdateForWikipediaBaseWord(ArrayList<WordsApiResult> wordResults, String token)
