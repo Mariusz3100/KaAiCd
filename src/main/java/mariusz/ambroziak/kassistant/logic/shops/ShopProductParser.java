@@ -118,7 +118,6 @@ public class ShopProductParser {
 	private void createProductForResults(ProductParsingProcessObject parsingAPhrase, ParsingResult object) {
 		String name=parsingAPhrase.getProduct().getName();
 		List<String> nameWordsList= Arrays.asList(name.split(" "));
-		Product p=new Product();
 
 		String searchApiName="";
 		String ingredients="";
@@ -128,108 +127,32 @@ public class ShopProductParser {
 
 			Tesco_Product tp=(Tesco_Product)(parsingAPhrase.getProduct());
 			searchApiName = tp.getSearchApiName()==null?"":tp.getSearchApiName();
-			List<String> searchApiNameWordsList = Arrays.asList(searchApiName.split(" "));
 			ingredients = tp.getIngredients()==null?"":tp.getIngredients();
-			List<String> ingredientsList = Arrays.asList(ingredients.split(" "));
+
+			Product product=ParseCompareProductNames.parseTwoPhrases(name,searchApiName);
 
 
-			int max= Math.max(Math.max(nameWordsList.size(),searchApiNameWordsList.size()),ingredientsList.size());
-			List<WordParsed> nameListResults=new ArrayList<>();
-			List<WordParsed> searchNameListResults=new ArrayList<>();
-			List<WordParsed> ingredientsListResults=new ArrayList<>();
-
-			if(name==null||name.isEmpty()){
-				searchNameListResults=searchApiNameWordsList.stream().map(s->new WordParsed(s,true)).collect(Collectors.toList());
-			}
-			if(searchApiName==null||searchApiName.isEmpty()){
-				nameListResults=nameWordsList.stream().map(s->new WordParsed(s,true)).collect(Collectors.toList());;
-			}
-																																																																																																																																																																																																																																																																																					int detailsNameOffset=0;
-			int searchApiNameOffset=0;
-			int nameOffset=0;
-			for(int i=0;i+nameOffset<max&&i+searchApiNameOffset<max;i++){
-				int currentNameIndex=i+nameOffset;
-				int currentSearchApiNameIndex=i+searchApiNameOffset;
-
-				if(currentNameIndex>=nameWordsList.size()){
-					nameListResults.add(new WordParsed("", false));
-				} else if(currentSearchApiNameIndex>=searchApiNameWordsList.size()){
-					searchNameListResults.add(new WordParsed("", false));
-				}else{
-
-					String detailsNameWord = nameWordsList.get(currentNameIndex);
-					String searchApiNameWord = searchApiNameWordsList.get(currentSearchApiNameIndex);
-					boolean equals = currentNameIndex < nameWordsList.size() && currentSearchApiNameIndex < searchApiNameWordsList.size() && detailsNameWord.equalsIgnoreCase(searchApiNameWord);
-
-					if (equals) {
-						nameListResults.add(new WordParsed(detailsNameWord, true));
-						searchNameListResults.add(new WordParsed(searchApiNameWord, true));
-					} else {
 
 
-						Optional<String> foundInNameList = nameWordsList.subList(currentNameIndex,nameWordsList.size()).stream().filter(s -> s.equals(searchApiNameWord)).findFirst();
-						Optional<String> foundInNSearchApiList = searchApiNameWordsList.subList(currentSearchApiNameIndex,searchApiNameWordsList.size()).stream().filter(s -> s.equals(detailsNameWord)).findFirst();
-
-						if(currentNameIndex+1>=nameWordsList.size()){
-							nameListResults.add(new WordParsed(detailsNameWord, false));
-						}
-						if(currentSearchApiNameIndex+1>=searchApiNameWordsList.size()){
-							searchNameListResults.add(new WordParsed(searchApiNameWord, false));
-
-						}
-						if(foundInNameList.isPresent()&&foundInNSearchApiList.isPresent()){
-							ProblemLogger.logProblem("Words on index "+currentNameIndex+" for name "+name+" do not match and are found for different indices");
-						}else{
-							if(!foundInNSearchApiList.isPresent()&&!foundInNameList.isPresent()){
-								searchNameListResults.add(new WordParsed(searchApiNameWord, false));
-								nameListResults.add(new WordParsed(detailsNameWord, false));
-
-							}
-
-							if(foundInNSearchApiList.isPresent()){
-								searchNameListResults.add(new WordParsed(searchApiNameWord, false));
-
-								if(nameListResults.size()<nameWordsList.size()) {
-									nameOffset--;
-									nameListResults.add(new WordParsed("", false));
-								}
-							}
-							if(foundInNameList.isPresent()){
-								nameListResults.add(new WordParsed(detailsNameWord, false));
-
-								if(searchNameListResults.size()<searchApiNameWordsList.size()) {
-									searchApiNameOffset--;
-									searchNameListResults.add(new WordParsed("", false));
-								}
-
-							}
-						}
-
-
-					}
-				}
-
-			}
-
-			p.setDetailsNameResults(nameListResults);
-			p.setSearchNameResults(searchNameListResults);
 			if(ingredients==null||ingredients.isEmpty()) {
-				p.setIngredientsNameResults(Arrays.asList(new WordParsed[]{new WordParsed("", false)}));
-
+				product.setIngredientsNameResults(Arrays.asList(new WordParsed[]{new WordParsed("", false)}));
 			}else{
+				List<WordParsed> ingredientListResult = Arrays.asList(ingredients.split(" ")).stream().map(s -> new WordParsed(s, true)).collect(Collectors.toList());
+				product.setIngredientsNameResults(ingredientListResult);
 
-				p.setIngredientsNameResults(ingredientsList.stream().map(s -> new WordParsed(s, true))
-						.collect(Collectors.toList()));
 			}
+
+			object.setProduct(product);
 
 		}else{
+			Product p=new Product();
 			p.setDetailsNameResults(nameWordsList.stream().map(s->new WordParsed(s,true))
 					.collect(Collectors.toList()));
+			object.setProduct(p);
 		}
 
 
 
-		object.setProduct(p);
 	}
 
 
