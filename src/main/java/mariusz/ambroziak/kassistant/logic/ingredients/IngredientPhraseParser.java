@@ -29,7 +29,7 @@ import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.DependencyTree
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
-import mariusz.ambroziak.kassistant.pojos.ParsingProcessObject;
+import mariusz.ambroziak.kassistant.pojos.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 
 
@@ -78,7 +78,7 @@ public class IngredientPhraseParser {
 		for(LearningTuple er:inputLines) {
 			String line=correctErrors(er.getOriginalPhrase());
 			er.setOriginalPhrase(line);
-			ParsingProcessObject parsingAPhrase=new ParsingProcessObject(er);
+			IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
 
 			NerResults entitiesFound = this.nerRecognizer.find(line);
 			parsingAPhrase.setEntities(entitiesFound);
@@ -130,7 +130,7 @@ public class IngredientPhraseParser {
 
 
 
-	private ParsingResult createResultObject(ParsingProcessObject parsingAPhrase) {
+	private ParsingResult createResultObject(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		ParsingResult object=new ParsingResult();
 		object.setOriginalPhrase(parsingAPhrase.getLearningTuple().getOriginalPhrase());
 		List<QualifiedToken> primaryResults = parsingAPhrase.getFinalResults();
@@ -185,7 +185,7 @@ public class IngredientPhraseParser {
 
 
 
-	private void initializeCorrectedConnotations(ParsingProcessObject parsingAPhrase) {
+	private void initializeCorrectedConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		
 		TokenizationResults tokenized = parsingAPhrase.getCorrectedToknized();
 		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
@@ -199,7 +199,7 @@ public class IngredientPhraseParser {
 
 	}
 	
-	private void initializeProductPhraseConnotations(ParsingProcessObject parsingAPhrase) {
+	private void initializeProductPhraseConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		
 		TokenizationResults tokenized = parsingAPhrase.getProductTokenized();
 		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
@@ -211,7 +211,7 @@ public class IngredientPhraseParser {
 
 
 	}
-	private void initializePrimaryConnotations(ParsingProcessObject parsingAPhrase) {
+	private void initializePrimaryConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		
 		TokenizationResults tokenized = parsingAPhrase.getEntitylessTokenized();
 		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
@@ -226,7 +226,7 @@ public class IngredientPhraseParser {
 	}
 
 
-	private List<ConnectionEntry> extractCorrectedConnotations(ParsingProcessObject parsingAPhrase) {
+	private List<ConnectionEntry> extractCorrectedConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		
 		return parsingAPhrase.getCorrectedToknized().getAllTwoWordDependencies();
 		
@@ -305,7 +305,7 @@ public class IngredientPhraseParser {
 
 
 
-	private CalculatedResults calculateWordsFound(ParsingProcessObject parsingAPhrase) {
+	private CalculatedResults calculateWordsFound(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		String expected=parsingAPhrase.getLearningTuple().getFoodMatch();
 
 		List<String> found=new ArrayList<String>();

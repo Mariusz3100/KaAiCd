@@ -2,9 +2,9 @@ package mariusz.ambroziak.kassistant.pojos;
 
 import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
 
-public class ParsingProcessObject extends AbstractParsingObject {
+public class IngredientPhraseParsingProcessObject extends AbstractParsingObject {
 	private LearningTuple learningCase;
-	public ParsingProcessObject(LearningTuple er) {
+	public IngredientPhraseParsingProcessObject(LearningTuple er) {
 		super();
 		this.learningCase=er;
 	}
