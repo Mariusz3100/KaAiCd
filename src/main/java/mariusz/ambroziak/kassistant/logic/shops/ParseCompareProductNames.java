@@ -1,6 +1,6 @@
 package mariusz.ambroziak.kassistant.logic.shops;
 
-import mariusz.ambroziak.kassistant.pojos.Product;
+import mariusz.ambroziak.kassistant.pojos.shop.Product;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordParsed;
 
 import java.util.ArrayList;

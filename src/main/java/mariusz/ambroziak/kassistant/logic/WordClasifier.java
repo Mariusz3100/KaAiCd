@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import mariusz.ambroziak.kassistant.pojos.ProductParsingProcessObject;
+import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 

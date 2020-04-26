@@ -1,4 +1,4 @@
-package mariusz.ambroziak.kassistant.pojos;
+package mariusz.ambroziak.kassistant.pojos.shop;
 
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordParsed;
 

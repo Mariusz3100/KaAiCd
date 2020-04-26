@@ -1,7 +1,8 @@
-package mariusz.ambroziak.kassistant.pojos;
+package mariusz.ambroziak.kassistant.pojos.shop;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
+import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 
 import java.util.List;

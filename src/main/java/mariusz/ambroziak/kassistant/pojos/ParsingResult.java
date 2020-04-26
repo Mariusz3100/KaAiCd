@@ -2,8 +2,7 @@ package mariusz.ambroziak.kassistant.pojos;
 
 import java.util.List;
 
-import mariusz.ambroziak.kassistant.pojos.CalculatedResults;
-import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
+import mariusz.ambroziak.kassistant.pojos.shop.Product;
 import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;

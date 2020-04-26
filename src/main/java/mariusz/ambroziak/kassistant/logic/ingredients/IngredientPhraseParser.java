@@ -29,7 +29,7 @@ import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.DependencyTree
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
-import mariusz.ambroziak.kassistant.pojos.IngredientPhraseParsingProcessObject;
+import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 
 

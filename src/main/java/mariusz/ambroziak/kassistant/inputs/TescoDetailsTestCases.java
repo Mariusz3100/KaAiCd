@@ -2,7 +2,7 @@ package mariusz.ambroziak.kassistant.inputs;
 
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.pojos.ProductParsingProcessObject;
+import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
