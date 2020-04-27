@@ -44,10 +44,14 @@ public class TescoDetailsTestCases {
 	public List<ProductParsingProcessObject> getProduktsFromFile() throws IOException {
 		List<ProductLearningCase> testCasesFromFile = getTestCasesFromFile();
 		List<ProductParsingProcessObject> retValue=testCasesFromFile.stream().map(
-				c->new ProductParsingProcessObject(this.tescoDetailsService.getFullDataFromDbOrApi(c.getUrl()),c)).collect(Collectors.toList());
+				c->new ProductParsingProcessObject(getProductDataFromDbOrApi(c),c)).collect(Collectors.toList());
 		return retValue;
 
 
+	}
+
+	private Tesco_Product getProductDataFromDbOrApi(ProductLearningCase c) {
+		return this.tescoDetailsService.getFullDataFromDbOrApi(c.getUrl());
 	}
 
 
@@ -83,12 +87,28 @@ public class TescoDetailsTestCases {
 
 	}
 
+	public List<ProductLearningCase> getTestCasesFromDb() {
+		Iterator<ProductLearningCase> all = this.learningCaseRepository.findAll().iterator();
+		List<ProductLearningCase> retValue=new ArrayList<>();
+
+		all.forEachRemaining(c->retValue.add(c));
+		return retValue;
+	}
+
+	public List<ProductParsingProcessObject> getParsingObjectsFromDb() {
+		List<ProductParsingProcessObject> retValue=getTestCasesFromDb().stream()
+				.map(s->new ProductParsingProcessObject(getProductDataFromDbOrApi(s),s)).collect(Collectors.toList());
+		return retValue;
+	}
 
 	public void copyTestCasesFromFileToDb() throws IOException {
 		List<ProductLearningCase> testCasesFromFile = getTestCasesFromFile();
 
 		for(ProductLearningCase testCase:testCasesFromFile){
-			learningCaseRepository.save(testCase);
+			List<ProductLearningCase> byUrl = learningCaseRepository.findByUrl(testCase.getUrl());
+			if(byUrl ==null||byUrl.isEmpty()) {
+				learningCaseRepository.save(testCase);
+			}
 		}
 
 	}

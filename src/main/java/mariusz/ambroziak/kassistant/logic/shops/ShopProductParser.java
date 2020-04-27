@@ -269,10 +269,10 @@ public class ShopProductParser {
 
 
 
-	public ParsingResultList parseFromFile() throws IOException {
+	public ParsingResultList parseTestCases() throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
 
-		List<ProductParsingProcessObject> inputs= tescoTestCases.getProduktsFromFile();
+		List<ProductParsingProcessObject> inputs= getTestCases();
 		for(ProductParsingProcessObject parsingAPhrase:inputs) {
 			String originalPhrase= parsingAPhrase.getOriginalPhrase();
 			String brandlessPhrase= calculateBrandlessPhrase(parsingAPhrase);
@@ -304,6 +304,11 @@ public class ShopProductParser {
 		}
 
 		return retValue;
+	}
+
+	private List<ProductParsingProcessObject> getTestCases() throws IOException {
+		//return tescoTestCases.getProduktsFromFile();
+		return tescoTestCases.getParsingObjectsFromDb();
 	}
 
 	private String calculateBrandlessPhrase(ProductParsingProcessObject productParsingObject) {

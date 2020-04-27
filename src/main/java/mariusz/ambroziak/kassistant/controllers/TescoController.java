@@ -52,7 +52,7 @@ public class TescoController {
 	@ResponseBody
 	@RequestMapping("/tescoParseFromFile")
     public ParsingResultList tescoParseFromFile() throws IOException{
-    	ParsingResultList retValue=this.productParserService.parseFromFile();
+    	ParsingResultList retValue=this.productParserService.parseTestCases();
     	return retValue;
     	
 	}
