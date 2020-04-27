@@ -85,12 +85,11 @@ public class TescoDetailsTestCases {
 
 
 	public void copyTestCasesFromFileToDb() throws IOException {
-		InputStream inputStream = inputFileResource.getInputStream();
-		BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
-		List<ProductParsingProcessObject> retValue=new ArrayList<ProductParsingProcessObject>();
-		List<ProductParsingProcessObject> produktsFromFile = getProduktsFromFile();
+		List<ProductLearningCase> testCasesFromFile = getTestCasesFromFile();
 
-
+		for(ProductLearningCase testCase:testCasesFromFile){
+			learningCaseRepository.save(testCase);
+		}
 
 	}
 

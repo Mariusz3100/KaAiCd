@@ -3,6 +3,7 @@ package mariusz.ambroziak.kassistant.controllers;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,7 +25,8 @@ public class TescoController {
 	@Autowired
 	ShopProductParser productParserService;
 	
-	
+	@Autowired
+	TescoDetailsTestCases testCasesManager;
 
 
 
@@ -63,4 +65,15 @@ public class TescoController {
 		return "done";
     	
     }
+
+
+	@CrossOrigin
+	@ResponseBody
+	@RequestMapping("/saveTestCases")
+	public String saveTestCases(@RequestParam(value="param", defaultValue="empty") String param) throws IOException{
+
+		this.testCasesManager.copyTestCasesFromFileToDb();
+		return "done";
+
+	}
 }
