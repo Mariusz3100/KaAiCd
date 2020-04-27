@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
+import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.pojos.*;
 import mariusz.ambroziak.kassistant.pojos.shop.Product;
@@ -65,7 +66,7 @@ public class ShopProductParser {
 		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase);
 		for(int i=0;i<inputs.size()&&i<5;i++) {
 			Tesco_Product product=inputs.get(i);
-			ProductParsingProcessObject parsingAPhrase=new ProductParsingProcessObject(product);
+			ProductParsingProcessObject parsingAPhrase=new ProductParsingProcessObject(product,new ProductLearningCase());
 			NerResults entitiesFound = this.nerRecognizer.find(product.getName());
 			parsingAPhrase.setEntities(entitiesFound);
 
@@ -99,15 +100,15 @@ public class ShopProductParser {
 		object.setEntities(fused);
 		object.setEntityLess(parsingAPhrase.getEntitylessString());
 		object.setTokens(parsingAPhrase.getFinalResults());
-		String expected=parsingAPhrase.getExpectedWords().stream().collect(Collectors.joining(" "));
+		String expected=parsingAPhrase.getMinimalExpectedWords().stream().collect(Collectors.joining(" "));
 		LearningTuple lp=new LearningTuple(parsingAPhrase.getOriginalPhrase(),0,"empty",expected,parsingAPhrase.getExpectedType());
 		object.setExpectedResult(lp);
 		object.setProductTypeFound(parsingAPhrase.getFoodTypeClassified().toString());
-		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getExpectedWords(),parsingAPhrase.getFinalResults()));
-		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
+		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getFinalResults()));
+		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
 
-        object.setRestrictivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getAllExpectedWords(),parsingAPhrase.getFinalResults()));
-        object.setPermisivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getAllExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
+        object.setRestrictivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getFinalResults()));
+        object.setPermisivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
 
 
 		createProductForResults(parsingAPhrase,object);

@@ -2,6 +2,8 @@ package mariusz.ambroziak.kassistant.inputs;
 
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
+import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.repository.ProductLearningCaseRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
@@ -15,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -26,37 +29,52 @@ public class TescoDetailsTestCases {
 	private ResourceLoader resourceLoader;
 	private Resource inputFileResource;
 	private TescoDetailsApiClientService tescoDetailsService;
+	private ProductLearningCaseRepository learningCaseRepository;
 
 	@Autowired
-	public TescoDetailsTestCases(ResourceLoader resourceLoader, TescoDetailsApiClientService searchService) {
+	public TescoDetailsTestCases(ResourceLoader resourceLoader, TescoDetailsApiClientService searchService,ProductLearningCaseRepository learningCaseRepository) {
 		this.resourceLoader = resourceLoader;
 		this.inputFileResource = this.resourceLoader.getResource("classpath:/teachingResources/tomatoProducts");
 		this.tescoDetailsService = searchService;
+		this.learningCaseRepository=learningCaseRepository;
 
 
 	}
 
 	public List<ProductParsingProcessObject> getProduktsFromFile() throws IOException {
+		List<ProductLearningCase> testCasesFromFile = getTestCasesFromFile();
+		List<ProductParsingProcessObject> retValue=testCasesFromFile.stream().map(
+				c->new ProductParsingProcessObject(this.tescoDetailsService.getFullDataFromDbOrApi(c.getUrl()),c)).collect(Collectors.toList());
+		return retValue;
+
+
+	}
+
+
+	public List<ProductLearningCase> getTestCasesFromFile() throws IOException {
 		InputStream inputStream = inputFileResource.getInputStream();
 		BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
-		List<ProductParsingProcessObject> retValue=new ArrayList<ProductParsingProcessObject>();
+		List<ProductLearningCase> retValue=new ArrayList<ProductLearningCase>();
 		String line=br.readLine();
 		while(line!=null) {
 			if(!line.startsWith("#")) {
 
 				String[] elements = line.split(";");
-				Tesco_Product product = this.tescoDetailsService.getFullDataFromDbOrApi(elements[1]);
-				ProductParsingProcessObject parseObj = new ProductParsingProcessObject(product);
+				String name= elements[0];
+
 				String type = elements[2];
 				ProductType foundType = ProductType.parseType(type);
-				parseObj.setExpectedType(foundType);
-				String[] expected = elements[3].toLowerCase().split(" ");
-				parseObj.setExpectedWords(Arrays.asList(expected));
-				String[] allExpected = elements[4].toLowerCase().split(" ");
-
-				parseObj.setAllExpectedWords(Arrays.asList(allExpected));
-				System.out.println("Parsed: " + product.getName());
-				retValue.add(parseObj);
+				String url=elements[1];
+				String minimalExpected = elements[3].toLowerCase();
+				String extendedExpected = elements[4].toLowerCase();
+				ProductLearningCase learningCase=new ProductLearningCase();
+				learningCase.setExtended_words_expected(extendedExpected);
+				learningCase.setMinimal_words_expected(minimalExpected);
+				learningCase.setName(name);
+				learningCase.setType_expected(foundType);
+				learningCase.setUrl(url);
+				System.out.println("Parsed from file" + learningCase.getName());
+				retValue.add(learningCase);
 			}
 			line=br.readLine();
 		}
@@ -65,6 +83,16 @@ public class TescoDetailsTestCases {
 
 	}
 
+
+	public void copyTestCasesFromFileToDb() throws IOException {
+		InputStream inputStream = inputFileResource.getInputStream();
+		BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
+		List<ProductParsingProcessObject> retValue=new ArrayList<ProductParsingProcessObject>();
+		List<ProductParsingProcessObject> produktsFromFile = getProduktsFromFile();
+
+
+
+	}
 
 
 

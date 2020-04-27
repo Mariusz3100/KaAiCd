@@ -2,34 +2,31 @@ package mariusz.ambroziak.kassistant.pojos.shop;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
+import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ProductParsingProcessObject extends AbstractParsingObject {
 	private ProductData product;
 	private String brandlessPhrase;
-	private List<String> expectedWords;
-	private List<String> allExpectedWords;
 
-	private ProductType expectedType;
+	private ProductLearningCase testCase;
 
-	public List<String> getAllExpectedWords() {
-		return allExpectedWords;
+	public List<String> getMinimalExpectedWords() {
+		String minimal_words_expected = getTestCase()==null||getTestCase().getMinimal_words_expected()==null?"":getTestCase().getMinimal_words_expected();
+		return Arrays.asList(minimal_words_expected.split(" "));
+
 	}
 
-	public void setAllExpectedWords(List<String> allExpectedWords) {
-		this.allExpectedWords = allExpectedWords;
-	}
 
-	public List<String> getExpectedWords() {
-		return expectedWords;
-	}
+	public List<String> getExtendedExpectedWords() {
+		String words_expected = getTestCase()==null||getTestCase().getMinimal_words_expected()==null?"":getTestCase().getExtended_words_expected();
+		return Arrays.asList(words_expected.split(" "));	}
 
-	public void setExpectedWords(List<String> expectedWords) {
-		this.expectedWords = expectedWords;
-	}
 
 
 
@@ -41,9 +38,9 @@ public class ProductParsingProcessObject extends AbstractParsingObject {
 		this.product = product;
 	}
 
-	public ProductParsingProcessObject(Tesco_Product product) {
-		super();
+	public ProductParsingProcessObject(ProductData product, ProductLearningCase testCase) {
 		this.product = product;
+		this.testCase = testCase;
 	}
 
 	public String getBrandlessPhrase() {
@@ -55,12 +52,9 @@ public class ProductParsingProcessObject extends AbstractParsingObject {
 	}
 
 	public ProductType getExpectedType() {
-		return expectedType;
+		return getTestCase().getType_expected();
 	}
 
-	public void setExpectedType(ProductType expectedType) {
-		this.expectedType = expectedType;
-	}
 
 	@Override
 	public String getOriginalPhrase() {
@@ -77,5 +71,12 @@ public class ProductParsingProcessObject extends AbstractParsingObject {
 	public String getEntitylessString(){
 		return  getEntitylessString(this.brandlessPhrase);
 	}
-	
+
+	public ProductLearningCase getTestCase() {
+		return testCase;
+	}
+
+	public void setTestCase(ProductLearningCase testCase) {
+		this.testCase = testCase;
+	}
 }
