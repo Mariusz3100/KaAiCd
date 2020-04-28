@@ -40,14 +40,14 @@ public class TescoController {
     	
     }
 	
-	@CrossOrigin
-	@ResponseBody
-	@RequestMapping("/tescoSearchAndParse")
-    public ParsingResultList tescoSearchAndParse(@RequestParam(value="param", defaultValue="empty") String param) throws IOException{
-    	ParsingResultList retValue=this.productParserService.categorizeProducts(param);
-    	return retValue;
-    	
-    }
+//	@CrossOrigin
+//	@ResponseBody
+//	@RequestMapping("/tescoSearchAndParse")
+//    public ParsingResultList tescoSearchAndParse(@RequestParam(value="param", defaultV alue="empty") String param) throws IOException{
+//    	ParsingResultList retValue=this.productParserService.categorizeProducts(param);
+//    	return retValue;
+//
+//    }
 	@CrossOrigin
 	@ResponseBody
 	@RequestMapping("/tescoParseFromFile")

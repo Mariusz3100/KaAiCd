@@ -60,34 +60,34 @@ public class ShopProductParser {
 
 
 
-	public ParsingResultList categorizeProducts(String phrase) throws IOException {
-		ParsingResultList retValue=new ParsingResultList();
-
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase);
-		for(int i=0;i<inputs.size()&&i<5;i++) {
-			Tesco_Product product=inputs.get(i);
-			ProductParsingProcessObject parsingAPhrase=new ProductParsingProcessObject(product,new ProductLearningCase());
-			NerResults entitiesFound = this.nerRecognizer.find(product.getName());
-			parsingAPhrase.setEntities(entitiesFound);
-
-			String entitylessString=parsingAPhrase.getEntitylessString();
-
-			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
-			parsingAPhrase.setEntitylessTokenized(tokens);
-
-			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-
-
-			ParsingResult singleResult = createResultObject(parsingAPhrase);
-			
-			retValue.addResult(singleResult);
-
-			
-		}
-
-		return retValue;
-
-	}
+//	public ParsingResultList categorizeProducts(String phrase) throws IOException {
+//		ParsingResultList retValue=new ParsingResultList();
+//
+//		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase);
+//		for(int i=0;i<inputs.size()&&i<5;i++) {
+//			Tesco_Product product=inputs.get(i);
+//			ProductParsingProcessObject parsingAPhrase=new ProductParsingProcessObject(product,new ProductLearningCase());
+//			NerResults entitiesFound = this.nerRecognizer.find(product.getName());
+//			parsingAPhrase.setEntities(entitiesFound);
+//
+//			String entitylessString=parsingAPhrase.getEntitylessString();
+//
+//			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
+//			parsingAPhrase.setEntitylessTokenized(tokens);
+//
+//			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
+//
+//
+//			ParsingResult singleResult = createResultObject(parsingAPhrase);
+//
+//			retValue.addResult(singleResult);
+//
+//
+//		}
+//
+//		return retValue;
+//
+//	}
 
 
 
@@ -110,6 +110,8 @@ public class ShopProductParser {
         object.setRestrictivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getFinalResults()));
         object.setPermisivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
 
+        object.setBrand(parsingAPhrase.getProduct().getBrand());
+		object.setBrandless(parsingAPhrase.getBrandlessPhrase());
 
 		createProductForResults(parsingAPhrase,object);
 
@@ -275,12 +277,9 @@ public class ShopProductParser {
 		List<ProductParsingProcessObject> inputs= getTestCases();
 		for(ProductParsingProcessObject parsingAPhrase:inputs) {
 			String originalPhrase= parsingAPhrase.getOriginalPhrase();
-			String brandlessPhrase= calculateBrandlessPhrase(parsingAPhrase);
+			String brandlessPhrase= calculateBrandlessPhrase(parsingAPhrase.getOriginalPhrase(),parsingAPhrase.getProduct().getBrand());
 			parsingAPhrase.setBrandlessPhrase(brandlessPhrase);
-//			NerResults entitiesFound = this.nerRecognizer.find(brandlessPhrase);
-//			parsingAPhrase.setEntities(entitiesFound);
-//
-//			String entitylessString=parsingAPhrase.getEntitylessString();
+
 
 			TokenizationResults tokens = this.tokenizator.parse(brandlessPhrase);
 			parsingAPhrase.setEntitylessTokenized(tokens);
@@ -311,13 +310,10 @@ public class ShopProductParser {
 		return tescoTestCases.getParsingObjectsFromDb();
 	}
 
-	private String calculateBrandlessPhrase(ProductParsingProcessObject productParsingObject) {
-		String productName=productParsingObject.getProduct().getName();
-		String brand=productParsingObject.getProduct().getBrand();
-	//	String result=productName.replaceAll(brand,"").replaceAll("  ","");
+	private String calculateBrandlessPhrase(String originalPhrase, String brand) {
 
 		Pattern p=Pattern.compile(brand,Pattern.CASE_INSENSITIVE);
-		Matcher m=p.matcher(productName);
+		Matcher m=p.matcher(originalPhrase);
 		String result=m.replaceAll("");
 		result=result.replaceAll("  "," ").trim();
 		return result;
