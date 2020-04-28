@@ -17,6 +17,8 @@ public class ParsingResult{
 
 	private String entities;
 	private String entityLess;
+	private String brand;
+	private String brandless;
 	private String tokenString;
 	private List<QualifiedToken> tokens;
 	
@@ -178,6 +180,20 @@ public class ParsingResult{
 	public void setExpectedResult(LearningTuple expectedResult) {
 		this.expectedResult = expectedResult;
 	}
-	
-	
+
+	public String getBrand() {
+		return brand;
+	}
+
+	public void setBrand(String brand) {
+		this.brand = brand;
+	}
+
+	public String getBrandless() {
+		return brandless;
+	}
+
+	public void setBrandless(String brandless) {
+		this.brandless = brandless;
+	}
 }
