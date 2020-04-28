@@ -1,7 +1,7 @@
 package mariusz.ambroziak.kassistant.logic.shops;
 
-import mariusz.ambroziak.kassistant.pojos.shop.Product;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordParsed;
+import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +17,8 @@ public class ParseCompareProductNames {
 //    private String shorterPhrase;
 //    private String longerPhrase;
 
-    List<WordParsed> firstPhraseResults;
-    List<WordParsed> secondPhraseResults;
+    List<WordComparisonResult> firstPhraseResults;
+    List<WordComparisonResult> secondPhraseResults;
     private int currentFirstPhraseReadingIndex;
     private int currentSecondPhraseReadingIndex;
 
@@ -42,14 +42,14 @@ public class ParseCompareProductNames {
         secondPhraseResults=new ArrayList<>();
     }
 
-    public static Product  parseTwoPhrases(String firstPhrase, String secondPhrase){
+    public static ProductNamesComparison parseTwoPhrases(String firstPhrase, String secondPhrase){
         ParseCompareProductNames thisObject=new ParseCompareProductNames(firstPhrase,secondPhrase);
         return thisObject.calculateResults();
 
     }
 
-    private Product calculateResults(){
-        Product retValue=checkForEmptyPhrases();
+    private ProductNamesComparison calculateResults(){
+        ProductNamesComparison retValue=checkForEmptyPhrases();
         if(retValue!=null){
             return retValue;
         }else {
@@ -89,7 +89,7 @@ public class ParseCompareProductNames {
             }
 
 
-            retValue = new Product();
+            retValue = new ProductNamesComparison();
 
             retValue.setDetailsNameResults(this.firstPhraseResults);
             retValue.setSearchNameResults(this.secondPhraseResults);
@@ -100,28 +100,28 @@ public class ParseCompareProductNames {
         }
     }
 
-    private Product checkForEmptyPhrases() {
-        Product retValue=null;
+    private ProductNamesComparison checkForEmptyPhrases() {
+        ProductNamesComparison retValue=null;
         if((firstPhrase==null||firstPhrase.isEmpty())&&(secondPhrase==null||secondPhrase.isEmpty())){
-            retValue=new Product();
+            retValue=new ProductNamesComparison();
             retValue.setDetailsNameResults(new ArrayList<>());
             retValue.setSearchNameResults(new ArrayList<>());
             return retValue;
         }
 
         if(firstPhrase==null||firstPhrase.isEmpty()){
-            retValue=new Product();
-            secondPhraseResults= Arrays.asList(secondPhrase.split(" ")).stream().map(s->new WordParsed(s,true)).collect(Collectors.toList());;
-            firstPhraseResults= Arrays.asList(secondPhrase.split(" ")).stream().map(s->new WordParsed("",false)).collect(Collectors.toList());;
-            retValue=new Product();
+            retValue=new ProductNamesComparison();
+            secondPhraseResults= Arrays.asList(secondPhrase.split(" ")).stream().map(s->new WordComparisonResult(s,true)).collect(Collectors.toList());;
+            firstPhraseResults= Arrays.asList(secondPhrase.split(" ")).stream().map(s->new WordComparisonResult("",false)).collect(Collectors.toList());;
+            retValue=new ProductNamesComparison();
             retValue.setDetailsNameResults(firstPhraseResults);
             retValue.setSearchNameResults(secondPhraseResults);
             return retValue;
         }
         if(secondPhrase==null||secondPhrase.isEmpty()){
-            firstPhraseResults= Arrays.asList(firstPhrase.split(" ")).stream().map(s->new WordParsed(s,true)).collect(Collectors.toList());
-            secondPhraseResults= Arrays.asList(firstPhrase.split(" ")).stream().map(s->new WordParsed("",false)).collect(Collectors.toList());
-            retValue=new Product();
+            firstPhraseResults= Arrays.asList(firstPhrase.split(" ")).stream().map(s->new WordComparisonResult(s,true)).collect(Collectors.toList());
+            secondPhraseResults= Arrays.asList(firstPhrase.split(" ")).stream().map(s->new WordComparisonResult("",false)).collect(Collectors.toList());
+            retValue=new ProductNamesComparison();
             retValue.setDetailsNameResults(firstPhraseResults);
             retValue.setSearchNameResults(secondPhraseResults);
             return retValue;
@@ -159,14 +159,14 @@ public class ParseCompareProductNames {
     private void addToBothResultLists(String word){
         currentFirstPhraseReadingIndex++;
         currentSecondPhraseReadingIndex++;
-        secondPhraseResults.add(new WordParsed(word, true));
-        firstPhraseResults.add(new WordParsed(word, true));
+        secondPhraseResults.add(new WordComparisonResult(word, true));
+        firstPhraseResults.add(new WordComparisonResult(word, true));
     }
     private void addConflictingWordsToLists(String firstPhraseWord, String secondPhraseWord){
         currentFirstPhraseReadingIndex++;
         currentSecondPhraseReadingIndex++;
-        secondPhraseResults.add(new WordParsed(secondPhraseWord, false));
-        firstPhraseResults.add(new WordParsed(firstPhraseWord, false));
+        secondPhraseResults.add(new WordComparisonResult(secondPhraseWord, false));
+        firstPhraseResults.add(new WordComparisonResult(firstPhraseWord, false));
     }
 //    private void addToSecondResultListOnly(String word){
 //        currentFirstPhraseReadingIndex++;
@@ -182,22 +182,22 @@ public class ParseCompareProductNames {
 
 
     private void addWordToFirstListEmptyToSecondList(String word){
-        firstPhraseResults.add(new WordParsed(word, false));
-        secondPhraseResults.add(new WordParsed("", false));
+        firstPhraseResults.add(new WordComparisonResult(word, false));
+        secondPhraseResults.add(new WordComparisonResult("", false));
 
     }
     private void addEmptyToSecond(){
-        secondPhraseResults.add(new WordParsed("", false));
+        secondPhraseResults.add(new WordComparisonResult("", false));
 
     }
     private void addWordToSecondListEmptyToFirstList(String word){
-        secondPhraseResults.add(new WordParsed(word, false));
-        firstPhraseResults.add(new WordParsed("", false));
+        secondPhraseResults.add(new WordComparisonResult(word, false));
+        firstPhraseResults.add(new WordComparisonResult("", false));
 
     }
 
     private void addEmptyToFirst(){
-        firstPhraseResults.add(new WordParsed("", false));
+        firstPhraseResults.add(new WordComparisonResult("", false));
 
     }
 

@@ -9,12 +9,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.pojos.*;
-import mariusz.ambroziak.kassistant.pojos.shop.Product;
+import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordParsed;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import mariusz.ambroziak.kassistant.webclients.edamamnlp.EdamanIngredientParsingService;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntityRecognitionClientService;
-import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
 
@@ -132,26 +130,26 @@ public class ShopProductParser {
 			searchApiName = tp.getSearchApiName()==null?"":tp.getSearchApiName();
 			ingredients = tp.getIngredients()==null?"":tp.getIngredients();
 
-			Product product=ParseCompareProductNames.parseTwoPhrases(name,searchApiName);
+			ProductNamesComparison productNamesComparison =ParseCompareProductNames.parseTwoPhrases(name,searchApiName);
 
 
 
 
 			if(ingredients==null||ingredients.isEmpty()) {
-				product.setIngredientsNameResults(Arrays.asList(new WordParsed[]{new WordParsed("", false)}));
+				productNamesComparison.setIngredientsNameResults(Arrays.asList(new WordComparisonResult[]{new WordComparisonResult("", false)}));
 			}else{
-				List<WordParsed> ingredientListResult = Arrays.asList(ingredients.split(" ")).stream().map(s -> new WordParsed(s, true)).collect(Collectors.toList());
-				product.setIngredientsNameResults(ingredientListResult);
+				List<WordComparisonResult> ingredientListResult = Arrays.asList(ingredients.split(" ")).stream().map(s -> new WordComparisonResult(s, true)).collect(Collectors.toList());
+				productNamesComparison.setIngredientsNameResults(ingredientListResult);
 
 			}
 
-			object.setProduct(product);
+			object.setInitialNames(productNamesComparison);
 
 		}else{
-			Product p=new Product();
-			p.setDetailsNameResults(nameWordsList.stream().map(s->new WordParsed(s,true))
+			ProductNamesComparison p=new ProductNamesComparison();
+			p.setDetailsNameResults(nameWordsList.stream().map(s->new WordComparisonResult(s,true))
 					.collect(Collectors.toList()));
-			object.setProduct(p);
+			object.setInitialNames(p);
 		}
 
 
@@ -160,9 +158,9 @@ public class ShopProductParser {
 
 
 
-	private Product calculatewordLists(List<String> longerList,List<String> shorterList){
-		List<WordParsed> nameListResults=new ArrayList<>();
-		List<WordParsed> searchNameListResults=new ArrayList<>();
+	private ProductNamesComparison calculatewordLists(List<String> longerList, List<String> shorterList){
+		List<WordComparisonResult> nameListResults=new ArrayList<>();
+		List<WordComparisonResult> searchNameListResults=new ArrayList<>();
 
 
 		for(int i=0;i<longerList.size();i++){
@@ -170,8 +168,8 @@ public class ShopProductParser {
 			boolean equals=i<shorterList.size()&&longerList.get(i).equalsIgnoreCase(shorterList.get(i));
 
 			if(equals) {
-				nameListResults.add(new WordParsed(i >= longerList.size() ? "" : longerList.get(i), equals));
-				searchNameListResults.add(new WordParsed(i >= shorterList.size() ? "" : shorterList.get(i), equals));
+				nameListResults.add(new WordComparisonResult(i >= longerList.size() ? "" : longerList.get(i), equals));
+				searchNameListResults.add(new WordComparisonResult(i >= shorterList.size() ? "" : shorterList.get(i), equals));
 			}else {
 
 			}
@@ -179,7 +177,7 @@ public class ShopProductParser {
 		}
 
 
-		Product p=new Product();
+		ProductNamesComparison p=new ProductNamesComparison();
 
 		return  p;
 	}
@@ -276,33 +274,62 @@ public class ShopProductParser {
 
 		List<ProductParsingProcessObject> inputs= getTestCases();
 		for(ProductParsingProcessObject parsingAPhrase:inputs) {
-			String originalPhrase= parsingAPhrase.getOriginalPhrase();
-			String brandlessPhrase= calculateBrandlessPhrase(parsingAPhrase.getOriginalPhrase(),parsingAPhrase.getProduct().getBrand());
-			parsingAPhrase.setBrandlessPhrase(brandlessPhrase);
+			ParsingResult singleResult = parseAProductParsingObject(parsingAPhrase);
 
 
-			TokenizationResults tokens = this.tokenizator.parse(brandlessPhrase);
-			parsingAPhrase.setEntitylessTokenized(tokens);
+			Tesco_Product tp=(Tesco_Product)parsingAPhrase.getProduct();
+
+			String secondName=tp.getSearchApiName();
+			ProductNamesComparison productNamesComparisonOfFinalTokens=null;
+			String detailsName = parsingAPhrase.getFinalResults().stream()
+					.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
+					.map(t -> t.getText()).collect(Collectors.joining(" "));
+			if(secondName==null||secondName.isEmpty()) {
+				productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, "");
+			}else{
+
+				Tesco_Product tempTp = tp.clone();
+				tempTp.setName(secondName);
+				tempTp.setSearchApiName(tp.getName());
+
+				ProductParsingProcessObject tempParsingObject = new ProductParsingProcessObject(tempTp, parsingAPhrase.getTestCase());
+				ParsingResult result = parseAProductParsingObject(tempParsingObject);
+
+				detailsName = parsingAPhrase.getFinalResults().stream()
+						.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
+						.map(t -> t.getText()).collect(Collectors.joining(" "));
 
 
+				String searchApiName = tempParsingObject.getFinalResults().stream()
+						.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
+						.map(t -> t.getText()).collect(Collectors.joining(" "));
 
 
-
-
-
-
-            this.shopWordClacifier.calculateProductType(parsingAPhrase);
-			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-
-			improperlyCorrectErrorsInFinalResults(parsingAPhrase);
-			ParsingResult singleResult = createResultObject(parsingAPhrase);
-			
+				productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, searchApiName);
+			}
+			singleResult.setFinalNames(productNamesComparisonOfFinalTokens);
 			retValue.addResult(singleResult);
 
 			
 		}
 
 		return retValue;
+	}
+
+	private ParsingResult parseAProductParsingObject(ProductParsingProcessObject parsingAPhrase) {
+		String brandlessPhrase= calculateBrandlessPhrase(parsingAPhrase.getOriginalPhrase(),parsingAPhrase.getProduct().getBrand());
+		parsingAPhrase.setBrandlessPhrase(brandlessPhrase);
+
+
+		TokenizationResults tokens = this.tokenizator.parse(brandlessPhrase);
+		parsingAPhrase.setEntitylessTokenized(tokens);
+
+
+		this.shopWordClacifier.calculateProductType(parsingAPhrase);
+		this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
+
+		improperlyCorrectErrorsInFinalResults(parsingAPhrase);
+		return createResultObject(parsingAPhrase);
 	}
 
 	private List<ProductParsingProcessObject> getTestCases() throws IOException {

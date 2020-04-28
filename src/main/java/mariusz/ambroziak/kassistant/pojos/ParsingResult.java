@@ -2,7 +2,7 @@ package mariusz.ambroziak.kassistant.pojos;
 
 import java.util.List;
 
-import mariusz.ambroziak.kassistant.pojos.shop.Product;
+import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
@@ -25,15 +25,24 @@ public class ParsingResult{
 	private String correctedPhrase;
 	private List<Token> correctedTokens;
 	private String productTypeFound;
-	private Product product;
+	private ProductNamesComparison initialNames;
+	private ProductNamesComparison finalNames;
 
 
-	public Product getProduct() {
-		return product;
+	public ProductNamesComparison getFinalNames() {
+		return finalNames;
 	}
 
-	public void setProduct(Product product) {
-		this.product = product;
+	public void setFinalNames(ProductNamesComparison finalNames) {
+		this.finalNames = finalNames;
+	}
+
+	public ProductNamesComparison getInitialNames() {
+		return initialNames;
+	}
+
+	public void setInitialNames(ProductNamesComparison initialNames) {
+		this.initialNames = initialNames;
 	}
 
 	public CalculatedResults getRestrictivelyCalculatedResultForPhrase() {
