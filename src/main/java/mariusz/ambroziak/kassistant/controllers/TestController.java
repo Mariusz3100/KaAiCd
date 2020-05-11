@@ -1,5 +1,13 @@
 package mariusz.ambroziak.kassistant.controllers;
 
+import mariusz.ambroziak.kassistant.enums.AmountTypes;
+import mariusz.ambroziak.kassistant.enums.ProductType;
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
+import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.web.bind.annotation.RestController;
 
 import mariusz.ambroziak.kassistant.logic.IngredientPhraseTokenizerTest;
@@ -25,18 +33,32 @@ public class TestController {
     
 	TokenizationClientService tokenizationService;
 	NamedEntityRecognitionClientService nerService;
-	
+
+	ProductParsingResultRepository productParsingRepo;
+	IngredientPhraseParsingResultRepository ingredientParsingRepo;
 	IngredientPhraseTokenizerTest testTokenizerService;
+	TescoProductRepository tescoProductRepository;
 
-
-	@Autowired
 	public TestController(TokenizationClientService tokenizationService, NamedEntityRecognitionClientService nerService,
-			IngredientPhraseTokenizerTest testTokenizerService) {
-		super();
+						  ProductParsingResultRepository productParsingRepo, IngredientPhraseParsingResultRepository ingredientParsingRepo,
+						  IngredientPhraseTokenizerTest testTokenizerService, TescoProductRepository tescoProductRepository) {
 		this.tokenizationService = tokenizationService;
 		this.nerService = nerService;
+		this.productParsingRepo = productParsingRepo;
+		this.ingredientParsingRepo = ingredientParsingRepo;
 		this.testTokenizerService = testTokenizerService;
+		this.tescoProductRepository = tescoProductRepository;
 	}
+
+
+//	@Autowired
+//	public TestController(TokenizationClientService tokenizationService, NamedEntityRecognitionClientService nerService,
+//			IngredientPhraseTokenizerTest testTokenizerService) {
+//		super();
+//		this.tokenizationService = tokenizationService;
+//		this.nerService = nerService;
+//		this.testTokenizerService = testTokenizerService;
+//	}
 	
 	@RequestMapping("/springTokenize")
     public String springTokenize(@RequestParam(value="param", defaultValue="empty") String param){
@@ -50,8 +72,21 @@ public class TestController {
     	NerResults retValue=this.nerService.find(param);
     	return retValue.toString();
     }
-    
-	
+
+	@RequestMapping("/testIngDb")
+	public String testIngDb(@RequestParam(value="param", defaultValue="empty") String param){
+		IngredientPhraseParsingResult x=new IngredientPhraseParsingResult("test",12, AmountTypes.pcs, ProductType.fresh,"test","Test");
+		this.ingredientParsingRepo.save(x);
+		return "Done";
+	}
+
+	@RequestMapping("/testProdDb")
+	public String testProdDb(@RequestParam(value="param", defaultValue="empty") String param){
+		Tesco_Product tesco_product = tescoProductRepository.findAll().get(0);
+		ProductParsingResult x=new ProductParsingResult(tesco_product,"Test","test","Test");
+		this.productParsingRepo.save(x);
+		return "Done";
+	}
 	@CrossOrigin
 	@RequestMapping("/springTokenizerFromFile")
 	@ResponseBody

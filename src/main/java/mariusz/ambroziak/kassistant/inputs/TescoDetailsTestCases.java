@@ -50,6 +50,16 @@ public class TescoDetailsTestCases {
 
 	}
 
+
+	public List<ProductParsingProcessObject> getProduktsForAPhrase(String phrase) throws IOException {
+		List<ProductLearningCase> testCasesFromFile = getTestCasesFromFile();
+		List<ProductParsingProcessObject> retValue=testCasesFromFile.stream().map(
+				c->new ProductParsingProcessObject(getProductDataFromDbOrApi(c),c)).collect(Collectors.toList());
+		return retValue;
+
+
+	}
+
 	private Tesco_Product getProductDataFromDbOrApi(ProductLearningCase c) {
 		return this.tescoDetailsService.getFullDataFromDbOrApi(c.getUrl());
 	}

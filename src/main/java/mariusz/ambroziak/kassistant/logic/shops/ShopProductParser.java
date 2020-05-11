@@ -9,10 +9,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
+import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.pojos.*;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
+import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
@@ -58,34 +60,34 @@ public class ShopProductParser {
 
 
 
-//	public ParsingResultList categorizeProducts(String phrase) throws IOException {
-//		ParsingResultList retValue=new ParsingResultList();
-//
-//		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase);
-//		for(int i=0;i<inputs.size()&&i<5;i++) {
-//			Tesco_Product product=inputs.get(i);
-//			ProductParsingProcessObject parsingAPhrase=new ProductParsingProcessObject(product,new ProductLearningCase());
-//			NerResults entitiesFound = this.nerRecognizer.find(product.getName());
-//			parsingAPhrase.setEntities(entitiesFound);
-//
-//			String entitylessString=parsingAPhrase.getEntitylessString();
-//
-//			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
-//			parsingAPhrase.setEntitylessTokenized(tokens);
-//
-//			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-//
-//
-//			ParsingResult singleResult = createResultObject(parsingAPhrase);
-//
-//			retValue.addResult(singleResult);
-//
-//
-//		}
-//
-//		return retValue;
-//
-//	}
+	public ParsingResultList tescoSearchForProductsWithTestCases(String phrase) throws IOException {
+		ParsingResultList retValue=new ParsingResultList();
+
+		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase);
+		for(int i=0;i<inputs.size()&&i<5;i++) {
+			Tesco_Product product=inputs.get(i);
+			ProductParsingProcessObject parsingAPhrase=new ProductParsingProcessObject(product,new ProductLearningCase());
+			NerResults entitiesFound = this.nerRecognizer.find(product.getName());
+			parsingAPhrase.setEntities(entitiesFound);
+
+			String entitylessString=parsingAPhrase.getEntitylessString();
+
+			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
+			parsingAPhrase.setEntitylessTokenized(tokens);
+
+			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
+
+
+			ParsingResult singleResult = createResultObject(parsingAPhrase);
+
+			retValue.addResult(singleResult);
+
+
+		}
+
+		return retValue;
+
+	}
 
 
 
@@ -111,12 +113,23 @@ public class ShopProductParser {
         object.setBrand(parsingAPhrase.getProduct().getBrand());
 		object.setBrandless(parsingAPhrase.getBrandlessPhrase());
 
-		createProductForResults(parsingAPhrase,object);
+		if(parsingAPhrase.getProduct() instanceof Tesco_Product){
+			String secondName="";
+			Tesco_Product product = (Tesco_Product) parsingAPhrase.getProduct();
+			secondName= product.getSearchApiName();
+			object.setAlternateName(secondName);
+
+			object.setIngredientPhrase(product.getIngredients());
+		}
+
+		object.setDescriptionPhrase(parsingAPhrase.getProduct().getDescription());
+
+		object.setInitialNames(parsingAPhrase.getInitialNames());
 
 		return object;
 	}
 
-	private void createProductForResults(ProductParsingProcessObject parsingAPhrase, ParsingResult object) {
+	private ProductNamesComparison createNamesComparison(ProductParsingProcessObject parsingAPhrase) {
 		String name=parsingAPhrase.getProduct().getName();
 		List<String> nameWordsList= Arrays.asList(name.split(" "));
 
@@ -143,13 +156,13 @@ public class ShopProductParser {
 
 			}
 
-			object.setInitialNames(productNamesComparison);
+			return productNamesComparison;
 
 		}else{
 			ProductNamesComparison p=new ProductNamesComparison();
 			p.setDetailsNameResults(nameWordsList.stream().map(s->new WordComparisonResult(s,true))
 					.collect(Collectors.toList()));
-			object.setInitialNames(p);
+			return p;
 		}
 
 
@@ -317,7 +330,11 @@ public class ShopProductParser {
 	}
 
 	private ParsingResult parseAProductParsingObject(ProductParsingProcessObject parsingAPhrase) {
-		String brandlessPhrase= calculateBrandlessPhrase(parsingAPhrase.getOriginalPhrase(),parsingAPhrase.getProduct().getBrand());
+
+
+		String resultOfComparison=compareNames(parsingAPhrase);
+
+		String brandlessPhrase= calculateBrandlessPhrase(resultOfComparison,parsingAPhrase.getProduct().getBrand());
 		parsingAPhrase.setBrandlessPhrase(brandlessPhrase);
 
 
@@ -330,6 +347,15 @@ public class ShopProductParser {
 
 		improperlyCorrectErrorsInFinalResults(parsingAPhrase);
 		return createResultObject(parsingAPhrase);
+	}
+
+	private String compareNames(ProductParsingProcessObject parsingAPhrase) {
+		ProductNamesComparison comparison=createNamesComparison(parsingAPhrase);
+		parsingAPhrase.setInitialNames(comparison);
+
+		return comparison.getResultPhrase();
+
+
 	}
 
 	private List<ProductParsingProcessObject> getTestCases() throws IOException {
