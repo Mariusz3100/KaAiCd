@@ -69,6 +69,61 @@ public class IngredientPhraseParser {
 	}
 
 
+	public ParsingResultList parseIngredientLines(List<String> lines) throws IOException {
+		ParsingResultList retValue=new ParsingResultList();
+
+		List<LearningTuple> inputLines= edamanNlpParsingService.retrieveDataFromFile();
+		for(LearningTuple er:inputLines) {
+			String line=correctErrors(er.getOriginalPhrase());
+			er.setOriginalPhrase(line);
+			IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
+
+			NerResults entitiesFound = this.nerRecognizer.find(line);
+			parsingAPhrase.setEntities(entitiesFound);
+
+			String entitylessString=parsingAPhrase.getEntitylessString();
+
+			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
+			parsingAPhrase.setEntitylessTokenized(tokens);
+
+			initializePrimaryConnotations(parsingAPhrase);
+
+
+			this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
+			initializeCorrectedConnotations(parsingAPhrase);
+			initializeProductPhraseConnotations(parsingAPhrase);
+
+			ParsingResult singleResult = createResultObject(parsingAPhrase);
+
+			retValue.addResult(singleResult);
+
+
+		}
+
+		for(ParsingResult result:retValue.getResults()){
+			String line=result.getOriginalPhrase()+csvSeparator+
+					result.getExpectedResult().getFoodMatch()+csvSeparator;
+
+			String restrictive="";
+			for(String x:result.getRestrictivelyCalculatedResult().getMarkedWords()){
+				if(!restrictive.isEmpty())
+					restrictive+=wordSeparator;
+				restrictive+=x;
+			}
+
+			String permissive="";
+			for(String x:result.getRestrictivelyCalculatedResult().getMarkedWords()){
+				if(!permissive.isEmpty())
+					permissive+=wordSeparator;
+				permissive+=x;
+			}
+			line+=permissive+csvSeparator+restrictive;
+			System.out.println(line);
+		}
+
+		return retValue;
+
+	}
 
 
 	public ParsingResultList parseFromFile() throws IOException {

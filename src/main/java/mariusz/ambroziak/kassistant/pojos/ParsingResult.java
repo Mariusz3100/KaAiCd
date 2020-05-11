@@ -9,6 +9,10 @@ import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 //class mainly for presenting in angular
 public class ParsingResult{
 	private String originalPhrase;
+	private String alternateName;
+	private String ingredientPhrase;
+	private String descriptionPhrase;
+
 	private LearningTuple expectedResult;
 	private CalculatedResults restrictivelyCalculatedResult;
 	private CalculatedResults permisivelyCalculatedResult;
@@ -204,5 +208,29 @@ public class ParsingResult{
 
 	public void setBrandless(String brandless) {
 		this.brandless = brandless;
+	}
+
+	public String getAlternateName() {
+		return alternateName;
+	}
+
+	public void setAlternateName(String alternateName) {
+		this.alternateName = alternateName;
+	}
+
+	public String getIngredientPhrase() {
+		return ingredientPhrase;
+	}
+
+	public void setIngredientPhrase(String ingredientPhrase) {
+		this.ingredientPhrase = ingredientPhrase;
+	}
+
+	public String getDescriptionPhrase() {
+		return descriptionPhrase;
+	}
+
+	public void setDescriptionPhrase(String descriptionPhrase) {
+		this.descriptionPhrase = descriptionPhrase;
 	}
 }

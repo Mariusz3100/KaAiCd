@@ -74,6 +74,8 @@ public class WordClasifier {
 		productTypeKeywords.add("sweetener");
 		productTypeKeywords.add("cheese");
 		productTypeKeywords.add("citrous fruit");
+		productTypeKeywords.add("dish");
+		productTypeKeywords.add("victuals");
 
 
 

@@ -5,9 +5,11 @@ import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparison
 import java.util.List;
 
 public class ProductNamesComparison {
-    List<WordComparisonResult> detailsNameResults;
-    List<WordComparisonResult> searchNameResults;
-    List<WordComparisonResult> ingredientsNameResults;
+    private List<WordComparisonResult> detailsNameResults;
+    private List<WordComparisonResult> searchNameResults;
+    private List<WordComparisonResult> ingredientsNameResults;
+    private String resultPhrase;
+
 
     public List<WordComparisonResult> getDetailsNameResults() {
         return detailsNameResults;
@@ -31,5 +33,14 @@ public class ProductNamesComparison {
 
     public void setIngredientsNameResults(List<WordComparisonResult> ingredientsNameResults) {
         this.ingredientsNameResults = ingredientsNameResults;
+    }
+
+
+    public String getResultPhrase() {
+        return resultPhrase;
+    }
+
+    public void setResultPhrase(String resultPhrase) {
+        this.resultPhrase = resultPhrase;
     }
 }

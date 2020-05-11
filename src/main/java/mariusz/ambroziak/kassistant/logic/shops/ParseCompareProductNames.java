@@ -68,16 +68,16 @@ public class ParseCompareProductNames {
                     currentSecondPhraseReadingIndex++;
                     addWordToSecondListEmptyToFirstList(secondPhraseWord);
                 } else if (currentSecondPhraseReadingIndex >= secondPhraseSplitted.size() && currentFirstPhraseReadingIndex < firstPhraseSplitted.size()) {
-                    String firstPhraseWord = firstPhraseSplitted.get(currentSecondPhraseReadingIndex);
+                    String firstPhraseWord = firstPhraseSplitted.get(currentFirstPhraseReadingIndex);
                     currentFirstPhraseReadingIndex++;
                     addWordToFirstListEmptyToSecondList(firstPhraseWord);
                 } else {
                     String firstPhraseWord = firstPhraseSplitted.get(currentFirstPhraseReadingIndex);
                     String secondPhraseWord = secondPhraseSplitted.get(currentSecondPhraseReadingIndex);
-                    boolean equals = firstPhraseWord.equals(secondPhraseWord);
+                    boolean equals = compareWords(firstPhraseWord, secondPhraseWord);
 
                     if (equals) {
-                        addToBothResultLists(firstPhraseWord);
+                        addToBothResultLists(secondPhraseWord);
                     } else {
 
                         neitherPhraseIsFinished(firstPhraseSplitted, secondPhraseSplitted, firstPhraseWord, secondPhraseWord);
@@ -94,10 +94,32 @@ public class ParseCompareProductNames {
             retValue.setDetailsNameResults(this.firstPhraseResults);
             retValue.setSearchNameResults(this.secondPhraseResults);
 
-            
+            String resultPhrase=this.secondPhraseResults.stream().filter(s->s.isMatch()).map(s->s.getWord()).collect(Collectors.joining(" "));
+            resultPhrase=resultPhrase.replaceAll("  "," ").trim();
+
+            retValue.setResultPhrase(resultPhrase);
 
             return retValue;
         }
+    }
+
+    private boolean compareWords(String firstPhraseWord, String secondPhraseWord) {
+        boolean equals= firstPhraseWord.equals(secondPhraseWord);
+
+        if(!equals){
+            equals=checkForImproperEquals(firstPhraseWord,secondPhraseWord);
+        }
+
+        return equals;
+    }
+
+    private boolean checkForImproperEquals(String firstPhraseWord, String secondPhraseWord) {
+        if(firstPhraseWord.toLowerCase().equals("toms")&&secondPhraseWord.toLowerCase().equals("tomatoes"))
+            return true;
+        if(firstPhraseWord.toLowerCase().equals("fin")&&secondPhraseWord.toLowerCase().equals("finest"))
+            return true;
+
+        return false;
     }
 
     private ProductNamesComparison checkForEmptyPhrases() {
@@ -106,6 +128,7 @@ public class ParseCompareProductNames {
             retValue=new ProductNamesComparison();
             retValue.setDetailsNameResults(new ArrayList<>());
             retValue.setSearchNameResults(new ArrayList<>());
+            retValue.setResultPhrase("");
             return retValue;
         }
 
@@ -116,6 +139,7 @@ public class ParseCompareProductNames {
             retValue=new ProductNamesComparison();
             retValue.setDetailsNameResults(firstPhraseResults);
             retValue.setSearchNameResults(secondPhraseResults);
+            retValue.setResultPhrase(secondPhrase);
             return retValue;
         }
         if(secondPhrase==null||secondPhrase.isEmpty()){
@@ -124,14 +148,15 @@ public class ParseCompareProductNames {
             retValue=new ProductNamesComparison();
             retValue.setDetailsNameResults(firstPhraseResults);
             retValue.setSearchNameResults(secondPhraseResults);
+            retValue.setResultPhrase(firstPhrase);
             return retValue;
         }
         return null;
     }
 
     private void neitherPhraseIsFinished(List<String> firstPhraseSplitted, List<String> secondPhraseSplitted, String firstPhraseWord, String secondPhraseWord) {
-        Optional<String> foundInFirstPhraseList = firstPhraseSplitted.subList(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).stream().filter(s -> s.equals(secondPhraseWord)).findFirst();
-        Optional<String> foundInSecondPhraseList = secondPhraseSplitted.subList(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).stream().filter(s -> s.equals(firstPhraseWord)).findFirst();
+        Optional<String> foundInFirstPhraseList = firstPhraseSplitted.subList(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).stream().filter(s -> compareWords(s, secondPhraseWord)).findFirst();
+        Optional<String> foundInSecondPhraseList = secondPhraseSplitted.subList(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).stream().filter(s -> compareWords(s, firstPhraseWord)).findFirst();
         if(!foundInFirstPhraseList.isPresent()&&!foundInSecondPhraseList.isPresent()){
             addConflictingWordsToLists(firstPhraseWord,secondPhraseWord);
         }else{

@@ -1,23 +1,23 @@
-Tesco Salad Tomatoes 6 Pack;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=76297275:fresh;salad tomatoes;fresh
-Tesco Tomatoes On The Vine Loose;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=51875194;fresh;Tomatoes On The Vine Loose;fresh
-Tesco Large On The Vine Tomatoes 450G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=82872858;fresh;Tomatoes On The Vine Loose;fresh
-Tesco Beef Tomatoes Each;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=51262441;fresh;Beef Tomatoes;fresh
-Tesco Finest Sugardrop Tomatoes 220G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=64640694;Sugardrop Tomatoes;fresh
-Tesco Baby Plum Tomatoes 325G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=52540911;Baby Plum Tomatoes;fresh
-Cirio Chopped Tomatoes 4 X400g;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=67021103;Chopped Tomatoes;processed
-Tesco Cherry Tomatoes 330G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=77454543;Cherry Tomatoes;fresh
-Tesco Finest Piccolo Cherry Tomatoes 220G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=58987592;piccolo cherry tomatoes;fresh
-Tesco Sweet Vine Ripened Tomatoes 230G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=76297413;sweet vine ripened tomatoes;fresh
-Tesco Tomato Puree 200G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=50436687;Tomato Puree;processed
-Tesco Tomato Puree 142G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=50203116;Tomato Puree;processed
-Napolina Tomato Passata 500G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=62458395;Tomato Passata;processed
-Dawtona Tomato Puree 200G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=61033369;Tomato Puree;processed
-Napolina Double Concentrate Tomato Puree 142G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=54164627;Tomato Puree;processed
-Napolina Chopped Tomatoes 4 X 400G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=57115077;Chopped Tomatoes;processed
-Tesco Sundried Tomato Antipasti 535G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=67824271;Sundried Tomato Antipasti;processed
-Tesco Tomato Juice 1 Litre;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=51567708;Tomato Juice;juice
-Big Tom Tomato Juice 750Ml;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=58788637;Tomato Juice;juice
-Tesco Italian Tomato Passata 500G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=50921268;Italian Tomato Passata;processed
-Growers Harvest Tomato Passata 500G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=85088512;Tomato Passata;processed
-Youngs 2 Mediterranean Tomato Fish Bakes 350G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=85719426;Mediterranean Tomato Fish Bakes
-Tesco Italian Finely Chopped Tomatoes 400G;http://localhost:8085/proxy/product?url=https://dev.tescolabs.com/product/?tpnb=57365828;Chopped Tomatoes;
+Tesco Finest Sugardrop Tomatoes 220G;https://dev.tescolabs.com/productNamesComparison/?tpnb=64640694;fresh;tomato;sugardrop tomatoes
+Tesco Baby Plum Tomatoes 325G;https://dev.tescolabs.com/productNamesComparison/?tpnb=52540911;fresh;tomato;plum Tomatoes
+Cirio Chopped Tomatoes 4 X400g;https://dev.tescolabs.com/productNamesComparison/?tpnb=67021103;processed;chopped tomato;chopped tomatoes
+Tesco Cherry Tomatoes 330G;https://dev.tescolabs.com/productNamesComparison/?tpnb=77454543;fresh;tomato;Cherry Tomatoes
+Tesco Finest Piccolo Cherry Tomatoes 220G;https://dev.tescolabs.com/productNamesComparison/?tpnb=58987592;fresh;tomato;piccolo cherry tomato
+Tesco Sweet Vine Ripened Tomatoes 230G;https://dev.tescolabs.com/productNamesComparison/?tpnb=76297413;fresh;tomato;sweet vine ripened tomatoes
+Tesco Tomato Puree 200G;https://dev.tescolabs.com/productNamesComparison/?tpnb=50436687;processed;tomato puree;tomato puree
+Tesco Tomato Puree 142G;https://dev.tescolabs.com/productNamesComparison/?tpnb=50203116;processed;tomato puree;tomato puree
+Tesco Salad Tomatoes 6 Pack;https://dev.tescolabs.com/productNamesComparison/?tpnb=76297275;fresh;tomato;salad tomatoes
+Tesco Tomatoes On The Vine Loose;https://dev.tescolabs.com/productNamesComparison/?tpnb=51875194;fresh;tomato;Tomatoes On The Vine Loose
+Tesco Large On The Vine Tomatoes 450G;https://dev.tescolabs.com/productNamesComparison/?tpnb=82872858;fresh;tomato;Tomatoes On The Vine Loose;fresh
+Tesco Beef Tomatoes Each;https://dev.tescolabs.com/productNamesComparison/?tpnb=51262441;fresh;tomato;Beef Tomatoes
+Napolina Tomato Passata 500G;https://dev.tescolabs.com/productNamesComparison/?tpnb=62458395;processed;tomato puree; Tomato Passata
+Dawtona Tomato Puree 200G;https://dev.tescolabs.com/productNamesComparison/?tpnb=61033369;processed;tomato puree; tomato Puree
+Napolina Double Concentrate Tomato Puree 142G;https://dev.tescolabs.com/productNamesComparison/?tpnb=54164627;processed;tomato puree; Double Concentrate Tomato Puree
+Napolina Chopped Tomatoes 4 X 400G;https://dev.tescolabs.com/productNamesComparison/?tpnb=57115077;processed;chopped tomatoes;chopped Tomatoes
+Tesco Sundried Tomato Antipasti 535G;https://dev.tescolabs.com/productNamesComparison/?tpnb=67824271;processed; Sundried Tomato Antipasti;Sundried Tomato Antipasti
+Tesco Tomato Juice 1 Litre;https://dev.tescolabs.com/productNamesComparison/?tpnb=51567708;juice;Tomato Juice;Tomato Juice
+Big Tom Tomato Juice 750Ml;https://dev.tescolabs.com/productNamesComparison/?tpnb=58788637;juice;Tomato Juice;Tomato Juice
+Tesco Italian Tomato Passata 500G;https://dev.tescolabs.com/productNamesComparison/?tpnb=50921268;processed;tomato puree; Tomato Passata
+Growers Harvest Tomato Passata 500G;https://dev.tescolabs.com/productNamesComparison/?tpnb=85088512;processed;tomato puree; Tomato Passata
+Youngs 2 Mediterranean Tomato Fish Bakes 350G;https://dev.tescolabs.com/productNamesComparison/?tpnb=85719426;dish; Mediterranean Tomato Fish Bakes; Mediterranean Tomato Fish Bakes
+Tesco Italian Finely Chopped Tomatoes 400G;https://dev.tescolabs.com/productNamesComparison/?tpnb=57365828;processed; Italian Finely Chopped Tomatoes;Chopped Tomatoes;
