@@ -1,7 +1,7 @@
 package mariusz.ambroziak.kassistant.pojos.product;
 
 import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
-import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
+import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
 
 public class IngredientPhraseParsingProcessObject extends AbstractParsingObject {
 	private LearningTuple learningCase;

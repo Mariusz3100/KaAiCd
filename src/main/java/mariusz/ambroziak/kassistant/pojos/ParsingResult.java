@@ -3,7 +3,7 @@ package mariusz.ambroziak.kassistant.pojos;
 import java.util.List;
 
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
-import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
+import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 //class mainly for presenting in angular

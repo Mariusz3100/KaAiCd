@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import mariusz.ambroziak.kassistant.webclients.edamamnlp.EdamamNlpResponseData;
-import mariusz.ambroziak.kassistant.webclients.edamamnlp.EdamanIngredientParsingService;
+import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpResponseData;
+import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
 
 @RestController
 public class EdamaNlpController {
