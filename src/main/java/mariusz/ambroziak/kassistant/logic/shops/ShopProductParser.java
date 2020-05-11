@@ -15,12 +15,12 @@ import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
-import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
+import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import mariusz.ambroziak.kassistant.webclients.edamamnlp.EdamanIngredientParsingService;
+import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntityRecognitionClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;

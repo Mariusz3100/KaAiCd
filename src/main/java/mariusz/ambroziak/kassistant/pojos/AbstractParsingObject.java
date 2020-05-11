@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
+import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.webclients.edamamnlp.LearningTuple;
+import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
 
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
@@ -17,7 +18,8 @@ import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
 
 public abstract class AbstractParsingObject {
-
+	private String bracketLessPhrase;
+	private String entitylessString;
 	private NerResults nerResults;
 	private TokenizationResults entitylessTokenized;
 	private TokenizationResults correctedToknized;
@@ -31,6 +33,9 @@ public abstract class AbstractParsingObject {
 	List<ConnectionEntry> dependencyConotationsFound;
 	private List<List<String>> adjacentyConotationsFound;
 
+
+	private ProductNamesComparison initialNames;
+	private ProductNamesComparison finalNames;
 
 	public List<List<String>> getAdjacentyConotationsFound() {
 		if(this.adjacentyConotationsFound==null)
@@ -157,9 +162,25 @@ public abstract class AbstractParsingObject {
 	}
 
 	public List<QualifiedToken> getFinalResults() {
+		if(this.finalResults==null)
+			this.finalResults=new ArrayList<>();
+
 		return finalResults;
 	}
 
+	public String getFinalResultsString(){
+		if(getFinalResults().isEmpty())
+			return "";
+		else
+			return getFinalResults().stream().map(s->s.getText()).collect(Collectors.joining(" "));
+	}
+
+	public String getPermissiveFinalResultsString(){
+		if(getPermissiveFinalResults().isEmpty())
+			return "";
+		else
+			return getPermissiveFinalResults().stream().map(s->s.getText()).collect(Collectors.joining(" "));
+	}
 
 	public NerResults getEntities() {
 		return nerResults;
@@ -200,7 +221,7 @@ public abstract class AbstractParsingObject {
 		this.entitylessTokenized = entitylessTokenized;
 	}
 
-	public String getEntitylessString(String phrase) {
+	public String calculateEntitylessString(String phrase) {
 		NerResults allEntities=this.getEntities();
 		String retValue=phrase;
 		if(allEntities==null||allEntities.getEntities()==null||allEntities.getEntities().isEmpty()) {
@@ -219,7 +240,7 @@ public abstract class AbstractParsingObject {
 	}
 
 
-	public abstract String getEntitylessString();
+//	public abstract String getEntitylessString();
 
 	protected abstract String getOriginalPhrase();
 
@@ -264,4 +285,35 @@ public abstract class AbstractParsingObject {
 
 	}
 
+	public ProductNamesComparison getInitialNames() {
+		return initialNames;
+	}
+
+	public void setInitialNames(ProductNamesComparison initialNames) {
+		this.initialNames = initialNames;
+	}
+
+	public ProductNamesComparison getFinalNames() {
+		return finalNames;
+	}
+
+	public void setFinalNames(ProductNamesComparison finalNames) {
+		this.finalNames = finalNames;
+	}
+
+	public String getBracketLessPhrase() {
+		return bracketLessPhrase;
+	}
+
+	public void setBracketLessPhrase(String bracketLessPhrase) {
+		this.bracketLessPhrase = bracketLessPhrase;
+	}
+
+	public String getEntitylessString() {
+		return entitylessString;
+	}
+
+	public void setEntitylessString(String entitylessString) {
+		this.entitylessString = entitylessString;
+	}
 }
