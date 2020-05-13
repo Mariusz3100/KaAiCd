@@ -9,9 +9,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.repository.ProductLearningCaseRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.pojos.*;
+import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
@@ -45,10 +50,13 @@ public class ShopProductParser {
 
 	@Autowired
 	private ProductWordsClassifier shopWordClacifier;
-	
-	
-	
-	
+
+	@Autowired
+	private ProductParsingResultRepository productParsingResultRepository;
+
+
+
+
 	private String spacelessRegex="(\\d+)(\\w+)";
 	
 	
@@ -77,7 +85,7 @@ public class ShopProductParser {
 
 			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
-
+			saveResultInDb(parsingAPhrase);
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
 
 			retValue.addResult(singleResult);
@@ -321,6 +329,8 @@ public class ShopProductParser {
 				productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, searchApiName);
 			}
 			singleResult.setFinalNames(productNamesComparisonOfFinalTokens);
+			saveResultInDb(parsingAPhrase);
+
 			retValue.addResult(singleResult);
 
 			
@@ -337,7 +347,7 @@ public class ShopProductParser {
 		String brandlessPhrase= calculateBrandlessPhrase(resultOfComparison,parsingAPhrase.getProduct().getBrand());
 		parsingAPhrase.setBrandlessPhrase(brandlessPhrase);
 
-
+		parsingAPhrase.setEntitylessString(brandlessPhrase);
 		TokenizationResults tokens = this.tokenizator.parse(brandlessPhrase);
 		parsingAPhrase.setEntitylessTokenized(tokens);
 
@@ -389,5 +399,18 @@ public class ShopProductParser {
 		}
 	}
 
+
+
+	private void saveResultInDb(ProductParsingProcessObject parsingAPhrase) {
+
+		ProductParsingResult toSave=new ProductParsingResult();
+		toSave.setOriginalName(parsingAPhrase.getOriginalPhrase());
+		toSave.setProduct(parsingAPhrase.getProduct());
+		toSave.setExtendedResultsCalculated(parsingAPhrase.getPermissiveFinalResultsString());
+		toSave.setMinimalResultsCalculated(parsingAPhrase.getFinalResultsString());
+		toSave.setTypeCalculated(parsingAPhrase.getFoodTypeClassified());
+		this.productParsingResultRepository.save(toSave);
+
+	}
 
 }
