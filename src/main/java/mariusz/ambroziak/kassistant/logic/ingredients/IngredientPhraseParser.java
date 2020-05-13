@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
 import mariusz.ambroziak.kassistant.pojos.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.ParsingResultList;
@@ -44,6 +47,9 @@ public class IngredientPhraseParser {
 	@Autowired
 	private IngredientWordsClasifier wordClasifier;
 
+
+	@Autowired
+	private IngredientPhraseParsingResultRepository ingredientParsingRepo;
 
 	private final String csvSeparator=";";
 	private final String wordSeparator=",";
@@ -152,7 +158,7 @@ public class IngredientPhraseParser {
 			initializeProductPhraseConnotations(parsingAPhrase);
 
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
-
+			saveResultInDb(parsingAPhrase);
 			retValue.addResult(singleResult);
 
 
@@ -181,6 +187,23 @@ public class IngredientPhraseParser {
 
 		return retValue;
 
+	}
+
+	private void saveResultInDb(IngredientPhraseParsingProcessObject parsingAPhrase) {
+
+		IngredientPhraseParsingResult toSave=new IngredientPhraseParsingResult();
+		toSave.setOriginalName(parsingAPhrase.getLearningTuple().getOriginalPhrase());
+		toSave.setExtendedResultsCalculated(parsingAPhrase.getPermissiveFinalResultsString());
+		toSave.setMinimalResultsCalculated(parsingAPhrase.getFinalResultsString());
+		toSave.setTypeCalculated(parsingAPhrase.getFoodTypeClassified());
+		toSave.setedamamAmount(parsingAPhrase.getLearningTuple().getAmount());
+		toSave.setedamamAmountType(parsingAPhrase.getLearningTuple().getAmountType());
+		toSave.setedamamProductType(parsingAPhrase.getLearningTuple().getFoodTypeCategory());
+		toSave.setMinimalResultsCalculated(parsingAPhrase.getFinalResultsString());
+		toSave.setExtendedResultsCalculated(parsingAPhrase.getPermissiveFinalResultsString());
+
+
+		this.ingredientParsingRepo.save(toSave);
 	}
 
 
