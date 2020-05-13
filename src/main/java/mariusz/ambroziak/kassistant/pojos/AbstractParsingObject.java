@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.enums.ProductType;
@@ -172,14 +173,14 @@ public abstract class AbstractParsingObject {
 		if(getFinalResults().isEmpty())
 			return "";
 		else
-			return getFinalResults().stream().map(s->s.getText()).collect(Collectors.joining(" "));
+			return getFinalResults().stream().filter(s->s.getWordType()== WordType.ProductElement).map(s->s.getText()).collect(Collectors.joining(" "));
 	}
 
 	public String getPermissiveFinalResultsString(){
 		if(getPermissiveFinalResults().isEmpty())
 			return "";
 		else
-			return getPermissiveFinalResults().stream().map(s->s.getText()).collect(Collectors.joining(" "));
+			return getPermissiveFinalResults().stream().filter(s->s.getWordType()== WordType.ProductElement).map(s->s.getText()).collect(Collectors.joining(" "));
 	}
 
 	public NerResults getEntities() {
