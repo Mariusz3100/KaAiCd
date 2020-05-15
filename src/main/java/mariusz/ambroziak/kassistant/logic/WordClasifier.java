@@ -107,25 +107,14 @@ public class WordClasifier {
 		initialCategorization(parsingAPhrase);
 
 		recategorize(parsingAPhrase);
-		extractAndMarkProductProperties(parsingAPhrase);
 
 		categorizeAllElseAsProducts(parsingAPhrase);
 
 	}
 
-	private void extractAndMarkProductProperties(AbstractParsingObject parsingAPhrase) {
-		for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
-			for(String keyword:freshFoodKeywords) {
-				if(keyword.equals(qt.getText())) {
-					qt.setWordType(WordType.ProductPropertyElement);
-					parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
-				}
-			}
-		}
 
-	}
 
-	private void categorizeAllElseAsProducts(AbstractParsingObject parsingAPhrase) {
+	protected void categorizeAllElseAsProducts(AbstractParsingObject parsingAPhrase) {
 		List<QualifiedToken> permissiveList=new ArrayList<QualifiedToken>();
 		for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
 			WordType type=qt.getWordType()==null||qt.getWordType()==WordType.Unknown?WordType.ProductElement:qt.getWordType();
@@ -137,7 +126,7 @@ public class WordClasifier {
 		parsingAPhrase.setPermissiveFinalResults(permissiveList);
 	}
 
-	private void recategorize(AbstractParsingObject parsingAPhrase) {
+	protected void recategorize(AbstractParsingObject parsingAPhrase) {
 		fillQuanAndProdPhrases(parsingAPhrase);
 
 		TokenizationResults correctedPhraseParsed = this.tokenizator.parse(parsingAPhrase.createCorrectedPhrase());
@@ -665,15 +654,7 @@ public class WordClasifier {
 		return false;
 	}
 
-	public void calculateProductType(ProductParsingProcessObject parsingAPhrase) {
-		ProductType result=checkDepartmentForKeywords(parsingAPhrase);
 
-		if(result==null||result.equals(ProductType.unknown)){
-			result=checkQuantities(parsingAPhrase);
-		}
-
-		parsingAPhrase.setFoodTypeClassified(result);
-	}
 
 	public ProductType checkDepartmentForKeywords(ProductParsingProcessObject parsingAPhrase) {
 		ProductData product=parsingAPhrase.getProduct();
