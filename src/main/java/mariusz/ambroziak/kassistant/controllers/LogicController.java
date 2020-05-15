@@ -36,9 +36,10 @@ public class LogicController {
 	@RequestMapping("/parseIngredients")
 	@ResponseBody
 	public ParsingResultList phrasesParsing() throws IOException{
-		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
-		
-		System.out.println();
+//		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
+
+		ParsingResultList parseFromFile = this.ingredientParser.parseFromDb();
+
 
 		return parseFromFile;
 

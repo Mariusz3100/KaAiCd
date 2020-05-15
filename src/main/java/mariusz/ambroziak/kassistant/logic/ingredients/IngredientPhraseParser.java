@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
 import mariusz.ambroziak.kassistant.pojos.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.ParsingResult;
@@ -46,6 +47,8 @@ public class IngredientPhraseParser {
 	@Autowired
 	private IngredientWordsClasifier wordClasifier;
 
+	@Autowired
+	private IngredientPhraseLearningCaseRepository ingredientPhraseLearningCaseRepository;
 
 	@Autowired
 	private IngredientPhraseParsingResultRepository ingredientParsingRepo;
@@ -105,56 +108,22 @@ public class IngredientPhraseParser {
 
 		}
 
-		for(ParsingResult result:retValue.getResults()){
-			String line=result.getOriginalPhrase()+csvSeparator+
-					result.getExpectedResult().getFoodMatch()+csvSeparator;
-
-			String restrictive="";
-			for(String x:result.getRestrictivelyCalculatedResult().getMarkedWords()){
-				if(!restrictive.isEmpty())
-					restrictive+=wordSeparator;
-				restrictive+=x;
-			}
-
-			String permissive="";
-			for(String x:result.getRestrictivelyCalculatedResult().getMarkedWords()){
-				if(!permissive.isEmpty())
-					permissive+=wordSeparator;
-				permissive+=x;
-			}
-			line+=permissive+csvSeparator+restrictive;
-			System.out.println(line);
-		}
+		printResults(retValue);
 
 		return retValue;
 
 	}
 
 
-	public ParsingResultList parseFromFile() throws IOException {
+	public ParsingResultList parseFromDb() throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
+		List<IngredientLearningCase> inputLines= new ArrayList<>();//edamanNlpParsingService.retrieveDataFromFile();
 
-		List<IngredientLearningCase> inputLines= edamanNlpParsingService.retrieveDataFromFile();
+		this.ingredientPhraseLearningCaseRepository.findAll().forEach(e->inputLines.add(e));
+
+
 		for(IngredientLearningCase er:inputLines) {
-			String line=correctErrors(er.getOriginalPhrase());
-			er.setOriginalPhrase(line);
-			IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
-			handleBracketsAndSetBracketLess(parsingAPhrase);
-
-			NerResults entitiesFound = this.nerRecognizer.find(line);
-			parsingAPhrase.setEntities(entitiesFound);
-
-			String entitylessString=parsingAPhrase.calculateEntitylessString(parsingAPhrase.getBracketLessPhrase());
-
-			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
-			parsingAPhrase.setEntitylessTokenized(tokens);
-
-			initializePrimaryConnotations(parsingAPhrase);
-
-			
-			this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-			initializeCorrectedConnotations(parsingAPhrase);
-			initializeProductPhraseConnotations(parsingAPhrase);
+			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
 
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
 			saveResultInDb(parsingAPhrase);
@@ -163,29 +132,76 @@ public class IngredientPhraseParser {
 
 		}
 
-		for(ParsingResult result:retValue.getResults()){
-			String line=result.getOriginalPhrase()+csvSeparator+
-					result.getExpectedResult().getFoodMatch()+csvSeparator;
-
-			String restrictive="";
-			for(String x:result.getRestrictivelyCalculatedResult().getMarkedWords()){
-				if(!restrictive.isEmpty())
-					restrictive+=wordSeparator;
-				restrictive+=x;
-			}
-
-			String permissive="";
-			for(String x:result.getRestrictivelyCalculatedResult().getMarkedWords()){
-				if(!permissive.isEmpty())
-					permissive+=wordSeparator;
-				permissive+=x;
-			}
-			line+=permissive+csvSeparator+restrictive;
-			System.out.println(line);
-		}
+		printResults(retValue);
 
 		return retValue;
 
+	}
+
+	public ParsingResultList parseFromFile() throws IOException {
+		ParsingResultList retValue=new ParsingResultList();
+
+		List<IngredientLearningCase> inputLines= edamanNlpParsingService.retrieveDataFromFile();
+		for(IngredientLearningCase er:inputLines) {
+			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
+
+			ParsingResult singleResult = createResultObject(parsingAPhrase);
+			saveResultInDb(parsingAPhrase);
+			retValue.addResult(singleResult);
+
+
+		}
+
+		printResults(retValue);
+
+		return retValue;
+
+	}
+
+	private IngredientPhraseParsingProcessObject processSingleCase(IngredientLearningCase er) {
+		String line=correctErrors(er.getOriginalPhrase());
+		er.setOriginalPhrase(line);
+		IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
+		handleBracketsAndSetBracketLess(parsingAPhrase);
+
+		NerResults entitiesFound = this.nerRecognizer.find(line);
+		parsingAPhrase.setEntities(entitiesFound);
+
+		String entitylessString=parsingAPhrase.calculateEntitylessString(parsingAPhrase.getBracketLessPhrase());
+
+		TokenizationResults tokens = this.tokenizator.parse(entitylessString);
+		parsingAPhrase.setEntitylessTokenized(tokens);
+
+		initializePrimaryConnotations(parsingAPhrase);
+
+
+		this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
+		initializeCorrectedConnotations(parsingAPhrase);
+		initializeProductPhraseConnotations(parsingAPhrase);
+		return parsingAPhrase;
+	}
+
+	private void printResults(ParsingResultList retValue) {
+		for (ParsingResult result : retValue.getResults()) {
+			String line = result.getOriginalPhrase() + csvSeparator +
+					result.getExpectedResult().getFoodMatch() + csvSeparator;
+
+			String restrictive = "";
+			for (String x : result.getRestrictivelyCalculatedResult().getMarkedWords()) {
+				if (!restrictive.isEmpty())
+					restrictive += wordSeparator;
+				restrictive += x;
+			}
+
+			String permissive = "";
+			for (String x : result.getRestrictivelyCalculatedResult().getMarkedWords()) {
+				if (!permissive.isEmpty())
+					permissive += wordSeparator;
+				permissive += x;
+			}
+			line += permissive + csvSeparator + restrictive;
+			System.out.println(line);
+		}
 	}
 
 	private void saveResultInDb(IngredientPhraseParsingProcessObject parsingAPhrase) {
