@@ -1,19 +1,19 @@
 package mariusz.ambroziak.kassistant.pojos.product;
 
 import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 
 public class IngredientPhraseParsingProcessObject extends AbstractParsingObject {
-	private LearningTuple learningCase;
-	public IngredientPhraseParsingProcessObject(LearningTuple er) {
+	private IngredientLearningCase learningCase;
+	public IngredientPhraseParsingProcessObject(IngredientLearningCase er) {
 		super();
 		this.learningCase=er;
 	}
 
-	public LearningTuple getLearningTuple() {
+	public IngredientLearningCase getLearningTuple() {
 		return learningCase;
 	}
-	public void setLearningTuple(LearningTuple expectedResult) {
+	public void setLearningTuple(IngredientLearningCase expectedResult) {
 		this.learningCase = expectedResult;
 	}
 

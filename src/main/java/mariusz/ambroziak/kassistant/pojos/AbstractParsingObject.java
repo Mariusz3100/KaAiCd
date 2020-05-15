@@ -10,7 +10,7 @@ import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
@@ -250,8 +250,8 @@ public abstract class AbstractParsingObject {
 		return this.getQuantityPhrase()+" of "+this.getProductPhrase();
 	}
 
-	public LearningTuple calculateResultFromCollectedData() {
-		LearningTuple retValue=new LearningTuple(productPhrase, 0, productPhrase, productPhrase, null);
+	public IngredientLearningCase calculateResultFromCollectedData() {
+		IngredientLearningCase retValue=new IngredientLearningCase(productPhrase, 0, productPhrase, productPhrase, null);
 
 		return retValue;
 	}

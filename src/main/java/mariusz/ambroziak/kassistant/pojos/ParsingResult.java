@@ -3,7 +3,7 @@ package mariusz.ambroziak.kassistant.pojos;
 import java.util.List;
 
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 //class mainly for presenting in angular
@@ -13,7 +13,7 @@ public class ParsingResult{
 	private String ingredientPhrase;
 	private String descriptionPhrase;
 
-	private LearningTuple expectedResult;
+	private IngredientLearningCase expectedResult;
 	private CalculatedResults restrictivelyCalculatedResult;
 	private CalculatedResults permisivelyCalculatedResult;
 	private CalculatedResults restrictivelyCalculatedResultForPhrase;
@@ -186,11 +186,11 @@ public class ParsingResult{
 	public void setOriginalPhrase(String originalPhrase) {
 		this.originalPhrase = originalPhrase;
 	}
-	public LearningTuple getExpectedResult() {
+	public IngredientLearningCase getExpectedResult() {
 		return expectedResult;
 	}
 
-	public void setExpectedResult(LearningTuple expectedResult) {
+	public void setExpectedResult(IngredientLearningCase expectedResult) {
 		this.expectedResult = expectedResult;
 	}
 

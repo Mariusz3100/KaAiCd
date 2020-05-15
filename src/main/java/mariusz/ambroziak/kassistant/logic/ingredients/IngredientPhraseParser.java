@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
 import mariusz.ambroziak.kassistant.pojos.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.ParsingResult;
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.LearningTuple;
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
@@ -78,8 +77,8 @@ public class IngredientPhraseParser {
 	public ParsingResultList parseIngredientLines(List<String> lines) throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
 
-		List<LearningTuple> inputLines= edamanNlpParsingService.retrieveDataFromFile();
-		for(LearningTuple er:inputLines) {
+		List<IngredientLearningCase> inputLines= edamanNlpParsingService.retrieveDataFromFile();
+		for(IngredientLearningCase er:inputLines) {
 			String line=correctErrors(er.getOriginalPhrase());
 			er.setOriginalPhrase(line);
 			IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
@@ -135,8 +134,8 @@ public class IngredientPhraseParser {
 	public ParsingResultList parseFromFile() throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
 
-		List<LearningTuple> inputLines= edamanNlpParsingService.retrieveDataFromFile();
-		for(LearningTuple er:inputLines) {
+		List<IngredientLearningCase> inputLines= edamanNlpParsingService.retrieveDataFromFile();
+		for(IngredientLearningCase er:inputLines) {
 			String line=correctErrors(er.getOriginalPhrase());
 			er.setOriginalPhrase(line);
 			IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
