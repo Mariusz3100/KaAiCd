@@ -8,6 +8,8 @@ import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsing
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
+import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
+import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
 import org.springframework.web.bind.annotation.RestController;
 
 import mariusz.ambroziak.kassistant.logic.IngredientPhraseTokenizerTest;
@@ -38,6 +40,9 @@ public class TestController {
 	IngredientPhraseParsingResultRepository ingredientParsingRepo;
 	IngredientPhraseTokenizerTest testTokenizerService;
 	TescoProductRepository tescoProductRepository;
+
+	@Autowired
+	UsdaApiClient usdaApiClient;
 
 	public TestController(TokenizationClientService tokenizationService, NamedEntityRecognitionClientService nerService,
 						  ProductParsingResultRepository productParsingRepo, IngredientPhraseParsingResultRepository ingredientParsingRepo,
@@ -87,6 +92,14 @@ public class TestController {
 		this.productParsingRepo.save(x);
 		return "Done";
 	}
+
+	@RequestMapping("/testUsda")
+	public String testUsda(@RequestParam(value="param", defaultValue="empty") String param){
+		UsdaResponse inApi = this.usdaApiClient.findInApi("tomato paste", 10);
+
+		return inApi.toJsonString();
+	}
+
 	@CrossOrigin
 	@RequestMapping("/springTokenizerFromFile")
 	@ResponseBody
