@@ -3,6 +3,7 @@ package mariusz.ambroziak.kassistant.controllers;
 import mariusz.ambroziak.kassistant.enums.AmountTypes;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
@@ -81,6 +82,7 @@ public class TestController {
 	@RequestMapping("/testIngDb")
 	public String testIngDb(@RequestParam(value="param", defaultValue="empty") String param){
 		IngredientPhraseParsingResult x=new IngredientPhraseParsingResult("test",12, AmountTypes.pcs, ProductType.fresh,"test","Test",ProductType.unknown);
+		x.setParsingBatch(new ParsingBatch());
 		this.ingredientParsingRepo.save(x);
 		return "Done";
 	}
@@ -89,6 +91,8 @@ public class TestController {
 	public String testProdDb(@RequestParam(value="param", defaultValue="empty") String param){
 		Tesco_Product tesco_product = tescoProductRepository.findAll().get(0);
 		ProductParsingResult x=new ProductParsingResult(tesco_product,"Test","test","Test",ProductType.unknown);
+		x.setParsingBatch(new ParsingBatch());
+
 		this.productParsingRepo.save(x);
 		return "Done";
 	}

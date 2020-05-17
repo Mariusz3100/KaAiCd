@@ -9,8 +9,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
+import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.pojos.*;
@@ -18,6 +20,7 @@ import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
+import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
@@ -40,6 +43,9 @@ public class ShopProductParser {
 	private NamedEntityRecognitionClientService nerRecognizer;
 	@Autowired
 	private TescoApiClientService tescoApiClientService;
+
+	@Autowired
+	private TescoDetailsApiClientService tescoDetailsApiClientService;
 	@Autowired
 	private TescoDetailsTestCases tescoTestCases;
 	@Autowired
@@ -51,6 +57,8 @@ public class ShopProductParser {
 	@Autowired
 	private ProductParsingResultRepository productParsingResultRepository;
 
+	@Autowired
+	private ParsingBatchRepository parsingBatchRepository;
 
 
 
@@ -66,29 +74,14 @@ public class ShopProductParser {
 
 
 	public ParsingResultList tescoSearchForProductsWithTestCases(String phrase) throws IOException {
-		ParsingResultList retValue=new ParsingResultList();
-
 		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase);
-		for(int i=0;i<inputs.size()&&i<5;i++) {
-			Tesco_Product product=inputs.get(i);
-			ProductParsingProcessObject parsingAPhrase=new ProductParsingProcessObject(product,new ProductLearningCase());
-			NerResults entitiesFound = this.nerRecognizer.find(product.getName());
-			parsingAPhrase.setEntities(entitiesFound);
 
-			String entitylessString=parsingAPhrase.getEntitylessString();
+		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
+				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
+		ParsingResultList retValue = parseListOfCases(parsingProcessObjects, batchObject);
 
-			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
-			parsingAPhrase.setEntitylessTokenized(tokens);
-
-			this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-
-			saveResultInDb(parsingAPhrase);
-			ParsingResult singleResult = createResultObject(parsingAPhrase);
-
-			retValue.addResult(singleResult);
-
-
-		}
 
 		return retValue;
 
@@ -287,10 +280,21 @@ public class ShopProductParser {
 
 
 
-	public ParsingResultList parseTestCases() throws IOException {
-		ParsingResultList retValue=new ParsingResultList();
+	public ParsingResultList parseAllTestCases() throws IOException {
 
 		List<ProductParsingProcessObject> inputs= getTestCases();
+
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
+
+		ParsingResultList retValue = parseListOfCases(inputs, batchObject);
+
+		return retValue;
+	}
+
+	private ParsingResultList parseListOfCases(List<ProductParsingProcessObject> inputs, ParsingBatch batchObject) {
+		ParsingResultList retValue=new ParsingResultList();
+
 		for(ProductParsingProcessObject parsingAPhrase:inputs) {
 			ParsingResult singleResult = parseAProductParsingObject(parsingAPhrase);
 
@@ -326,13 +330,12 @@ public class ShopProductParser {
 				productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, searchApiName);
 			}
 			singleResult.setFinalNames(productNamesComparisonOfFinalTokens);
-			saveResultInDb(parsingAPhrase);
+			saveResultInDb(parsingAPhrase,batchObject);
 
 			retValue.addResult(singleResult);
 
-			
-		}
 
+		}
 		return retValue;
 	}
 
@@ -398,7 +401,7 @@ public class ShopProductParser {
 
 
 
-	private void saveResultInDb(ProductParsingProcessObject parsingAPhrase) {
+	private void saveResultInDb(ProductParsingProcessObject parsingAPhrase, ParsingBatch pb) {
 
 		ProductParsingResult toSave=new ProductParsingResult();
 		toSave.setOriginalName(parsingAPhrase.getOriginalPhrase());
@@ -406,6 +409,8 @@ public class ShopProductParser {
 		toSave.setExtendedResultsCalculated(parsingAPhrase.getPermissiveFinalResultsString());
 		toSave.setMinimalResultsCalculated(parsingAPhrase.getFinalResultsString());
 		toSave.setTypeCalculated(parsingAPhrase.getFoodTypeClassified());
+		toSave.setParsingBatch(pb);
+
 		this.productParsingResultRepository.save(toSave);
 
 	}

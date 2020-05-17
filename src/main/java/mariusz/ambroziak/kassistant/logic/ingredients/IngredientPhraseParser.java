@@ -10,8 +10,10 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.pojos.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.ParsingResultList;
@@ -52,6 +54,9 @@ public class IngredientPhraseParser {
 
 	@Autowired
 	private IngredientPhraseParsingResultRepository ingredientParsingRepo;
+
+	@Autowired
+	private ParsingBatchRepository parsingBatchRepository;
 
 	private final String csvSeparator=";";
 	private final String wordSeparator=",";
@@ -119,6 +124,8 @@ public class IngredientPhraseParser {
 		ParsingResultList retValue=new ParsingResultList();
 		List<IngredientLearningCase> inputLines= new ArrayList<>();//edamanNlpParsingService.retrieveDataFromFile();
 
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
 		this.ingredientPhraseLearningCaseRepository.findAll().forEach(e->inputLines.add(e));
 
 
@@ -126,7 +133,7 @@ public class IngredientPhraseParser {
 			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
 
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
-			saveResultInDb(parsingAPhrase);
+			saveResultInDb(parsingAPhrase,batchObject);
 			retValue.addResult(singleResult);
 
 
@@ -141,12 +148,14 @@ public class IngredientPhraseParser {
 	public ParsingResultList parseFromFile() throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
 
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
 		List<IngredientLearningCase> inputLines= edamanNlpParsingService.retrieveDataFromFile();
 		for(IngredientLearningCase er:inputLines) {
 			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
 
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
-			saveResultInDb(parsingAPhrase);
+			saveResultInDb(parsingAPhrase,batchObject);
 			retValue.addResult(singleResult);
 
 
@@ -204,7 +213,7 @@ public class IngredientPhraseParser {
 		}
 	}
 
-	private void saveResultInDb(IngredientPhraseParsingProcessObject parsingAPhrase) {
+	private void saveResultInDb(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {
 
 		IngredientPhraseParsingResult toSave=new IngredientPhraseParsingResult();
 		toSave.setOriginalName(parsingAPhrase.getLearningTuple().getOriginalPhrase());
@@ -217,6 +226,7 @@ public class IngredientPhraseParser {
 		toSave.setMinimalResultsCalculated(parsingAPhrase.getFinalResultsString());
 		toSave.setExtendedResultsCalculated(parsingAPhrase.getPermissiveFinalResultsString());
 
+		toSave.setParsingBatch(batchObject);
 
 		this.ingredientParsingRepo.save(toSave);
 	}
