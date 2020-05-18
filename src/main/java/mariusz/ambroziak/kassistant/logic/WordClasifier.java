@@ -164,7 +164,7 @@ public class WordClasifier {
 		for(int i=0;i<parsingAPhrase.getEntitylessTokenized().getTokens().size();i++) {
 			Token t=parsingAPhrase.getEntitylessTokenized().getTokens().get(i);
 
-			if(PythonSpacyLabels.tokenisationCardinalLabel.equals(t.getTag())) {
+			if(PythonSpacyLabels.tokenisationCardinalLabel.equals(t.getTag())||PythonSpacyLabels.listItemMarker.equals(t.getTag())) {
 				addQuantityResult(parsingAPhrase,i, t);
 				List<NamedEntity> cardinalEntities = parsingAPhrase.getCardinalEntities();
 
