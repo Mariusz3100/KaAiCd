@@ -269,6 +269,7 @@ public class IngredientPhraseParser {
 		object.setDependencyConotationsFound(parsingAPhrase.getDependencyConotationsFound());
 
 
+		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
 
 
 		return object;
@@ -317,13 +318,13 @@ public class IngredientPhraseParser {
 	
 	private void initializeProductPhraseConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		
-		TokenizationResults tokenized = parsingAPhrase.getProductTokenized();
+		TokenizationResults tokenized = parsingAPhrase.getQuantitylessTokenized();
 		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
-		List<ConnectionEntry> productPhraseConotations = tokenized.getAllTwoWordDependencies();
+		List<ConnectionEntry> quantitylessConnotations = tokenized.getAllTwoWordDependencies();
 		Token foundToken = tokenized.findToken(tokenized.getTokens(),dependencyTreeRoot==null?"":dependencyTreeRoot.getText());
-		productPhraseConotations.add(new ConnectionEntry(new Token("ROOT","",""),foundToken));
+		quantitylessConnotations.add(new ConnectionEntry(new Token("ROOT","",""),foundToken));
 		
-		parsingAPhrase.setProductPhraseConotations(productPhraseConotations);
+		parsingAPhrase.setQuantitylessConnotations(quantitylessConnotations);
 
 
 	}

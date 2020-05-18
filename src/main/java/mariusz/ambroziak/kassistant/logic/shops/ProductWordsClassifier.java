@@ -26,17 +26,24 @@ public class ProductWordsClassifier extends WordClasifier {
     public void calculateWordTypesForWholePhrase(AbstractParsingObject parsingAPhrase) {
 
 
+        super.calculateWordTypesForWholePhrase(parsingAPhrase);
 
 
-
-        initialCategorization(parsingAPhrase);
-
-        recategorize(parsingAPhrase);
-        extractAndMarkProductProperties(parsingAPhrase);
-
-        categorizeAllElseAsProducts(parsingAPhrase);
+//        initialCategorization(parsingAPhrase);
+//
+//        recategorize(parsingAPhrase);
+//        calculateProductType(parsingAPhrase);
+//
+//        categorizeAllElseAsProducts(parsingAPhrase);
 
     }
+
+
+
+    private void calculateProductType(AbstractParsingObject parsingAPhrase) {
+        extractAndMarkProductProperties(parsingAPhrase);
+    }
+
     protected void extractAndMarkProductProperties(AbstractParsingObject parsingAPhrase) {
         for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
             for(String keyword:freshFoodKeywords) {

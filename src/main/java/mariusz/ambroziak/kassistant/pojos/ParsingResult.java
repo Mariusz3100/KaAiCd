@@ -12,6 +12,7 @@ public class ParsingResult{
 	private String alternateName;
 	private String ingredientPhrase;
 	private String descriptionPhrase;
+	private String quantitylessPhrase;
 
 	private IngredientLearningCase expectedResult;
 	private CalculatedResults restrictivelyCalculatedResult;
@@ -232,5 +233,13 @@ public class ParsingResult{
 
 	public void setDescriptionPhrase(String descriptionPhrase) {
 		this.descriptionPhrase = descriptionPhrase;
+	}
+
+	public String getQuantitylessPhrase() {
+		return quantitylessPhrase;
+	}
+
+	public void setQuantitylessPhrase(String quantitylessPhrase) {
+		this.quantitylessPhrase = quantitylessPhrase;
 	}
 }

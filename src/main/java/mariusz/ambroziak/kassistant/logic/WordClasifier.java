@@ -105,6 +105,7 @@ public class WordClasifier {
 
 	public void calculateWordTypesForWholePhrase(AbstractParsingObject parsingAPhrase) {
 		initialCategorization(parsingAPhrase);
+		fillQuanAndProdPhrases(parsingAPhrase);
 
 		recategorize(parsingAPhrase);
 
@@ -127,15 +128,14 @@ public class WordClasifier {
 	}
 
 	protected void recategorize(AbstractParsingObject parsingAPhrase) {
-		fillQuanAndProdPhrases(parsingAPhrase);
 
 		TokenizationResults correctedPhraseParsed = this.tokenizator.parse(parsingAPhrase.createCorrectedPhrase());
 
 		parsingAPhrase.setCorrectedToknized(correctedPhraseParsed);
 
-		TokenizationResults productPhraseparsed = this.tokenizator.parse(parsingAPhrase.getProductPhrase());
+		TokenizationResults productPhraseparsed = this.tokenizator.parse(parsingAPhrase.getQuantitylessPhrase());
 
-		parsingAPhrase.setProductPhraseTokenized(productPhraseparsed);
+		parsingAPhrase.setQuantitylessTokenized(productPhraseparsed);
 
 
 	}
@@ -157,7 +157,7 @@ public class WordClasifier {
 		quantityPhrase=quantityPhrase.trim();
 
 		parsingAPhrase.setQuantityPhrase(quantityPhrase);
-		parsingAPhrase.setProductPhrase(productPhrase);
+		parsingAPhrase.setQuantitylessPhrase(productPhrase);
 	}
 
 	protected void initialCategorization(AbstractParsingObject parsingAPhrase) {

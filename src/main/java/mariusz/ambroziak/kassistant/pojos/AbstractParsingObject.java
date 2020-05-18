@@ -24,13 +24,13 @@ public abstract class AbstractParsingObject {
 	private NerResults nerResults;
 	private TokenizationResults entitylessTokenized;
 	private TokenizationResults correctedToknized;
-	private TokenizationResults productPhraseTokenized;
+	private TokenizationResults quantitylessTokenized;
 	private List<QualifiedToken> finalResults;
 	private List<QualifiedToken> permissiveFinalResults;
 	private ProductType foodTypeClassified;
 	List<ConnectionEntry> entitylessConotations;
 	List<ConnectionEntry> correctedConotations;
-	List<ConnectionEntry> productPhraseConotations;
+	List<ConnectionEntry> quantitylessConnotations;
 	List<ConnectionEntry> dependencyConotationsFound;
 	private List<List<String>> adjacentyConotationsFound;
 
@@ -75,23 +75,23 @@ public abstract class AbstractParsingObject {
 		this.getFutureTokens().put(index,futureToken);
 	}
 
-	public TokenizationResults getProductTokenized() {
-		return productPhraseTokenized;
+	public TokenizationResults getQuantitylessTokenized() {
+		return quantitylessTokenized;
 	}
 
-	public void setProductPhraseTokenized(TokenizationResults productTokenized) {
-		this.productPhraseTokenized = productTokenized;
+	public void setQuantitylessTokenized(TokenizationResults productTokenized) {
+		this.quantitylessTokenized = productTokenized;
 	}
-	public List<ConnectionEntry> getProductPhraseConotations() {
-		return productPhraseConotations;
+	public List<ConnectionEntry> getQuantitylessConnotations() {
+		return quantitylessConnotations;
 	}
 
-	public void setProductPhraseConotations(List<ConnectionEntry> productPhraseConotations) {
-		this.productPhraseConotations = productPhraseConotations;
+	public void setQuantitylessConnotations(List<ConnectionEntry> quantitylessConnotations) {
+		this.quantitylessConnotations = quantitylessConnotations;
 	}
 
 	private String quantityPhrase;
-	private String productPhrase;
+	private String quantitylessPhrase;
 
 	public TokenizationResults getCorrectedToknized() {
 		return correctedToknized;
@@ -154,12 +154,12 @@ public abstract class AbstractParsingObject {
 		this.quantityPhrase = quantityPhrase;
 	}
 
-	public String getProductPhrase() {
-		return productPhrase;
+	public String getQuantitylessPhrase() {
+		return quantitylessPhrase;
 	}
 
-	public void setProductPhrase(String productPhrase) {
-		this.productPhrase = productPhrase;
+	public void setQuantitylessPhrase(String quantitylessPhrase) {
+		this.quantitylessPhrase = quantitylessPhrase;
 	}
 
 	public List<QualifiedToken> getFinalResults() {
@@ -247,11 +247,11 @@ public abstract class AbstractParsingObject {
 
 	public String createCorrectedPhrase() {
 
-		return this.getQuantityPhrase()+" of "+this.getProductPhrase();
+		return this.getQuantityPhrase()+" of "+this.getQuantitylessPhrase();
 	}
 
 	public IngredientLearningCase calculateResultFromCollectedData() {
-		IngredientLearningCase retValue=new IngredientLearningCase(productPhrase, 0, productPhrase, productPhrase, null);
+		IngredientLearningCase retValue=new IngredientLearningCase(quantitylessPhrase, 0, quantitylessPhrase, quantitylessPhrase, null);
 
 		return retValue;
 	}
@@ -317,4 +317,6 @@ public abstract class AbstractParsingObject {
 	public void setEntitylessString(String entitylessString) {
 		this.entitylessString = entitylessString;
 	}
+
+
 }
