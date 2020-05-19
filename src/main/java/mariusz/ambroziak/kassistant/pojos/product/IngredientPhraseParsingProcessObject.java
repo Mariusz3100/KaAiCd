@@ -23,7 +23,13 @@ public class IngredientPhraseParsingProcessObject extends AbstractParsingObject 
 	}
 
 
-	public String getEntitylessString(){
-		return  getEntitylessString(this.getOriginalPhrase());
+//	public String getEntitylessString(){
+//		return  getEntitylessString(this.getOriginalPhrase());
+//	}
+
+	public String calculateEntitylessString(String originalPhrase){
+
+		this.setEntitylessString(super.calculateEntitylessString(originalPhrase));
+		return getEntitylessString();
 	}
 }

@@ -69,7 +69,7 @@ public class ProductParsingProcessObject extends AbstractParsingObject {
 	}
 
 	public String getEntitylessString(){
-		return  getEntitylessString(this.brandlessPhrase);
+		return  calculateEntitylessString(this.brandlessPhrase);
 	}
 
 	public ProductLearningCase getTestCase() {
