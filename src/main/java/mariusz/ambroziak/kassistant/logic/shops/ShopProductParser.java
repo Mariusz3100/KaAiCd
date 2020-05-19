@@ -124,6 +124,8 @@ public class ShopProductParser {
 
 		object.setInitialNames(parsingAPhrase.getInitialNames());
 
+		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
+
 		return object;
 	}
 

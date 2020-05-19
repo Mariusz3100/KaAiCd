@@ -1,9 +1,6 @@
 package mariusz.ambroziak.kassistant.logic;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -106,13 +103,78 @@ public class WordClasifier {
 	public void calculateWordTypesForWholePhrase(AbstractParsingObject parsingAPhrase) {
 		initialCategorization(parsingAPhrase);
 		fillQuanAndProdPhrases(parsingAPhrase);
-
-		recategorize(parsingAPhrase);
+		initializeProductPhraseConnotations(parsingAPhrase);
+		if(parsingAPhrase.getFinalResults().stream().filter(t->t.getWordType()==null||t.getWordType()==WordType.Unknown).findAny().isPresent()) {
+			categorizationFromConnotations(parsingAPhrase);
+			recategorize(parsingAPhrase);
+		}
+		calculateProductType(parsingAPhrase);
 
 		categorizeAllElseAsProducts(parsingAPhrase);
 
 	}
 
+	private void initializeProductPhraseConnotations(AbstractParsingObject parsingAPhrase) {
+	}
+
+	private void calculateProductType(AbstractParsingObject parsingAPhrase) {
+	}
+
+	private void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {
+		Map<String, Integer> adjacentyConotations = calculateAdjacencies(parsingAPhrase);
+
+		if(adjacentyConotations!=null) {
+			for (String entry : adjacentyConotations.keySet()) {
+
+				ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
+
+				WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
+				if(wordsApiResult!=null){
+					int index=adjacentyConotations.get(entry);
+					String[] x=entry.split(" ");
+//					parsingAPhrase.addResult(index, new QualifiedToken(parsingAPhrase.getFinalResults().get(index), WordType.ProductElement));
+//					parsingAPhrase.addResult(index, new QualifiedToken(parsingAPhrase.getFinalResults().get(index+1), WordType.ProductElement));
+					if(!(parsingAPhrase.getFinalResults().get(index).getText().equals(x[0])||parsingAPhrase.getFinalResults().get(index+1).getText().equals(x[1]))){
+						System.out.println("Problem, connotations not match");
+					}else{
+
+						addProductResult(parsingAPhrase, index, parsingAPhrase.getFinalResults().get(index), "[Double, "+wordsApiResult.getReasoningForFound()+"]");
+						addProductResult(parsingAPhrase, index+1, parsingAPhrase.getFinalResults().get(index + 1), "[Double,"+wordsApiResult.getReasoningForFound()+"]");
+					}
+				}else{
+
+				}
+			}
+		}
+		List<ConnectionEntry> productAdjacentyConotationsFound = parsingAPhrase.getQuantitylessConnotations();
+
+		if(productAdjacentyConotationsFound!=null) {
+			for (ConnectionEntry adjacentyConnotations : productAdjacentyConotationsFound) {
+				System.out.println();
+			}
+		}
+
+	}
+
+	private Map<String,Integer> calculateAdjacencies(AbstractParsingObject parsingAPhrase) {
+		Map<String,Integer> retValue=new HashMap<>();
+
+
+		for(int i=0;i<parsingAPhrase.getFinalResults().size()-1;i++) {
+			QualifiedToken qt1=parsingAPhrase.getFinalResults().get(i);
+			QualifiedToken qt2=parsingAPhrase.getFinalResults().get(i+1);
+
+			if(WordType.QuantityElement!=qt1.getWordType()&&WordType.QuantityElement!=qt2.getWordType()) {
+				retValue.put(qt1.getText()+" "+qt2.getText(),i);
+			}
+
+		}
+
+
+		return  retValue;
+
+
+	}
 
 
 	protected void categorizeAllElseAsProducts(AbstractParsingObject parsingAPhrase) {
@@ -165,7 +227,7 @@ public class WordClasifier {
 			Token t=parsingAPhrase.getEntitylessTokenized().getTokens().get(i);
 
 			if(PythonSpacyLabels.tokenisationCardinalLabel.equals(t.getTag())||PythonSpacyLabels.listItemMarker.equals(t.getTag())) {
-				addQuantityResult(parsingAPhrase,i, t);
+				addQuantityResult(parsingAPhrase,i, t, "[spacy tag:"+t.getTag()+"]");
 				List<NamedEntity> cardinalEntities = parsingAPhrase.getCardinalEntities();
 
 				for(NamedEntity cardinalEntity:cardinalEntities) {
@@ -184,19 +246,23 @@ public class WordClasifier {
 				}
 			}
 		}
+
+
 	}
 
 	public void classifySingleWord(AbstractParsingObject parsingAPhrase, int index) throws WordNotFoundException {
-		if(parsingAPhrase.getFutureTokens().containsKey(index)) {
-			return;
-		}
+//		if(parsingAPhrase.getFutureTokens().containsKey(index)) {
+//			return;
+//		}
 
 		TokenizationResults tokens=parsingAPhrase.getEntitylessTokenized();
 		Token t=tokens.getTokens().get(index);
 		String token=t.getText();
 		WordType improperlyFoundType=improperlyFindType(parsingAPhrase,index,parsingAPhrase.getFutureTokens());
 		if(improperlyFoundType!=null) {
-			parsingAPhrase.addResult(index,new QualifiedToken(t,improperlyFoundType));
+			QualifiedToken qt = new QualifiedToken(t, improperlyFoundType);
+			qt.setReasoning("[improperly found, for now]");
+			parsingAPhrase.addResult(index, qt);
 
 			return;
 		}
@@ -218,11 +284,15 @@ public class WordClasifier {
 			if(wordResults!=null&&!wordResults.isEmpty()) {
 				WordsApiResult quantityTypeRecognized = checkQuantityTypesForWordObject(wordResults);
 				if(quantityTypeRecognized!=null) {
-					addQuantityResult(parsingAPhrase, index, t);
+					addQuantityResult(parsingAPhrase, index, t,quantityTypeRecognized);
 				} else {
 					WordsApiResult productTypeRecognized = checkProductTypesForWordObject(wordResults);
 					if(productTypeRecognized!=null) {
-						checkOtherTokens(parsingAPhrase,index ,productTypeRecognized);
+						//checkOtherTokens(parsingAPhrase,index ,productTypeRecognized);
+						//change the approach.
+					//	parsingAPhrase.addResult(index, new QualifiedToken(t, WordType.ProductElement));
+
+						addProductResult(parsingAPhrase,index,t,productTypeRecognized);
 					}else {
 						parsingAPhrase.addResult(index, new QualifiedToken(t,null));
 					}
@@ -301,7 +371,7 @@ public class WordClasifier {
 			{
 				QuantityTranslation checkForTranslation = convertClient.checkForTranslation(token);
 				if(checkForTranslation!=null) {
-					addQuantityResult(parsingAPhrase,index,t);
+					addQuantityResult(parsingAPhrase,index,t, " [convert api:"+checkForTranslation.getMultiplier()+" "+checkForTranslation.getTargetAmountType()+"]");
 					return true;
 				}
 			}
@@ -321,12 +391,29 @@ public class WordClasifier {
 		}
 	}
 
-	protected void addQuantityResult(AbstractParsingObject parsingAPhrase, int index, Token t) {
+	protected void addQuantityResult(AbstractParsingObject parsingAPhrase, int index, Token t, WordsApiResult quantityTypeRecognized) {
 		QualifiedToken result=new QualifiedToken(t, WordType.QuantityElement);
-
+		result.setReasoning(quantityTypeRecognized==null||quantityTypeRecognized.getDefinition()==null?"":quantityTypeRecognized.getDefinition());
 		parsingAPhrase.addResult(index,result);
 	}
 
+	protected void addQuantityResult(AbstractParsingObject parsingAPhrase, int index, Token t,String reasoning) {
+		QualifiedToken result=new QualifiedToken(t, WordType.QuantityElement);
+		result.setReasoning(reasoning);
+		parsingAPhrase.addResult(index,result);
+	}
+
+	protected void addProductResult(AbstractParsingObject parsingAPhrase, int index, Token t, WordsApiResult productTypeRecognized) {
+		QualifiedToken result=new QualifiedToken(t, WordType.ProductElement);
+		result.setReasoning(productTypeRecognized==null||productTypeRecognized.getReasoningForFound()==null?"":productTypeRecognized.getReasoningForFound());
+		parsingAPhrase.addResult(index,result);
+	}
+
+	protected void addProductResult(AbstractParsingObject parsingAPhrase, int index, Token t,String reasoning) {
+		QualifiedToken result=new QualifiedToken(t, WordType.ProductElement);
+		result.setReasoning(reasoning);
+		parsingAPhrase.addResult(index,result);
+	}
 
 
 	private void checkOtherTokens(AbstractParsingObject parsingAPhrase, int index,WordsApiResult productTypeRecognized) {
@@ -618,40 +705,57 @@ public class WordClasifier {
 	}
 
 	private static WordsApiResult checkProductTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
-		for(WordsApiResult war:wordResults) {
-			if(checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(),war.getTypeOf(),productTypeKeywords)) {
-				return war;
-			}
-		}
+		WordsApiResult war = checkForTypes(wordResults,productTypeKeywords);
+		if (war != null)
+			return war;
+
 		return null;
 	}
 
 
 	private static WordsApiResult checkQuantityTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
+		WordsApiResult war = checkForTypes(wordResults,quantityTypeKeywords);
+		if (war != null)
+			return war;
+
+		return null;
+	}
+
+	private static WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults, ArrayList<String> keywordsForTypeconsidered) {
 		for(WordsApiResult war:wordResults) {
-			if(war instanceof WordsApiResultImpostor
-					||checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(),war.getTypeOf(),quantityTypeKeywords)
-					||checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(),war.getAttribute(),quantityAttributeKeywords)) {
+			if(war instanceof WordsApiResultImpostor){
 				return war;
 			}
+			String typeOfTagRecognized=checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(),war.getTypeOf(),keywordsForTypeconsidered);
+
+			if(typeOfTagRecognized!=null&&!typeOfTagRecognized.isEmpty()){
+				war.setReasoningForFound("WordsApi: "+war.getDefinition()+" ("+typeOfTagRecognized+")");
+				return war;
+			}
+			String attributeTagRecognized=checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(),war.getAttribute(),keywordsForTypeconsidered);
+
+			if(attributeTagRecognized!=null&&!attributeTagRecognized.isEmpty()){
+				war.setReasoningForFound("WordsApi: "+war.getDefinition()+" ("+attributeTagRecognized+")");
+
+				return war;
+			}
+
 		}
 		return null;
 	}
 
 
-
-
-	private static boolean checkIfPropertiesFromWordsApiContainKeywords(String productName, ArrayList<String> typeResults,ArrayList<String> keywords) {
+	private static String checkIfPropertiesFromWordsApiContainKeywords(String productName, ArrayList<String> typeResults, ArrayList<String> keywords) {
 		for(String typeToBeChecked:typeResults) {
 			for(String typeConsidered:keywords) {
 				if(typeToBeChecked.indexOf(typeConsidered)>=0) {
-					System.out.println(productName+" -> "+typeToBeChecked+" : "+typeConsidered);
+//					System.out.println(productName+" -> "+typeToBeChecked+" : "+typeConsidered);
 
-					return true;
+					return typeToBeChecked;
 				}
 			}
 		}
-		return false;
+		return null;
 	}
 
 
