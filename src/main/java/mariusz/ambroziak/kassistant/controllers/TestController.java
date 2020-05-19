@@ -99,7 +99,7 @@ public class TestController {
 
 	@RequestMapping("/testUsda")
 	public String testUsda(@RequestParam(value="param", defaultValue="empty") String param){
-		UsdaResponse inApi = this.usdaApiClient.findInApi("tomato paste", 10);
+		UsdaResponse inApi = this.usdaApiClient.findInApi(param, 10);
 
 		return inApi.toJsonString();
 	}

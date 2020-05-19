@@ -59,6 +59,8 @@ public class IngredientPhraseTokenizerTest {
 
 		phrase=phrase.replaceFirst("½", "1/2");
 		phrase=phrase.replaceFirst("¼", "1/4");
+		phrase=phrase.replaceFirst("é", "e");
+
 		if(phrase.substring(0, phrase.length()<10?phrase.length():10).indexOf(" c ")>0) {
 			phrase=phrase.replaceFirst(" c ", " cup ");
 		}
