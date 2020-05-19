@@ -122,38 +122,40 @@ public class WordClasifier {
 
 	private void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {
 		Map<String, Integer> adjacentyConotations = calculateAdjacencies(parsingAPhrase);
-
+		boolean found=false;
 		if(adjacentyConotations!=null) {
 			for (String entry : adjacentyConotations.keySet()) {
 
-				ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
-
-				WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
-				if(wordsApiResult!=null){
-					int index=adjacentyConotations.get(entry);
-					String[] x=entry.split(" ");
-//					parsingAPhrase.addResult(index, new QualifiedToken(parsingAPhrase.getFinalResults().get(index), WordType.ProductElement));
-//					parsingAPhrase.addResult(index, new QualifiedToken(parsingAPhrase.getFinalResults().get(index+1), WordType.ProductElement));
-					if(!(parsingAPhrase.getFinalResults().get(index).getText().equals(x[0])||parsingAPhrase.getFinalResults().get(index+1).getText().equals(x[1]))){
-						System.out.println("Problem, connotations not match");
-					}else{
-
-						addProductResult(parsingAPhrase, index, parsingAPhrase.getFinalResults().get(index), "[Double, "+wordsApiResult.getReasoningForFound()+"]");
-						addProductResult(parsingAPhrase, index+1, parsingAPhrase.getFinalResults().get(index + 1), "[Double,"+wordsApiResult.getReasoningForFound()+"]");
-					}
-				}else{
-
+				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry);
+				if(!found){
+					System.out.println();
 				}
-			}
-		}
-		List<ConnectionEntry> productAdjacentyConotationsFound = parsingAPhrase.getQuantitylessConnotations();
 
-		if(productAdjacentyConotationsFound!=null) {
-			for (ConnectionEntry adjacentyConnotations : productAdjacentyConotationsFound) {
-				System.out.println();
 			}
 		}
 
+
+
+
+	}
+
+	private boolean checkWordsApi(AbstractParsingObject parsingAPhrase, Map<String, Integer> adjacentyConotations, String entry) {
+		ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
+		WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
+		if(wordsApiResult!=null){
+			int index=adjacentyConotations.get(entry);
+			String[] x=entry.split(" ");
+			if(!(parsingAPhrase.getFinalResults().get(index).getText().equals(x[0])||parsingAPhrase.getFinalResults().get(index+1).getText().equals(x[1]))){
+				System.out.println("Problem, connotations not match");
+			}else{
+				addProductResult(parsingAPhrase, index, parsingAPhrase.getFinalResults().get(index), "[Double, "+wordsApiResult.getReasoningForFound()+"]");
+				addProductResult(parsingAPhrase, index+1, parsingAPhrase.getFinalResults().get(index + 1), "[Double,"+wordsApiResult.getReasoningForFound()+"]");
+				return true;
+			}
+		}else{
+			return false;
+		}
+		return false;
 	}
 
 	private Map<String,Integer> calculateAdjacencies(AbstractParsingObject parsingAPhrase) {
