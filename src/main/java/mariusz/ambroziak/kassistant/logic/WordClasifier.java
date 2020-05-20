@@ -13,6 +13,9 @@ import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.pojos.quantity.QuantityTranslation;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
+import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
+import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
+import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +42,9 @@ public class WordClasifier {
 
 	@Autowired
 	private WordsApiClient wordsApiClient;
+
+	@Autowired
+	private UsdaApiClient usdaApiClient;
 
 	@Autowired
 	private WikipediaApiClient wikipediaClient;
@@ -128,7 +134,7 @@ public class WordClasifier {
 
 				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry);
 				if(!found){
-					System.out.println();
+					checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry);
 				}
 
 			}
@@ -137,6 +143,23 @@ public class WordClasifier {
 
 
 
+	}
+
+	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,int index, String entry) {
+		UsdaResponse inApi = this.usdaApiClient.findInApi(entry, 10);
+
+		for(SingleResult sp:inApi.getFoods()){
+			String desc=sp.getDescription();
+			if(desc.toLowerCase().contains(entry.toLowerCase())){
+				QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
+				addProductResult(parsingAPhrase,index,qualifiedToken1,"[usda api: "+sp.getGtinUpc()+"]");
+
+				QualifiedToken qualifiedToken2 = parsingAPhrase.getFinalResults().get(index+1);
+				addProductResult(parsingAPhrase,index+1,qualifiedToken2,"[usda api: "+sp.getGtinUpc()+"]");
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean checkWordsApi(AbstractParsingObject parsingAPhrase, Map<String, Integer> adjacentyConotations, String entry) {
