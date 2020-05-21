@@ -139,7 +139,7 @@ public class IngredientPhraseParser {
 
 		}
 
-		printResults(retValue);
+	//	printResults(retValue);
 
 		return retValue;
 
@@ -185,8 +185,8 @@ public class IngredientPhraseParser {
 
 
 		this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-		initializeCorrectedConnotations(parsingAPhrase);
-		initializeProductPhraseConnotations(parsingAPhrase);
+	//	initializeCorrectedConnotations(parsingAPhrase);
+	//	initializeProductPhraseConnotations(parsingAPhrase);
 		return parsingAPhrase;
 	}
 
@@ -258,7 +258,7 @@ public class IngredientPhraseParser {
 		object.setEntities(fused);
 		object.setEntityLess(parsingAPhrase.getEntitylessString());
 		object.setCorrectedPhrase(parsingAPhrase.createCorrectedPhrase());
-		object.setCorrectedTokens(parsingAPhrase.getCorrectedtokens());
+	//	object.setCorrectedTokens(parsingAPhrase.getCorrectedtokens());
 		object.setExpectedResult(parsingAPhrase.getLearningTuple());
 		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getLearningTuple().getFoodMatch(),parsingAPhrase.getFinalResults()));
 		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getLearningTuple().getFoodMatch(),parsingAPhrase.getPermissiveFinalResults()));

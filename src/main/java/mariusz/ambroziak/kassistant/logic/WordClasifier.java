@@ -37,7 +37,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiResultImpostor;
 public class WordClasifier {
 	private static String wikipediaCheckRegex=".*[a-zA-Z].*";
 	private static String convertApiCheckRegex=".*[a-zA-Z].*";
-	private static String punctuationRegex="[\\.,\\-]*";
+	public static String punctuationRegex="[\\.,\\-]*";
 
 
 	@Autowired
