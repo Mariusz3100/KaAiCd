@@ -91,20 +91,11 @@ public class IngredientPhraseParser {
 			er.setOriginalPhrase(line);
 			IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
 
-			NerResults entitiesFound = this.nerRecognizer.find(line);
-			parsingAPhrase.setEntities(entitiesFound);
-
-			String entitylessString=parsingAPhrase.getEntitylessString();
-
-			TokenizationResults tokens = this.tokenizator.parse(entitylessString);
-			parsingAPhrase.setEntitylessTokenized(tokens);
-
-			initializePrimaryConnotations(parsingAPhrase);
 
 
 			this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 			initializeCorrectedConnotations(parsingAPhrase);
-			initializeProductPhraseConnotations(parsingAPhrase);
+//			initializeProductPhraseConnotations(parsingAPhrase);
 
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
 
@@ -181,7 +172,7 @@ public class IngredientPhraseParser {
 		TokenizationResults tokens = this.tokenizator.parse(entitylessString);
 		parsingAPhrase.setEntitylessTokenized(tokens);
 
-		initializePrimaryConnotations(parsingAPhrase);
+	//	initializePrimaryConnotations(parsingAPhrase);
 
 
 		this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
@@ -315,32 +306,20 @@ public class IngredientPhraseParser {
 
 
 	}
-	
+
 	private void initializeProductPhraseConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
-		
+
 		TokenizationResults tokenized = parsingAPhrase.getQuantitylessTokenized();
 		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
 		List<ConnectionEntry> quantitylessConnotations = tokenized.getAllTwoWordDependencies();
 		Token foundToken = tokenized.findToken(tokenized.getTokens(),dependencyTreeRoot==null?"":dependencyTreeRoot.getText());
 		quantitylessConnotations.add(new ConnectionEntry(new Token("ROOT","",""),foundToken));
-		
+
 		parsingAPhrase.setQuantitylessConnotations(quantitylessConnotations);
 
 
 	}
-	private void initializePrimaryConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
-		
-		TokenizationResults tokenized = parsingAPhrase.getEntitylessTokenized();
-		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
-		List<ConnectionEntry> originalPhraseConotations = tokenized.getAllTwoWordDependencies();
-		Token foundToken = tokenized.findToken(tokenized.getTokens(),dependencyTreeRoot==null?"":dependencyTreeRoot.getText());
-		originalPhraseConotations.add(new ConnectionEntry(new Token("ROOT","",""),foundToken));
-		
 
-		parsingAPhrase.setFromEntityLessConotations(originalPhraseConotations);
-
-		
-	}
 
 
 	private List<ConnectionEntry> extractCorrectedConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {

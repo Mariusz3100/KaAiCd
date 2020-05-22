@@ -13,6 +13,9 @@ import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.pojos.quantity.QuantityTranslation;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
+import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntityRecognitionClientService;
+import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.*;
 import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
@@ -21,10 +24,6 @@ import org.springframework.stereotype.Service;
 
 
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
 import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.webclients.wikipedia.WikipediaApiClient;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.ConvertApiClient;
@@ -52,7 +51,10 @@ public class WordClasifier {
 	private ConvertApiClient convertClient;
 	@Autowired
 	private TokenizationClientService tokenizator;
-
+	@Autowired
+	private NamedEntityRecognitionClientService nerRecognizer;
+	@Autowired
+	PhraseDependenciesComparator dependenciesComparator;
 
 	public static ArrayList<String> productTypeKeywords;
 	public static ArrayList<String> irrelevanceKeywords;
@@ -107,9 +109,16 @@ public class WordClasifier {
 
 
 	public void calculateWordTypesForWholePhrase(AbstractParsingObject parsingAPhrase) {
+		handleBracketsAndSetBracketLess(parsingAPhrase);
+	//	handleEntities(parsingAPhrase);
+
+
+
+
+		initializePrimaryTokensAndConnotations(parsingAPhrase);
 		initialCategorization(parsingAPhrase);
 		fillQuanAndProdPhrases(parsingAPhrase);
-		initializeProductPhraseConnotations(parsingAPhrase);
+		initializeProductPhraseTokensAndConnotations(parsingAPhrase);
 		if(parsingAPhrase.getFinalResults().stream().filter(t->t.getWordType()==null||t.getWordType()==WordType.Unknown).findAny().isPresent()) {
 			categorizationFromConnotations(parsingAPhrase);
 			recategorize(parsingAPhrase);
@@ -120,7 +129,27 @@ public class WordClasifier {
 
 	}
 
-	private void initializeProductPhraseConnotations(AbstractParsingObject parsingAPhrase) {
+	private void handleEntities(AbstractParsingObject parsingAPhrase) {
+		NerResults entitiesFound = this.nerRecognizer.find(parsingAPhrase.getBracketLessPhrase());
+		parsingAPhrase.setEntities(entitiesFound);
+
+		String entitylessString=parsingAPhrase.getEntitylessString();
+
+		TokenizationResults tokens = this.tokenizator.parse(entitylessString);
+		parsingAPhrase.setEntitylessTokenized(tokens);
+	}
+
+	private void initializeProductPhraseTokensAndConnotations(AbstractParsingObject parsingAPhrase) {
+
+		TokenizationResults tokenized = this.tokenizator.parse(parsingAPhrase.getQuantitylessPhrase());
+		parsingAPhrase.setQuantitylessTokenized(tokenized);
+		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
+		List<ConnectionEntry> quantitylessConnotations = tokenized.getAllTwoWordDependencies();
+		Token foundToken = tokenized.findToken(tokenized.getTokens(),dependencyTreeRoot==null?"":dependencyTreeRoot.getText());
+		quantitylessConnotations.add(new ConnectionEntry(new Token("ROOT","",""),foundToken));
+
+		parsingAPhrase.setQuantitylessConnotations(quantitylessConnotations);
+
 	}
 
 	private void calculateProductType(AbstractParsingObject parsingAPhrase) {
@@ -223,6 +252,21 @@ public class WordClasifier {
 		TokenizationResults productPhraseparsed = this.tokenizator.parse(parsingAPhrase.getQuantitylessPhrase());
 
 		parsingAPhrase.setQuantitylessTokenized(productPhraseparsed);
+
+
+	}
+	private void initializePrimaryTokensAndConnotations(AbstractParsingObject parsingAPhrase) {
+		String phrase=parsingAPhrase.getBracketLessPhrase();
+
+		TokenizationResults tokenized=this.tokenizator.parse(phrase);
+		parsingAPhrase.setBracketlessTokenized(tokenized);
+		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
+		List<ConnectionEntry> originalPhraseConotations = tokenized.getAllTwoWordDependencies();
+		Token foundToken = tokenized.findToken(tokenized.getTokens(),dependencyTreeRoot==null?"":dependencyTreeRoot.getText());
+		originalPhraseConotations.add(new ConnectionEntry(new Token("ROOT","",""),foundToken));
+
+
+		parsingAPhrase.setFromEntityLessConotations(originalPhraseConotations);
 
 
 	}
@@ -341,6 +385,19 @@ public class WordClasifier {
 
 
 		return null;
+	}
+
+	private void handleBracketsAndSetBracketLess(AbstractParsingObject parsingAPhrase) {
+		String x=parsingAPhrase.getOriginalPhrase();
+		if(x==null)
+			parsingAPhrase.setBracketLessPhrase("");
+		else {
+			x=x.replaceAll("\\(.*\\)","");
+			parsingAPhrase.setBracketLessPhrase(x);
+		}
+
+
+
 	}
 
 	private boolean searchForAllPossibleMeaningsInWordsApi(AbstractParsingObject parsingAPhrase,

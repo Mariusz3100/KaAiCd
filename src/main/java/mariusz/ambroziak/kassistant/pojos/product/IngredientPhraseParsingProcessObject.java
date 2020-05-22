@@ -18,7 +18,7 @@ public class IngredientPhraseParsingProcessObject extends AbstractParsingObject 
 	}
 
 	@Override
-	protected String getOriginalPhrase() {
+	public String getOriginalPhrase() {
 		return this.getLearningTuple().getOriginalPhrase();
 	}
 

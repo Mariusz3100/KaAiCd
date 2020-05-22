@@ -22,6 +22,8 @@ public abstract class AbstractParsingObject {
 	private String bracketLessPhrase;
 	private String entitylessString;
 	private NerResults nerResults;
+	private TokenizationResults bracketlessTokenized;
+
 	private TokenizationResults entitylessTokenized;
 	private TokenizationResults correctedToknized;
 	private TokenizationResults quantitylessTokenized;
@@ -82,6 +84,15 @@ public abstract class AbstractParsingObject {
 	public void setQuantitylessTokenized(TokenizationResults productTokenized) {
 		this.quantitylessTokenized = productTokenized;
 	}
+
+	public TokenizationResults getBracketlessTokenized() {
+		return bracketlessTokenized;
+	}
+
+	public void setBracketlessTokenized(TokenizationResults bracketlessTokenized) {
+		this.bracketlessTokenized = bracketlessTokenized;
+	}
+
 	public List<ConnectionEntry> getQuantitylessConnotations() {
 		return quantitylessConnotations;
 	}
@@ -243,7 +254,7 @@ public abstract class AbstractParsingObject {
 
 //	public abstract String getEntitylessString();
 
-	protected abstract String getOriginalPhrase();
+	public abstract String getOriginalPhrase();
 
 	public String createCorrectedPhrase() {
 
