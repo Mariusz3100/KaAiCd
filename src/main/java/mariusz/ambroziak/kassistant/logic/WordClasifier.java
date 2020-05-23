@@ -168,8 +168,26 @@ public class WordClasifier {
 
 			}
 		}
+		List<ConnectionEntry> quantitylessConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s->s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
 
 
+		if(quantitylessConnotations!=null) {
+			for (ConnectionEntry entry : quantitylessConnotations) {
+
+//				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry.getHead()+" "+entry.getChild());
+//				if(!found){
+//					found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry.getChild()+" "+entry.getHead());
+//				}
+//
+//				if(!found){
+//					found=checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry.getHead()+" "+entry.getChild());
+//				}
+//				if(!found){
+//					checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry.getChild()+" "+entry.getHead());
+//				}
+
+			}
+		}
 
 
 	}
@@ -181,11 +199,23 @@ public class WordClasifier {
 			String desc=sp.getDescription();
 			if(desc.toLowerCase().contains(entry.toLowerCase())){
 				QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
-				addProductResult(parsingAPhrase,index,qualifiedToken1,"[usda api: "+sp.getGtinUpc()+"]");
+				addProductResult(parsingAPhrase,index,qualifiedToken1,"[usda api: "+sp.getFdcId()+"]");
 
 				QualifiedToken qualifiedToken2 = parsingAPhrase.getFinalResults().get(index+1);
-				addProductResult(parsingAPhrase,index+1,qualifiedToken2,"[usda api: "+sp.getGtinUpc()+"]");
+				addProductResult(parsingAPhrase,index+1,qualifiedToken2,"[usda api: "+sp.getFdcId()+"]");
 				return true;
+			}else{
+				boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
+				System.out.println(desc+" : "+entry+" : "+isSame);
+
+				if(isSame){
+					QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
+					addProductResult(parsingAPhrase,index,qualifiedToken1,"[usda api: "+sp.getFdcId()+"]");
+
+					QualifiedToken qualifiedToken2 = parsingAPhrase.getFinalResults().get(index+1);
+					addProductResult(parsingAPhrase,index+1,qualifiedToken2,"[usda api: "+sp.getFdcId()+"]");
+					return true;
+				}
 			}
 		}
 		return false;
