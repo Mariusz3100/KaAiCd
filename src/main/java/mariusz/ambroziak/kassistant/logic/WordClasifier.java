@@ -170,28 +170,48 @@ public class WordClasifier {
 
 			}
 		}
-		List<ConnectionEntry> quantitylessConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s->s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
+		List<ConnectionEntry> quantitylessDependenciesConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s->!s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
 
+		if(quantitylessDependenciesConnotations!=null) {
+			for (ConnectionEntry entry : quantitylessDependenciesConnotations) {
+				found=checkWordsApi(parsingAPhrase, entry);
 
-		if(quantitylessConnotations!=null) {
-			for (ConnectionEntry entry : quantitylessConnotations) {
+				if(found)
+					break;
+			}
 
-//				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry.getHead()+" "+entry.getChild());
-//				if(!found){
-//					found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry.getChild()+" "+entry.getHead());
-//				}
-//
-//				if(!found){
-//					found=checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry.getHead()+" "+entry.getChild());
-//				}
-//				if(!found){
-//					checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry.getChild()+" "+entry.getHead());
-//				}
-
+			if(!found){
+				found=checkUsdaApi(parsingAPhrase,quantitylessDependenciesConnotations);
 			}
 		}
 
 
+	}
+
+	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,List<ConnectionEntry> quantitylessDependenciesConnotations) {
+		String entry=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->t.getText().toLowerCase()).collect(Collectors.joining(" "));
+		String entryWithPluses=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->"+"+t.getText().toLowerCase()).collect(Collectors.joining(" "));
+		UsdaResponse inApi = this.usdaApiClient.findInApi(entryWithPluses, 20);
+		for(SingleResult sp:inApi.getFoods()) {
+			String desc = sp.getDescription();
+			boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
+			System.out.println(desc+" : "+entry+" : "+isSame);
+
+			if(isSame){
+				return markFoundAdjacencyResults(parsingAPhrase, quantitylessDependenciesConnotations,sp);
+			}
+		}
+
+		return false;
+	}
+
+	private boolean markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, List<ConnectionEntry> quantitylessDependenciesConnotations, SingleResult sp) {
+		if(sp.getDescription()==null||sp.getDescription().isEmpty())
+			return false;
+
+		TokenizationResults descTokenized = this.tokenizator.parse(sp.getDescription().toLowerCase());
+
+		return false;
 	}
 
 	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,int index, String entry) {
@@ -199,29 +219,75 @@ public class WordClasifier {
 
 		for(SingleResult sp:inApi.getFoods()){
 			String desc=sp.getDescription();
-			if(desc.toLowerCase().contains(entry.toLowerCase())){
-				QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
-				addProductResult(parsingAPhrase,index,qualifiedToken1,"[usda api: "+sp.getFdcId()+"]");
-
-				QualifiedToken qualifiedToken2 = parsingAPhrase.getFinalResults().get(index+1);
-				addProductResult(parsingAPhrase,index+1,qualifiedToken2,"[usda api: "+sp.getFdcId()+"]");
-				return true;
+			if(desc.toLowerCase().equals(entry.toLowerCase())){
+				return markFoundAdjacencyResults(parsingAPhrase, index, sp);
 			}else{
-				boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
-				System.out.println(desc+" : "+entry+" : "+isSame);
-
-				if(isSame){
-					QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
-					addProductResult(parsingAPhrase,index,qualifiedToken1,"[usda api: "+sp.getFdcId()+"]");
-
-					QualifiedToken qualifiedToken2 = parsingAPhrase.getFinalResults().get(index+1);
-					addProductResult(parsingAPhrase,index+1,qualifiedToken2,"[usda api: "+sp.getFdcId()+"]");
-					return true;
-				}
+//				boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
+//				System.out.println(desc+" : "+entry+" : "+isSame);
+//
+//				if(isSame){
+//					return markFoundAdjacencyResults(parsingAPhrase, index, sp);
+//				}
 			}
 		}
 		return false;
 	}
+
+
+//	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation) {
+//		String entry=dependencyConnotation.getHead()+" "+dependencyConnotation.getChild();
+//		UsdaResponse inApi = this.usdaApiClient.findInApi(entry, 10);
+//		if(inApi!=null){
+//
+//
+//			for(SingleResult sp:inApi.getFoods()){
+//				String desc=sp.getDescription();
+//				boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
+//				System.out.println(desc+" : "+entry+" : "+isSame);
+//
+//				if(isSame){
+//					return markFoundAdjacencyResults(parsingAPhrase, sp);
+//				}else{
+//					return false;
+//				}
+//			}
+//
+//
+//		}else{
+//			return false;
+//		}
+//		return false;
+//	}
+
+//
+//	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,int index, String entry) {
+//		UsdaResponse inApi = this.usdaApiClient.findInApi(entry, 10);
+//
+//		for(SingleResult sp:inApi.getFoods()){
+//			String desc=sp.getDescription();
+//			if(desc.toLowerCase().contains(entry.toLowerCase())){
+//				return markFoundAdjacencyResults(parsingAPhrase, index, sp);
+//			}else{
+//				boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
+//				System.out.println(desc+" : "+entry+" : "+isSame);
+//
+//				if(isSame){
+//					return markFoundAdjacencyResults(parsingAPhrase, index, sp);
+//				}
+//			}
+//		}
+//		return false;
+//	}
+
+	private boolean markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, int index, SingleResult sp) {
+		QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
+		addProductResult(parsingAPhrase, index, qualifiedToken1, "[usda api: " + sp.getFdcId() + "]");
+
+		QualifiedToken qualifiedToken2 = parsingAPhrase.getFinalResults().get(index + 1);
+		addProductResult(parsingAPhrase, index + 1, qualifiedToken2, "[usda api: " + sp.getFdcId() + "]");
+		return true;
+	}
+
 
 	private boolean checkWordsApi(AbstractParsingObject parsingAPhrase, Map<String, Integer> adjacentyConotations, String entry) {
 		ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
@@ -240,6 +306,62 @@ public class WordClasifier {
 			return false;
 		}
 		return false;
+	}
+
+	private boolean checkWordsApi(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation) {
+		String entry=dependencyConnotation.getHead()+" "+dependencyConnotation.getChild();
+		ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
+		WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
+		if(wordsApiResult!=null){
+			markFoundConnotation(parsingAPhrase, dependencyConnotation, entry, wordsApiResult);
+
+
+		}else{
+			return false;
+		}
+		return false;
+	}
+
+	private void markFoundConnotation(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation, String entry, WordsApiResult wordsApiResult) {
+		boolean foundHead=false,foundChild=false;
+		for(int i=0;i<parsingAPhrase.getFinalResults().size();i++){
+			QualifiedToken qt=parsingAPhrase.getFinalResults().get(i);
+
+			if(dependencyConnotation.getHead().getText()==qt.getText()){
+				foundHead=true;
+				addProductResult(parsingAPhrase, i, qt, "[Double, "+wordsApiResult.getReasoningForFound()+"]");
+
+			}
+			if(dependencyConnotation.getChild().getText()==qt.getText()&&qt.getHead().equals(dependencyConnotation.getHead())){
+				foundChild=true;
+				addProductResult(parsingAPhrase, i, qt, "[Double, "+wordsApiResult.getReasoningForFound()+"]");
+
+			}
+		}
+		if(!foundChild||!foundHead){
+			System.err.println("Entry '"+entry+"' found in words api, but not in tokens");
+		}
+	}
+
+	private void markFoundConnotation(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation, String entry, SingleResult usdaResult) {
+		boolean foundHead=false,foundChild=false;
+		for(int i=0;i<parsingAPhrase.getFinalResults().size();i++){
+			QualifiedToken qt=parsingAPhrase.getFinalResults().get(i);
+
+			if(dependencyConnotation.getHead().getText()==qt.getText()){
+				foundHead=true;
+				addProductResult(parsingAPhrase, i, qt, "[Double usda, "+usdaResult.getFdcId()+"]");
+
+			}
+			if(dependencyConnotation.getChild().getText()==qt.getText()&&qt.getHead().equals(dependencyConnotation.getHead())){
+				foundChild=true;
+				addProductResult(parsingAPhrase, i, qt, "[Double usda, "+usdaResult.getFdcId()+"]");
+
+			}
+		}
+		if(!foundChild||!foundHead){
+			System.err.println("Entry '"+entry+"' found in words api, but not in tokens");
+		}
 	}
 
 	private Map<String,Integer> calculateAdjacencies(AbstractParsingObject parsingAPhrase) {

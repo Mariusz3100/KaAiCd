@@ -38,11 +38,21 @@ public class PhraseDependenciesComparator {
             for(int i=0;i<allTwoWordDependenciesOfFirst.size();i++){
                 ConnectionEntry searchFor = allTwoWordDependenciesOfFirst.get(i);
 
-                if(allTwoWordDependenciesOfSecond.stream().filter(e->e.permissiveEquals(searchFor)).count()<1){
+                if(allTwoWordDependenciesOfSecond.stream().filter(e->e.permissiveEquals(searchFor)).count()>0){
+                    allTwoWordDependenciesOfSecond.removeIf(e->e.permissiveEquals(searchFor));
+                }else{
                     return false;
                 }
             }
-            return true;
+
+            if(allTwoWordDependenciesOfSecond.isEmpty()){
+                return true;
+
+            }else{
+                System.err.println("USDA api covers all phrase dependencies, but has additional ones.");
+                return false;
+            }
+
         }
 
     }
