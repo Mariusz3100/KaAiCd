@@ -152,7 +152,7 @@ public class WordClasifier {
 
 	}
 
-	private void calculateProductType(AbstractParsingObject parsingAPhrase) {
+	protected void calculateProductType(AbstractParsingObject parsingAPhrase) {
 	}
 
 	private void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {

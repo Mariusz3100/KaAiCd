@@ -40,7 +40,7 @@ public class ProductWordsClassifier extends WordClasifier {
 
 
 
-    private void calculateProductType(AbstractParsingObject parsingAPhrase) {
+    public void calculateProductType(AbstractParsingObject parsingAPhrase) {
         extractAndMarkProductProperties(parsingAPhrase);
     }
 
