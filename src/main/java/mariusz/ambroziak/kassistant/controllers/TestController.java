@@ -8,6 +8,7 @@ import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
+import mariusz.ambroziak.kassistant.logic.PhraseDependenciesComparator;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
@@ -44,6 +45,9 @@ public class TestController {
 
 	@Autowired
 	UsdaApiClient usdaApiClient;
+
+	@Autowired
+	PhraseDependenciesComparator phraseDependenciesComparator;
 
 	public TestController(TokenizationClientService tokenizationService, NamedEntityRecognitionClientService nerService,
 						  ProductParsingResultRepository productParsingRepo, IngredientPhraseParsingResultRepository ingredientParsingRepo,
@@ -126,4 +130,33 @@ public class TestController {
 		return retValue;
 
 	}
+
+
+
+	@CrossOrigin
+	@RequestMapping("/testPhraseDependenciesComparator")
+	@ResponseBody
+	public String testPhraseDependenciesComparator() throws IOException{
+		String first1="heavy cream";
+		String second1="heavy cream";
+
+		String first2="fresh lime juice";
+		String second2="lime juice";
+
+		String first3="chopped onion";
+		String second3="onion, chopped";
+
+		String retValue="";
+
+	//	retValue+=first1+":"+second1+":"+phraseDependenciesComparator.comparePhrases(first1,second1)+"<br>";
+	//	retValue+=first2+":"+second2+":"+phraseDependenciesComparator.comparePhrases(first2,second2)+"<br>";
+		retValue+=first3+":"+second3+":"+phraseDependenciesComparator.comparePhrases(first3,second3)+"<br>";
+
+		return retValue;
+
+
+	}
+
+
+
 }

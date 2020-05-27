@@ -24,8 +24,8 @@ public class PhraseDependenciesComparator {
         if(first.equals(second))
             return true;
 
-        TokenizationResults firstTokenized = tokenizer.parse(first);
-        TokenizationResults secondTokenized = tokenizer.parse(second);
+        TokenizationResults firstTokenized = tokenizer.parse(first.toLowerCase());
+        TokenizationResults secondTokenized = tokenizer.parse(second.toLowerCase());
 
 
         if(!arePhrasesSameLength(firstTokenized, secondTokenized))
