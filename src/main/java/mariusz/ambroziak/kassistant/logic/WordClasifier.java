@@ -72,6 +72,8 @@ public class WordClasifier {
 
 
 		productTypeKeywords.add("flavouring");
+		productTypeKeywords.add("herb");
+
 		productTypeKeywords.add("seasoning");
 		productTypeKeywords.add("dairy");
 		productTypeKeywords.add("meat");
