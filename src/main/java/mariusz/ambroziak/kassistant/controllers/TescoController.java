@@ -42,12 +42,19 @@ public class TescoController {
 	
 	@CrossOrigin
 	@ResponseBody
-	@RequestMapping("/tescoSearchAndParse")
-    public ParsingResultList tescoSearchAndParse(@RequestParam(value="param", defaultValue="empty") String param) throws IOException{
-    	ParsingResultList retValue=this.productParserService.tescoSearchForProductsWithTestCases(param);
+	@RequestMapping("/tescoParse")
+    public ParsingResultList tescoSearchAndParse(@RequestParam(value="param", required = false) String param) throws IOException{
+		ParsingResultList retValue=null;
+		if(param==null||param.isEmpty()){
+			retValue=this.productParserService.parseAllTestCases();
+		}else{
+			retValue=this.productParserService.tescoSearchForProductsWithTestCases(param);
+		}
     	return retValue;
 
     }
+
+
 	@CrossOrigin
 	@ResponseBody
 	@RequestMapping("/tescoParseFromFile")

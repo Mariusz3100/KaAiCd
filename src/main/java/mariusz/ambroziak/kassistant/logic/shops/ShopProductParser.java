@@ -74,7 +74,7 @@ public class ShopProductParser {
 
 
 	public ParsingResultList tescoSearchForProductsWithTestCases(String phrase) throws IOException {
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase);
+		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,2);
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
 				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
@@ -82,7 +82,7 @@ public class ShopProductParser {
 		parsingBatchRepository.save(batchObject);
 		ParsingResultList retValue = parseListOfCases(parsingProcessObjects, batchObject);
 
-
+		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
 		return retValue;
 
 	}
