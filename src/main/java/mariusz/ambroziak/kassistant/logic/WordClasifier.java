@@ -165,23 +165,26 @@ public class WordClasifier {
 
 				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry);
 				if(!found){
-					checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry);
+					found=checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry);
 				}
 
 			}
 		}
-		List<ConnectionEntry> quantitylessDependenciesConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s->!s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
 
-		if(quantitylessDependenciesConnotations!=null) {
-			for (ConnectionEntry entry : quantitylessDependenciesConnotations) {
-				found=checkWordsApi(parsingAPhrase, entry);
+		if(!found) {
+			List<ConnectionEntry> quantitylessDependenciesConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s -> !s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
 
-				if(found)
-					break;
-			}
+			if (quantitylessDependenciesConnotations != null) {
+				for (ConnectionEntry entry : quantitylessDependenciesConnotations) {
+					found = checkWordsApi(parsingAPhrase, entry);
 
-			if(!found){
-				found=checkUsdaApi(parsingAPhrase,quantitylessDependenciesConnotations);
+					if (found)
+						break;
+				}
+
+				if (!found) {
+					found = checkUsdaApi(parsingAPhrase, quantitylessDependenciesConnotations);
+				}
 			}
 		}
 
@@ -189,13 +192,14 @@ public class WordClasifier {
 	}
 
 	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,List<ConnectionEntry> quantitylessDependenciesConnotations) {
-		String entry=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->t.getText().toLowerCase()).collect(Collectors.joining(" "));
-		String entryWithPluses=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->"+"+t.getText().toLowerCase()).collect(Collectors.joining(" "));
-		UsdaResponse inApi = this.usdaApiClient.findInApi(entryWithPluses, 20);
+		//TODO right now we do not consider shorter search phrases, to be thought about
+		String quantitylessTokens=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->t.getText().toLowerCase()).collect(Collectors.joining(" "));
+		String quantitylessTokensWithPluses=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->"+"+t.getText().toLowerCase()).collect(Collectors.joining(" "));
+		UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 20);
 		for(SingleResult sp:inApi.getFoods()) {
 			String desc = sp.getDescription();
-			boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
-			System.out.println(desc+" : "+entry+" : "+isSame);
+			boolean isSame=this.dependenciesComparator.comparePhrases(desc,quantitylessTokens);
+			System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
 
 			if(isSame){
 				return markFoundAdjacencyResults(parsingAPhrase, quantitylessDependenciesConnotations,sp);
@@ -211,6 +215,24 @@ public class WordClasifier {
 
 		TokenizationResults descTokenized = this.tokenizator.parse(sp.getDescription().toLowerCase());
 
+		List<Token> descTokensLeft = descTokenized.getTokens();
+		for(int i = 0; i< descTokenized.getTokens().size(); i++){
+			Token t=descTokenized.getTokens().get(i);
+
+			Optional<QualifiedToken> found = parsingAPhrase.getFinalResults().stream().filter(token -> token.compareWithToken(t)).findFirst();
+
+			if(found.isPresent()){
+				found.get().setWordType(WordType.ProductElement);
+				found.get().setReasoning("[usda api: " + sp.getFdcId() + "]");
+			}else{
+				if(!Pattern.matches(WordClasifier.punctuationRegex,t.getText())) {
+					System.err.println(t.getText()+" from "+sp.getFdcId() + " has no matching tokens in '" + parsingAPhrase.getOriginalPhrase() + "'");
+				}
+			}
+
+		}
+
+
 		return false;
 	}
 
@@ -221,13 +243,6 @@ public class WordClasifier {
 			String desc=sp.getDescription();
 			if(desc.toLowerCase().equals(entry.toLowerCase())){
 				return markFoundAdjacencyResults(parsingAPhrase, index, sp);
-			}else{
-//				boolean isSame=this.dependenciesComparator.comparePhrases(desc,entry);
-//				System.out.println(desc+" : "+entry+" : "+isSame);
-//
-//				if(isSame){
-//					return markFoundAdjacencyResults(parsingAPhrase, index, sp);
-//				}
 			}
 		}
 		return false;
