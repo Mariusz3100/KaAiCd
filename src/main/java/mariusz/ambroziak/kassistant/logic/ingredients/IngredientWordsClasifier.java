@@ -1,9 +1,8 @@
 package mariusz.ambroziak.kassistant.logic.ingredients;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
-import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
+import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import org.springframework.stereotype.Service;

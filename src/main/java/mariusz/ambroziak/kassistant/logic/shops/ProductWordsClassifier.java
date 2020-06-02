@@ -3,7 +3,7 @@ package mariusz.ambroziak.kassistant.logic.shops;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
-import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
+import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;

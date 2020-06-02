@@ -16,9 +16,11 @@ import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.pojos.*;
+import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
+import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
+import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
-import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
@@ -197,7 +199,7 @@ public class ShopProductParser {
 
 
 
-	private CalculatedResults calculateWordsFound(List<String> expected,List<QualifiedToken> finalResults) {
+	private CalculatedResults calculateWordsFound(List<String> expected, List<QualifiedToken> finalResults) {
 		List<String> found=new ArrayList<String>();
 		List<String> mistakenlyFound=new ArrayList<String>();
 

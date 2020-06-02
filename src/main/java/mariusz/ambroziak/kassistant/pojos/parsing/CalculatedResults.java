@@ -1,4 +1,4 @@
-package mariusz.ambroziak.kassistant.pojos;
+package mariusz.ambroziak.kassistant.pojos.parsing;
 
 import java.util.List;
 

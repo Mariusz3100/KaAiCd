@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
-import mariusz.ambroziak.kassistant.pojos.AbstractParsingObject;
+import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.webclients.wikipedia.WikipediaApiClient;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.ConvertApiClient;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;

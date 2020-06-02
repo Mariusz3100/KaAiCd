@@ -1,7 +1,8 @@
-package mariusz.ambroziak.kassistant.pojos;
+package mariusz.ambroziak.kassistant.pojos.parsing;
 
 import java.util.List;
 
+import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;

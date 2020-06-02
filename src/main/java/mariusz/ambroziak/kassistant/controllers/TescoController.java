@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import mariusz.ambroziak.kassistant.pojos.ParsingResultList;
+import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
 

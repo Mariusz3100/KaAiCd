@@ -12,7 +12,7 @@ import mariusz.ambroziak.kassistant.webclients.edamam.recipes.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import mariusz.ambroziak.kassistant.pojos.ParsingResultList;
+import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 
 @RestController
