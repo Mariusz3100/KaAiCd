@@ -1,5 +1,6 @@
 package mariusz.ambroziak.kassistant.logic;
 
+import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
@@ -32,8 +33,8 @@ public class PhraseDependenciesComparator {
         {
             return false;
         }else{
-            List<ConnectionEntry> allTwoWordDependenciesOfFirst= firstTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctation(e)).collect(Collectors.toList());
-            List<ConnectionEntry> allTwoWordDependenciesOfSecond= secondTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctation(e)).collect(Collectors.toList());
+            List<ConnectionEntry> allTwoWordDependenciesOfFirst= firstTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e)).collect(Collectors.toList());
+            List<ConnectionEntry> allTwoWordDependenciesOfSecond= secondTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e)).collect(Collectors.toList());
 
             for(int i=0;i<allTwoWordDependenciesOfFirst.size();i++){
                 ConnectionEntry searchFor = allTwoWordDependenciesOfFirst.get(i);
@@ -58,9 +59,9 @@ public class PhraseDependenciesComparator {
     }
 
     private boolean arePhrasesSameLength(TokenizationResults firstTokenized, TokenizationResults secondTokenized) {
-        List<Token> firstCollected = firstTokenized.getTokens().stream().filter(s -> !checkifPunctation(s)).collect(Collectors.toList());
+        List<Token> firstCollected = firstTokenized.getTokens().stream().filter(s -> !checkifPunctation(s)&&!isOfWord(s)).collect(Collectors.toList());
 
-        List<Token> secondCollected = secondTokenized.getTokens().stream().filter(s -> !checkifPunctation(s)).collect(Collectors.toList());
+        List<Token> secondCollected = secondTokenized.getTokens().stream().filter(s -> !checkifPunctation(s)&&!isOfWord(s)).collect(Collectors.toList());
 
         boolean result= firstCollected.size()==secondCollected.size();
 
@@ -72,8 +73,12 @@ public class PhraseDependenciesComparator {
         return Pattern.matches(WordClasifier.punctuationRegex,s.getText());
     }
 
-    private boolean checkifHeadOrChildIsPunctation(ConnectionEntry e) {
-        return checkifPunctation(e.getHead())||checkifPunctation(e.getChild());
+    private boolean checkifHeadOrChildIsPunctationOrOfWord(ConnectionEntry e) {
+        return checkifPunctation(e.getHead())||checkifPunctation(e.getChild())|| isOfWord(e.getHead()) || isOfWord(e.getChild());
+    }
+
+    private boolean isOfWord(Token head) {
+        return head.getText().equals(NlpConstants.of_Word);
     }
 
 }

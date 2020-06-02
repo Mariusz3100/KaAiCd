@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
@@ -173,6 +174,8 @@ public class WordClasifier {
 
 		if(!found) {
 			List<ConnectionEntry> quantitylessDependenciesConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s -> !s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
+			quantitylessDependenciesConnotations=quantitylessDependenciesConnotations.stream()
+					.filter(t->!NlpConstants.of_Word.equals(t.getHead().getText())&&!NlpConstants.of_Word.equals(t.getChild().getText())).collect(Collectors.toList());
 
 			if (quantitylessDependenciesConnotations != null) {
 				for (ConnectionEntry entry : quantitylessDependenciesConnotations) {
@@ -194,7 +197,7 @@ public class WordClasifier {
 	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,List<ConnectionEntry> quantitylessDependenciesConnotations) {
 		//TODO right now we do not consider shorter search phrases, to be thought about
 		String quantitylessTokens=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->t.getText().toLowerCase()).collect(Collectors.joining(" "));
-		String quantitylessTokensWithPluses=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->"+"+t.getText().toLowerCase()).collect(Collectors.joining(" "));
+		String quantitylessTokensWithPluses=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().filter(t->!t.getText().equals(NlpConstants.of_Word)).map(t->"+"+t.getText().toLowerCase()).collect(Collectors.joining(" "));
 		UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 20);
 		for(SingleResult sp:inApi.getFoods()) {
 			String desc = sp.getDescription();
@@ -324,7 +327,7 @@ public class WordClasifier {
 	}
 
 	private boolean checkWordsApi(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation) {
-		String entry=dependencyConnotation.getHead()+" "+dependencyConnotation.getChild();
+		String entry=dependencyConnotation.getHead().getText()+" "+dependencyConnotation.getChild().getText();
 		ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
 		WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
 		if(wordsApiResult!=null){
