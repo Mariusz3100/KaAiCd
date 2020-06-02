@@ -344,7 +344,7 @@ public class ShopProductParser {
 	private ParsingResult parseAProductParsingObject(ProductParsingProcessObject parsingAPhrase) {
 
 
-		String resultOfComparison=compareNames(parsingAPhrase);
+		String resultOfComparison=compareNames(parsingAPhrase).toLowerCase();
 
 		String brandlessPhrase= calculateBrandlessPhrase(resultOfComparison,parsingAPhrase.getProduct().getBrand());
 		parsingAPhrase.setBrandlessPhrase(brandlessPhrase);
@@ -357,7 +357,6 @@ public class ShopProductParser {
 		this.shopWordClacifier.calculateProductType(parsingAPhrase);
 		this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
-		improperlyCorrectErrorsInFinalResults(parsingAPhrase);
 		return createResultObject(parsingAPhrase);
 	}
 
@@ -386,20 +385,7 @@ public class ShopProductParser {
 	}
 
 
-    private void improperlyCorrectErrorsInFinalResults(ProductParsingProcessObject parsingAPhrase) {
-		for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
-				if(qt.getText().toLowerCase().equals("tomatoes")) {
-					qt.setLemma("tomato");
-				}
 
-		}
-		for(QualifiedToken qt:parsingAPhrase.getPermissiveFinalResults()) {
-			if(qt.getText().toLowerCase().equals("tomatoes")) {
-				qt.setLemma("tomato");
-			}
-
-		}
-	}
 
 
 
