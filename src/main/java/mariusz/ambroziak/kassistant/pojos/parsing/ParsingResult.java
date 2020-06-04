@@ -27,12 +27,18 @@ public class ParsingResult{
 	private String brandless;
 	private String tokenString;
 	private List<QualifiedToken> tokens;
-	
+
 	private String correctedPhrase;
 	private List<Token> correctedTokens;
 	private String productTypeFound;
 	private ProductNamesComparison initialNames;
 	private ProductNamesComparison finalNames;
+
+	private List<ConnectionEntry> correctedConnotations;
+
+	private List<ConnectionEntry> originalConnotations;
+	List<ConnectionEntry> dependencyConotationsFound;
+	private List<List<String>> adjacentyConotationsFound;
 
 
 	public ProductNamesComparison getFinalNames() {
@@ -75,9 +81,6 @@ public class ParsingResult{
 		this.productTypeFound = productTypeFound;
 	}
 
-	private List<ConnectionEntry> originalConnotations;
-	List<ConnectionEntry> dependencyConotationsFound;
-	private List<List<String>> adjacentyConotationsFound;
 
 	public List<ConnectionEntry> getDependencyConotationsFound() {
 		return dependencyConotationsFound;
@@ -111,8 +114,7 @@ public class ParsingResult{
 		this.correctedConnotations = correctedConnotations;
 	}
 
-	private List<ConnectionEntry> correctedConnotations;
-	
+
 
 
 	public CalculatedResults getRestrictivelyCalculatedResult() {

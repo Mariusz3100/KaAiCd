@@ -113,11 +113,10 @@ public class IngredientPhraseParser {
 
 	public ParsingResultList parseFromDb() throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
-		List<IngredientLearningCase> inputLines= new ArrayList<>();//edamanNlpParsingService.retrieveDataFromFile();
-
+		List<IngredientLearningCase> inputLines = getIngredientLearningCasesFromDb();
 		ParsingBatch batchObject=new ParsingBatch();
 		parsingBatchRepository.save(batchObject);
-		this.ingredientPhraseLearningCaseRepository.findAll().forEach(e->inputLines.add(e));
+
 
 
 		for(IngredientLearningCase er:inputLines) {
@@ -134,6 +133,12 @@ public class IngredientPhraseParser {
 
 		return retValue;
 
+	}
+
+	public  List<IngredientLearningCase> getIngredientLearningCasesFromDb() {
+		List<IngredientLearningCase> inputLines= new ArrayList<>();//edamanNlpParsingService.retrieveDataFromFile();
+		this.ingredientPhraseLearningCaseRepository.findAll().forEach(e->inputLines.add(e));
+		return inputLines;
 	}
 
 	public ParsingResultList parseFromFile() throws IOException {
@@ -158,7 +163,7 @@ public class IngredientPhraseParser {
 
 	}
 
-	private IngredientPhraseParsingProcessObject processSingleCase(IngredientLearningCase er) {
+	public IngredientPhraseParsingProcessObject processSingleCase(IngredientLearningCase er) {
 		String line=correctErrors(er.getOriginalPhrase());
 		er.setOriginalPhrase(line);
 		IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
