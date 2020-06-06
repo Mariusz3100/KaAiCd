@@ -75,7 +75,7 @@ public class ShopProductParser {
 
 
 
-	public ParsingResultList tescoSearchForProductsWithTestCases(String phrase) throws IOException {
+	public ParsingResultList tescoSearchFor(String phrase) {
 		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,2);
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()

@@ -1,5 +1,6 @@
 package mariusz.ambroziak.kassistant.pojos.parsing;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MatchingProcessResult {
@@ -23,4 +24,13 @@ public class MatchingProcessResult {
     public void setProductsConsideredParsingResults(List<ProductMatchingResult> productsConsideredParsingResults) {
         this.productsConsideredParsingResults = productsConsideredParsingResults;
     }
+
+
+    public void addProductsConsideredParsingResults(ProductMatchingResult result) {
+        if(productsConsideredParsingResults==null)
+            productsConsideredParsingResults=new ArrayList<ProductMatchingResult>();
+
+        this.productsConsideredParsingResults.add(result);
+    }
+
 }

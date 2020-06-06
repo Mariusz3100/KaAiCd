@@ -1,34 +1,16 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
-import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
-import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
-import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
-import mariusz.ambroziak.kassistant.logic.ingredients.IngredientWordsClasifier;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
-import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
-import mariusz.ambroziak.kassistant.pojos.parsing.MatchingProcessResult;
-import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
-import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
+import mariusz.ambroziak.kassistant.pojos.parsing.*;
 import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
-import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
-import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntityRecognitionClientService;
-import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.*;
-import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +41,39 @@ public class IngredientProductMatchingService {
 
 
 			match.setIngredientParsingDetails(singleResult);
+			String markedWords=singleResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
+			ParsingResultList parsingResultList = this.productParser.tescoSearchFor(markedWords);
+
+			for(ParsingResult pr:parsingResultList.getResults()){
+				ProductMatchingResult pmr=new ProductMatchingResult(pr);
+
+
+				List<String> ingredientWordsMarked=singleResult.getRestrictivelyCalculatedResult().getMarkedWords();
+				List<String> productWordsMarked=pr.getRestrictivelyCalculatedResult().getMarkedWords();
+				List<String> matched=new ArrayList<>();
+				List<String> ingredientSurplus=new ArrayList<>();
+				List<String> productSurplus=new ArrayList<>();
+
+
+
+				for(String x:ingredientWordsMarked){
+					if(productWordsMarked.stream().filter(word->word.equals(x)).findAny().isPresent()){
+						matched.add(x);
+					}else {
+						ingredientSurplus.add(x);
+					}
+
+				}
+				productSurplus=productWordsMarked.stream().filter(s->!matched.contains(s)).collect(Collectors.toList());
+
+
+				CalculatedResults cr=new CalculatedResults(ingredientSurplus,matched,productSurplus,matched);
+				pmr.setWordsMatching(cr);
+				pmr.setVerdict(ingredientSurplus.isEmpty()&&productSurplus.isEmpty());
+
+				match.addProductsConsideredParsingResults(pmr);
+			}
+
 			retValue.add(match);
 
 		}

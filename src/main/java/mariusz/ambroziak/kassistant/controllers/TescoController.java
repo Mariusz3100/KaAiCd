@@ -48,7 +48,7 @@ public class TescoController {
 		if(param==null||param.isEmpty()){
 			retValue=this.productParserService.parseAllTestCases();
 		}else{
-			retValue=this.productParserService.tescoSearchForProductsWithTestCases(param);
+			retValue=this.productParserService.tescoSearchFor(param);
 		}
     	return retValue;
 

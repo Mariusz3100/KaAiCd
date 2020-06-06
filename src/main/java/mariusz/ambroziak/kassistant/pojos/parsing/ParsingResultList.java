@@ -7,6 +7,8 @@ public class ParsingResultList {
 	private List<ParsingResult> results;
 
 	public List<ParsingResult> getResults() {
+		if(results==null)
+			results=new ArrayList<ParsingResult>();
 		return results;
 	}
 
@@ -15,10 +17,7 @@ public class ParsingResultList {
 	}
 	
 	public void addResult(ParsingResult result) {
-		if(results==null)
-			results=new ArrayList<ParsingResult>();
-				
-		this.results.add(result);
+		getResults().add(result);
 	}
 	
 }
