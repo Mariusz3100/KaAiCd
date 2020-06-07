@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ParseCompareProductNames {
     private String firstPhrase;
@@ -157,7 +158,21 @@ public class ParseCompareProductNames {
     private void neitherPhraseIsFinished(List<String> firstPhraseSplitted, List<String> secondPhraseSplitted, String firstPhraseWord, String secondPhraseWord) {
         Optional<String> foundInFirstPhraseList = firstPhraseSplitted.subList(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).stream().filter(s -> compareWords(s, secondPhraseWord)).findFirst();
         Optional<String> foundInSecondPhraseList = secondPhraseSplitted.subList(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).stream().filter(s -> compareWords(s, firstPhraseWord)).findFirst();
-        if(!foundInFirstPhraseList.isPresent()&&!foundInSecondPhraseList.isPresent()){
+
+        if(foundInFirstPhraseList.isPresent()&&foundInSecondPhraseList.isPresent()) {
+            int foundInFirstPhraseIndex=IntStream.range(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).filter(i->firstPhraseSplitted.get(i).equals(secondPhraseWord)).findFirst().getAsInt();
+            int foundInSecondPhraseIndex=IntStream.range(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).filter(i->secondPhraseSplitted.get(i).equals(firstPhraseWord)).findFirst().getAsInt();
+            if(foundInFirstPhraseIndex==foundInSecondPhraseIndex){
+                addConflictingWordsToLists(firstPhraseWord,secondPhraseWord);
+            }else if(foundInFirstPhraseIndex>foundInSecondPhraseIndex){
+                skipCurrentWordInSecondList(secondPhraseWord);
+            }else{
+
+                skipCurrentWordinFirstList(firstPhraseWord);
+
+            }
+
+        }else if(!foundInFirstPhraseList.isPresent()&&!foundInSecondPhraseList.isPresent()){
             addConflictingWordsToLists(firstPhraseWord,secondPhraseWord);
         }else{
             if(foundInFirstPhraseList.isPresent()){

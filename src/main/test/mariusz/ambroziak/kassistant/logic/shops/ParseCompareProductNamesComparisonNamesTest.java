@@ -26,8 +26,8 @@ class ParseCompareProductNamesComparisonNamesTest {
     String firstPhrase5 ="Tomato Puree Tube";
     String secondPhrase5 ="Double Concentrate Tomato Puree";
 
-
-
+    String firstPhrase6 ="Loose Brown Onions";
+    String secondPhrase6 ="Tesco Brown Onions Loose";
 
     @Test
     void parseFirstEmpty() {
@@ -248,6 +248,40 @@ class ParseCompareProductNamesComparisonNamesTest {
 
     }
 
+
+    @Test
+    void parseTwoPhrases6() {
+        ProductNamesComparison productNamesComparison = ParseCompareProductNames.parseTwoPhrases(firstPhrase6, secondPhrase6);
+
+        print(productNamesComparison);
+        for (int i = 0; i< productNamesComparison.getDetailsNameResults().size()-1; i++){
+            if(i==2||i==3) {
+                assertTrue(productNamesComparison.getDetailsNameResults().get(i).isMatch());
+            }else{
+                assertFalse(productNamesComparison.getDetailsNameResults().get(i).isMatch());
+
+            }
+        }
+        for (int i = 0; i< productNamesComparison.getSearchNameResults().size()-1; i++){
+            if(i==2||i==3) {
+                assertTrue(productNamesComparison.getSearchNameResults().get(i).isMatch());
+            }else{
+                assertFalse(productNamesComparison.getSearchNameResults().get(i).isMatch());
+
+            }
+        }
+
+
+        String result1= productNamesComparison.getDetailsNameResults().stream().map(wp->wp.getWord()).collect(Collectors.joining(" "));
+        result1=result1.replaceAll("  "," ").trim();
+
+        assertEquals(result1,this.firstPhrase6);
+
+        String result2= productNamesComparison.getSearchNameResults().stream().map(wp->wp.getWord()).collect(Collectors.joining(" "));
+        result2=result2.replaceAll("  "," ").trim();
+        assertEquals(result2,this.secondPhrase6);
+
+    }
 
 
     public static void print(ProductNamesComparison productNamesComparison){
