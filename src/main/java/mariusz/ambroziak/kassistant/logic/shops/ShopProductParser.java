@@ -65,8 +65,6 @@ public class ShopProductParser {
 
 
 	private String spacelessRegex="(\\d+)(\\w+)";
-	
-	
 
 
 
@@ -75,8 +73,10 @@ public class ShopProductParser {
 
 
 
-	public ParsingResultList tescoSearchFor(String phrase) {
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,2);
+
+
+	public ParsingResultList tescoSearchForResults(String phrase) {
+		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
 				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
@@ -89,7 +89,19 @@ public class ShopProductParser {
 
 	}
 
+	public List<ProductParsingProcessObject> tescoSearchForParsings(String phrase) {
+		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
 
+		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
+				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
+		ParsingResultList retValue = parseListOfCases(parsingProcessObjects, batchObject);
+
+		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
+		return parsingProcessObjects;
+
+	}
 
 
 	private ParsingResult createResultObject(ProductParsingProcessObject parsingAPhrase) {
@@ -127,6 +139,7 @@ public class ShopProductParser {
 		object.setInitialNames(parsingAPhrase.getInitialNames());
 
 		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
+		object.setFinalNames(parsingAPhrase.getFinalNames());
 
 		return object;
 	}
@@ -300,40 +313,9 @@ public class ShopProductParser {
 		ParsingResultList retValue=new ParsingResultList();
 
 		for(ProductParsingProcessObject parsingAPhrase:inputs) {
-			ParsingResult singleResult = parseAProductParsingObject(parsingAPhrase);
+			 parseProductParsingObjectWithNamesComparison(parsingAPhrase);
+			ParsingResult singleResult=createResultObject(parsingAPhrase);
 
-
-			Tesco_Product tp=(Tesco_Product)parsingAPhrase.getProduct();
-
-			String secondName=tp.getSearchApiName();
-			ProductNamesComparison productNamesComparisonOfFinalTokens=null;
-			String detailsName = parsingAPhrase.getFinalResults().stream()
-					.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
-					.map(t -> t.getText()).collect(Collectors.joining(" "));
-			if(secondName==null||secondName.isEmpty()) {
-				productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, "");
-			}else{
-
-				Tesco_Product tempTp = tp.clone();
-				tempTp.setName(secondName);
-				tempTp.setSearchApiName(tp.getName());
-
-				ProductParsingProcessObject tempParsingObject = new ProductParsingProcessObject(tempTp, parsingAPhrase.getTestCase());
-				ParsingResult result = parseAProductParsingObject(tempParsingObject);
-
-				detailsName = parsingAPhrase.getFinalResults().stream()
-						.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
-						.map(t -> t.getText()).collect(Collectors.joining(" "));
-
-
-				String searchApiName = tempParsingObject.getFinalResults().stream()
-						.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
-						.map(t -> t.getText()).collect(Collectors.joining(" "));
-
-
-				productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, searchApiName);
-			}
-			singleResult.setFinalNames(productNamesComparisonOfFinalTokens);
 			saveResultInDb(parsingAPhrase,batchObject);
 
 			retValue.addResult(singleResult);
@@ -343,7 +325,44 @@ public class ShopProductParser {
 		return retValue;
 	}
 
-	private ParsingResult parseAProductParsingObject(ProductParsingProcessObject parsingAPhrase) {
+	public void parseProductParsingObjectWithNamesComparison(ProductParsingProcessObject parsingAPhrase) {
+		parseAProductParsingObject(parsingAPhrase);
+
+		Tesco_Product tp=(Tesco_Product)parsingAPhrase.getProduct();
+
+		String secondName=tp.getSearchApiName();
+		ProductNamesComparison productNamesComparisonOfFinalTokens=null;
+		String detailsName = parsingAPhrase.getFinalResults().stream()
+				.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
+				.map(t -> t.getText()).collect(Collectors.joining(" "));
+		if(secondName==null||secondName.isEmpty()) {
+			productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, "");
+		}else{
+
+			Tesco_Product tempTp = tp.clone();
+			tempTp.setName(secondName);
+			tempTp.setSearchApiName(tp.getName());
+
+			ProductParsingProcessObject tempParsingObject = new ProductParsingProcessObject(tempTp, parsingAPhrase.getTestCase());
+			parseAProductParsingObject(tempParsingObject);
+
+			detailsName = parsingAPhrase.getFinalResults().stream()
+					.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
+					.map(t -> t.getText()).collect(Collectors.joining(" "));
+
+
+			String searchApiName = tempParsingObject.getFinalResults().stream()
+					.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
+					.map(t -> t.getText()).collect(Collectors.joining(" "));
+
+
+			productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, searchApiName);
+		}
+		parsingAPhrase.setFinalNames(productNamesComparisonOfFinalTokens);
+
+	}
+
+	private void parseAProductParsingObject(ProductParsingProcessObject parsingAPhrase) {
 
 
 		String resultOfComparison=compareNames(parsingAPhrase).toLowerCase();
@@ -359,7 +378,6 @@ public class ShopProductParser {
 		this.shopWordClacifier.calculateProductType(parsingAPhrase);
 		this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
-		return createResultObject(parsingAPhrase);
 	}
 
 	private String compareNames(ProductParsingProcessObject parsingAPhrase) {
