@@ -2,10 +2,13 @@ package mariusz.ambroziak.kassistant.controllers;
 
 import mariusz.ambroziak.kassistant.enums.AmountTypes;
 import mariusz.ambroziak.kassistant.enums.ProductType;
+import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
+import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
 import mariusz.ambroziak.kassistant.logic.PhraseDependenciesComparator;
@@ -43,6 +46,9 @@ public class TestController {
 	IngredientPhraseTokenizerTest testTokenizerService;
 	TescoProductRepository tescoProductRepository;
 
+
+	@Autowired
+	PhraseFoundRepository phraseFoundRepo;
 	@Autowired
 	UsdaApiClient usdaApiClient;
 
@@ -90,7 +96,17 @@ public class TestController {
 		this.ingredientParsingRepo.save(x);
 		return "Done";
 	}
+	@RequestMapping("/testIngWithPhraseDb")
+	public String testIngWithPhraseDb(@RequestParam(value="param", defaultValue="empty") String param){
+		IngredientPhraseParsingResult x=new IngredientPhraseParsingResult("test",12, AmountTypes.pcs, ProductType.fresh,"test","Test",ProductType.unknown);
+		x.setParsingBatch(new ParsingBatch());
 
+		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,x,null);
+
+		this.ingredientParsingRepo.save(x);
+		this.phraseFoundRepo.save(phrase);
+		return "Done";
+	}
 	@RequestMapping("/testProdDb")
 	public String testProdDb(@RequestParam(value="param", defaultValue="empty") String param){
 		Tesco_Product tesco_product = tescoProductRepository.findAll().get(0);
