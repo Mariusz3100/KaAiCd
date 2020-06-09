@@ -11,6 +11,8 @@ import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
+import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
@@ -58,6 +60,10 @@ public class IngredientPhraseParser {
 	@Autowired
 	private ParsingBatchRepository parsingBatchRepository;
 
+	@Autowired
+	CustomPhraseFoundRepository phraseFoundRepo;
+
+
 	private final String csvSeparator=";";
 	private final String wordSeparator=",";
 
@@ -102,12 +108,23 @@ public class IngredientPhraseParser {
 			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
 
 			ParsingResult singleResult = createResultObject(parsingAPhrase);
-			saveResultInDb(parsingAPhrase,batchObject);
+			IngredientPhraseParsingResult ingredientPhraseParsingResult=saveResultInDb(parsingAPhrase,batchObject);
+			saveFoundPhrasesInDb(parsingAPhrase,ingredientPhraseParsingResult);
 			retValue.addResult(singleResult);
 
 		}
 		return retValue;
 	}
+
+	private void saveFoundPhrasesInDb(IngredientPhraseParsingProcessObject parsingAPhrase, IngredientPhraseParsingResult ingredientPhraseParsingResult) {
+		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
+
+		phrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));
+
+		phraseFoundRepo.saveAllIfNew(phrasesFound);
+
+	}
+
 	public ParsingResultList parseFromDb() throws IOException {
 		List<IngredientLearningCase> inputLines = getIngredientLearningCasesFromDb();
 		ParsingResultList retValue=parseLisOfCases(inputLines);
