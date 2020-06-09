@@ -175,11 +175,11 @@ public class IngredientProductMatchingService {
 
 		for(QualifiedToken qt:finalResults) {
 			if(qt.getWordType()== WordType.ProductElement) {
-				if(expected.contains(qt.getText())) {
-					found.add(qt.getText());
-					expected=expected.replaceAll(qt.getText(), "").replaceAll("  ", " ");
+				if(expected.contains(qt.getText())||expected.contains(qt.getLemma())) {
+					found.add(qt.getLemma());
+					expected=expected.replaceAll(qt.getText(), "").replaceAll(qt.getLemma(), "").replaceAll("  ", " ");
 				}else {
-					mistakenlyFound.add(qt.getText());
+					mistakenlyFound.add(qt.getLemma());
 				}
 			}
 		}
