@@ -2,7 +2,10 @@ package mariusz.ambroziak.kassistant.logic.matching;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.model.*;
+import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
@@ -27,17 +30,24 @@ public class IngredientProductMatchingService {
 	@Autowired
 	ShopProductParser productParser;
 
+	@Autowired
+	ParsingBatchRepository parsingBatchRepository;
 
 
 	public List<MatchingProcessResult> parseAndMatch(){
 		List<IngredientLearningCase> ingredientLearningCasesFromDb = this.ingredientParser.getIngredientLearningCasesFromDb();
 		List<MatchingProcessResult> retValue=new ArrayList<>();
-
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
 
 		for(IngredientLearningCase er:ingredientLearningCasesFromDb) {
 			IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
 
 			ParsingResult singleResult = createIngredientResultObject(parsingAPhrase);
+			IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultInDb(parsingAPhrase, batchObject);
+
+			List<PhraseFound> ingredientPhrasesFound = parsingAPhrase.getPhrasesFound();
+			ingredientPhrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));
 
 			MatchingProcessResult match=new MatchingProcessResult();
 
@@ -76,6 +86,11 @@ public class IngredientProductMatchingService {
 				pmr.setVerdict(ingredientSurplus.isEmpty()&&productSurplus.isEmpty());
 
 				match.addProductsConsideredParsingResults(pmr);
+
+				ProductParsingResult productParsingResult = this.productParser.saveResultInDb(pr, batchObject);
+
+				List<PhraseFound> productPhrasesFound = pr.getPhrasesFound();
+				productPhrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
 			}
 
 			retValue.add(match);

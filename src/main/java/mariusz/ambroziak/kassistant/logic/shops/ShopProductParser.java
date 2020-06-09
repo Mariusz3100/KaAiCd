@@ -409,7 +409,7 @@ public class ShopProductParser {
 
 
 
-	private void saveResultInDb(ProductParsingProcessObject parsingAPhrase, ParsingBatch pb) {
+	public ProductParsingResult saveResultInDb(ProductParsingProcessObject parsingAPhrase, ParsingBatch pb) {
 
 		ProductParsingResult toSave=new ProductParsingResult();
 		toSave.setOriginalName(parsingAPhrase.getOriginalPhrase());
@@ -420,7 +420,7 @@ public class ShopProductParser {
 		toSave.setParsingBatch(pb);
 
 		this.productParsingResultRepository.save(toSave);
-
+		return toSave;
 	}
 
 }

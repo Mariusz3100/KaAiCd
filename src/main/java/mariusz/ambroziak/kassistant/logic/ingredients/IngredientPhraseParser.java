@@ -209,7 +209,7 @@ public class IngredientPhraseParser {
 		}
 	}
 
-	private void saveResultInDb(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {
+	public IngredientPhraseParsingResult saveResultInDb(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {
 
 		IngredientPhraseParsingResult toSave=new IngredientPhraseParsingResult();
 		toSave.setOriginalName(parsingAPhrase.getLearningTuple().getOriginalPhrase());
@@ -225,6 +225,7 @@ public class IngredientPhraseParser {
 		toSave.setParsingBatch(batchObject);
 
 		this.ingredientParsingRepo.save(toSave);
+		return toSave;
 	}
 
 

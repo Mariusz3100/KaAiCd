@@ -5,6 +5,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
+import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
@@ -56,6 +58,8 @@ public class WordClasifier {
 	private NamedEntityRecognitionClientService nerRecognizer;
 	@Autowired
 	PhraseDependenciesComparator dependenciesComparator;
+
+
 
 	public static ArrayList<String> productTypeKeywords;
 	public static ArrayList<String> irrelevanceKeywords;
@@ -205,19 +209,20 @@ public class WordClasifier {
 			System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
 
 			if(isSame){
-				return markFoundAdjacencyResults(parsingAPhrase, quantitylessDependenciesConnotations,sp);
+				return markFoundDependencyResults(parsingAPhrase, quantitylessDependenciesConnotations,sp);
 			}
 		}
 
 		return false;
 	}
 
-	private boolean markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, List<ConnectionEntry> quantitylessDependenciesConnotations, SingleResult sp) {
+	private boolean markFoundDependencyResults(AbstractParsingObject parsingAPhrase, List<ConnectionEntry> quantitylessDependenciesConnotations, SingleResult sp) {
 		if(sp.getDescription()==null||sp.getDescription().isEmpty())
 			return false;
 
 		TokenizationResults descTokenized = this.tokenizator.parse(sp.getDescription().toLowerCase());
 
+		parsingAPhrase.addPhraseFound(new PhraseFound(sp.getDescription().toLowerCase(), WordType.ProductElement,"[usda api: " + sp.getFdcId() + "]"));
 		List<Token> descTokensLeft = descTokenized.getTokens();
 		for(int i = 0; i< descTokenized.getTokens().size(); i++){
 			Token t=descTokenized.getTokens().get(i);
@@ -298,6 +303,8 @@ public class WordClasifier {
 //	}
 
 	private boolean markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, int index, SingleResult sp) {
+		addFoundLongPhrase(parsingAPhrase,sp.getDescription().toLowerCase(),WordType.ProductElement,"[usda api: " + sp.getFdcId() + "]");
+
 		QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
 		addProductResult(parsingAPhrase, index, qualifiedToken1, "[usda api: " + sp.getFdcId() + "]");
 
@@ -316,8 +323,7 @@ public class WordClasifier {
 			if(!(parsingAPhrase.getFinalResults().get(index).getText().equals(x[0])||parsingAPhrase.getFinalResults().get(index+1).getText().equals(x[1]))){
 				System.out.println("Problem, connotations not match");
 			}else{
-				addProductResult(parsingAPhrase, index, parsingAPhrase.getFinalResults().get(index), "[Double, "+wordsApiResult.getReasoningForFound()+"]");
-				addProductResult(parsingAPhrase, index+1, parsingAPhrase.getFinalResults().get(index + 1), "[Double,"+wordsApiResult.getReasoningForFound()+"]");
+				markFoundAdjacencyResults(parsingAPhrase, wordsApiResult, index,"[Double, "+wordsApiResult.getReasoningForFound()+"]");
 				return true;
 			}
 		}else{
@@ -326,12 +332,19 @@ public class WordClasifier {
 		return false;
 	}
 
+	private void markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, WordsApiResult wordsApiResult, int index,String reasoning) {
+		addFoundLongPhrase(parsingAPhrase,wordsApiResult.getBaseWord(),WordType.ProductElement,wordsApiResult.getReasoningForFound());
+
+		addProductResult(parsingAPhrase, index, parsingAPhrase.getFinalResults().get(index), reasoning);
+		addProductResult(parsingAPhrase, index+1, parsingAPhrase.getFinalResults().get(index + 1), reasoning);
+	}
+
 	private boolean checkWordsApi(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation) {
 		String entry=dependencyConnotation.getHead().getText()+" "+dependencyConnotation.getChild().getText();
 		ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
 		WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
 		if(wordsApiResult!=null){
-			markFoundConnotation(parsingAPhrase, dependencyConnotation, entry, wordsApiResult);
+			markFoundDependencyConnotation(parsingAPhrase, dependencyConnotation, entry, wordsApiResult);
 
 
 		}else{
@@ -340,8 +353,9 @@ public class WordClasifier {
 		return false;
 	}
 
-	private void markFoundConnotation(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation, String entry, WordsApiResult wordsApiResult) {
+	private void markFoundDependencyConnotation(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation, String entry, WordsApiResult wordsApiResult) {
 		boolean foundHead=false,foundChild=false;
+		addFoundLongPhrase(parsingAPhrase,entry,WordType.ProductElement,wordsApiResult.getReasoningForFound());
 		for(int i=0;i<parsingAPhrase.getFinalResults().size();i++){
 			QualifiedToken qt=parsingAPhrase.getFinalResults().get(i);
 
@@ -361,26 +375,26 @@ public class WordClasifier {
 		}
 	}
 
-	private void markFoundConnotation(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation, String entry, SingleResult usdaResult) {
-		boolean foundHead=false,foundChild=false;
-		for(int i=0;i<parsingAPhrase.getFinalResults().size();i++){
-			QualifiedToken qt=parsingAPhrase.getFinalResults().get(i);
-
-			if(dependencyConnotation.getHead().getText()==qt.getText()){
-				foundHead=true;
-				addProductResult(parsingAPhrase, i, qt, "[Double usda, "+usdaResult.getFdcId()+"]");
-
-			}
-			if(dependencyConnotation.getChild().getText()==qt.getText()&&qt.getHead().equals(dependencyConnotation.getHead())){
-				foundChild=true;
-				addProductResult(parsingAPhrase, i, qt, "[Double usda, "+usdaResult.getFdcId()+"]");
-
-			}
-		}
-		if(!foundChild||!foundHead){
-			System.err.println("Entry '"+entry+"' found in words api, but not in tokens");
-		}
-	}
+//	private void markFoundConnotation(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation, String entry, SingleResult usdaResult) {
+//		boolean foundHead=false,foundChild=false;
+//		for(int i=0;i<parsingAPhrase.getFinalResults().size();i++){
+//			QualifiedToken qt=parsingAPhrase.getFinalResults().get(i);
+//
+//			if(dependencyConnotation.getHead().getText()==qt.getText()){
+//				foundHead=true;
+//				addProductResult(parsingAPhrase, i, qt, "[Double usda, "+usdaResult.getFdcId()+"]");
+//
+//			}
+//			if(dependencyConnotation.getChild().getText()==qt.getText()&&qt.getHead().equals(dependencyConnotation.getHead())){
+//				foundChild=true;
+//				addProductResult(parsingAPhrase, i, qt, "[Double usda, "+usdaResult.getFdcId()+"]");
+//
+//			}
+//		}
+//		if(!foundChild||!foundHead){
+//			System.err.println("Entry '"+entry+"' found in words api, but not in tokens");
+//		}
+//	}
 
 	private Map<String,Integer> calculateAdjacencies(AbstractParsingObject parsingAPhrase) {
 		Map<String,Integer> retValue=new HashMap<>();
@@ -534,6 +548,8 @@ public class WordClasifier {
 					//	parsingAPhrase.addResult(index, new QualifiedToken(t, WordType.ProductElement));
 
 						addProductResult(parsingAPhrase,index,t,productTypeRecognized);
+						addFoundSingleWordPhrase(parsingAPhrase,parsingAPhrase.getFinalResults().get(index));
+
 					}else {
 						parsingAPhrase.addResult(index, new QualifiedToken(t,null));
 					}
@@ -626,6 +642,7 @@ public class WordClasifier {
 				QuantityTranslation checkForTranslation = convertClient.checkForTranslation(token);
 				if(checkForTranslation!=null) {
 					addQuantityResult(parsingAPhrase,index,t, " [convert api:"+checkForTranslation.getMultiplier()+" "+checkForTranslation.getTargetAmountType()+"]");
+					addFoundSingleWordPhrase(parsingAPhrase,parsingAPhrase.getFinalResults().get(index));
 					return true;
 				}
 			}
@@ -649,6 +666,18 @@ public class WordClasifier {
 		QualifiedToken result=new QualifiedToken(t, WordType.QuantityElement);
 		result.setReasoning(quantityTypeRecognized==null||quantityTypeRecognized.getDefinition()==null?"":quantityTypeRecognized.getDefinition());
 		parsingAPhrase.addResult(index,result);
+	}
+
+	private void addFoundSingleWordPhrase(AbstractParsingObject parsingAPhrase, QualifiedToken result) {
+		PhraseFound pf=new PhraseFound(result.getText(), result.getWordType(),result.getReasoning());
+		parsingAPhrase.addPhraseFound(pf);
+	//	this.phrasesRepo.save(pf);
+	}
+
+	private void addFoundLongPhrase(AbstractParsingObject parsingAPhrase, String phrase,WordType wordType,String reasoning) {
+		PhraseFound pf=new PhraseFound(phrase, wordType,reasoning);
+		parsingAPhrase.addPhraseFound(pf);
+		//	this.phrasesRepo.save(pf);
 	}
 
 	protected void addQuantityResult(AbstractParsingObject parsingAPhrase, int index, Token t,String reasoning) {

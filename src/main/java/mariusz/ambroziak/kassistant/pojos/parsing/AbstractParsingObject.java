@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
+import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
@@ -40,6 +41,9 @@ public abstract class AbstractParsingObject {
 
 	private ProductNamesComparison initialNames;
 	private ProductNamesComparison finalNames;
+
+	private List<PhraseFound> phrasesFound;
+
 
 	public List<List<String>> getAdjacentyConotationsFound() {
 		if(this.adjacentyConotationsFound==null)
@@ -330,5 +334,17 @@ public abstract class AbstractParsingObject {
 		this.entitylessString = entitylessString;
 	}
 
+	public List<PhraseFound> getPhrasesFound() {
+		if(phrasesFound==null)
+			phrasesFound=new ArrayList<>();
+		return phrasesFound;
+	}
 
+	public void setPhrasesFound(List<PhraseFound> phrasesFound) {
+		this.phrasesFound = phrasesFound;
+	}
+
+	public void addPhraseFound(PhraseFound phraseFound) {
+		this.getPhrasesFound().add(phraseFound);
+	}
 }
