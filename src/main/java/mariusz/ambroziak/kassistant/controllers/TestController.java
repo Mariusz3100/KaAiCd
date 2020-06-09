@@ -7,10 +7,7 @@ import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResul
 import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
 import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
-import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.*;
 import mariusz.ambroziak.kassistant.logic.PhraseDependenciesComparator;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
@@ -48,7 +45,7 @@ public class TestController {
 
 
 	@Autowired
-	PhraseFoundRepository phraseFoundRepo;
+	CustomPhraseFoundRepository phraseFoundRepo;
 	@Autowired
 	UsdaApiClient usdaApiClient;
 
@@ -101,10 +98,10 @@ public class TestController {
 		IngredientPhraseParsingResult x=new IngredientPhraseParsingResult("test",12, AmountTypes.pcs, ProductType.fresh,"test","Test",ProductType.unknown);
 		x.setParsingBatch(new ParsingBatch());
 
-		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,x,null);
+		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,"test",x,null);
 
 		this.ingredientParsingRepo.save(x);
-		this.phraseFoundRepo.save(phrase);
+		this.phraseFoundRepo.saveIfNew(phrase);
 		return "Done";
 	}
 	@RequestMapping("/testProdDb")
