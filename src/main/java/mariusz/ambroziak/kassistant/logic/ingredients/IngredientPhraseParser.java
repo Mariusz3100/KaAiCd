@@ -81,43 +81,22 @@ public class IngredientPhraseParser {
 		this.wordClasifier = wordClasifier;
 	}
 
+//TODO how to treat empty expectations.
+//	public ParsingResultList parseIngredientLines(List<String> lines) throws IOException {
+//		ParsingResultList retValue=new ParsingResultList();
+//		if(lines!=null&&!lines.isEmpty()) {
+//			List<IngredientLearningCase> cases = lines.stream().map(s -> new IngredientLearningCase(s)).collect(Collectors.toList());
+//			retValue=parseLisOfCases(cases);
+//		}
+//
+//		return retValue;
+//
+//	}
 
-	public ParsingResultList parseIngredientLines(List<String> lines) throws IOException {
+	public ParsingResultList parseLisOfCases(List<IngredientLearningCase> inputLines) throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
-
-		List<IngredientLearningCase> inputLines= edamanNlpParsingService.retrieveDataFromFile();
-		for(IngredientLearningCase er:inputLines) {
-			String line=correctErrors(er.getOriginalPhrase());
-			er.setOriginalPhrase(line);
-			IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
-
-
-
-			this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-			initializeCorrectedConnotations(parsingAPhrase);
-//			initializeProductPhraseConnotations(parsingAPhrase);
-
-			ParsingResult singleResult = createResultObject(parsingAPhrase);
-
-			retValue.addResult(singleResult);
-
-
-		}
-
-		printResults(retValue);
-
-		return retValue;
-
-	}
-
-
-	public ParsingResultList parseFromDb() throws IOException {
-		ParsingResultList retValue=new ParsingResultList();
-		List<IngredientLearningCase> inputLines = getIngredientLearningCasesFromDb();
 		ParsingBatch batchObject=new ParsingBatch();
 		parsingBatchRepository.save(batchObject);
-
-
 
 		for(IngredientLearningCase er:inputLines) {
 			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
@@ -126,13 +105,14 @@ public class IngredientPhraseParser {
 			saveResultInDb(parsingAPhrase,batchObject);
 			retValue.addResult(singleResult);
 
-
 		}
-
-	//	printResults(retValue);
+		return retValue;
+	}
+	public ParsingResultList parseFromDb() throws IOException {
+		List<IngredientLearningCase> inputLines = getIngredientLearningCasesFromDb();
+		ParsingResultList retValue=parseLisOfCases(inputLines);
 
 		return retValue;
-
 	}
 
 	public  List<IngredientLearningCase> getIngredientLearningCasesFromDb() {
@@ -146,18 +126,9 @@ public class IngredientPhraseParser {
 
 		ParsingBatch batchObject=new ParsingBatch();
 		parsingBatchRepository.save(batchObject);
-		List<IngredientLearningCase> inputLines= edamanNlpParsingService.retrieveDataFromFile();
-		for(IngredientLearningCase er:inputLines) {
-			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
+		List<IngredientLearningCase> cases= edamanNlpParsingService.retrieveDataFromFile();
 
-			ParsingResult singleResult = createResultObject(parsingAPhrase);
-			saveResultInDb(parsingAPhrase,batchObject);
-			retValue.addResult(singleResult);
-
-
-		}
-
-		printResults(retValue);
+		retValue=this.parseLisOfCases(cases);
 
 		return retValue;
 
@@ -176,13 +147,8 @@ public class IngredientPhraseParser {
 
 		TokenizationResults tokens = this.tokenizator.parse(entitylessString);
 		parsingAPhrase.setEntitylessTokenized(tokens);
-
-	//	initializePrimaryConnotations(parsingAPhrase);
-
-
 		this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
-	//	initializeCorrectedConnotations(parsingAPhrase);
-	//	initializeProductPhraseConnotations(parsingAPhrase);
+
 		return parsingAPhrase;
 	}
 
@@ -307,9 +273,7 @@ public class IngredientPhraseParser {
 		Token foundToken = tokenized.findToken(tokenized.getTokens(),dependencyTreeRoot==null?"":dependencyTreeRoot.getText());
 		correctedConotations.add(new ConnectionEntry(new Token("ROOT","",""),foundToken));
 
-		
 		parsingAPhrase.setCorrectedConotations(correctedConotations);
-
 
 	}
 
@@ -398,8 +362,7 @@ public class IngredientPhraseParser {
 				
 				return t;
 			}
-			
-			
+
 		}
 		return null;
 	}
