@@ -9,9 +9,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.model.*;
+import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
@@ -19,12 +18,12 @@ import mariusz.ambroziak.kassistant.pojos.*;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
+import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,6 +62,8 @@ public class ShopProductParser {
 	private ParsingBatchRepository parsingBatchRepository;
 
 
+	@Autowired
+	CustomPhraseFoundRepository phraseFoundRepo;
 
 	private String spacelessRegex="(\\d+)(\\w+)";
 
@@ -103,7 +104,14 @@ public class ShopProductParser {
 
 	}
 
+	private void saveFoundPhrasesInDb(ProductParsingProcessObject parsingAPhrase, ProductParsingResult productParsingResult) {
+		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
+		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
+
+		phraseFoundRepo.saveAllIfNew(phrasesFound);
+
+	}
 	private ParsingResult createResultObject(ProductParsingProcessObject parsingAPhrase) {
 		ParsingResult object=new ParsingResult();
 		object.setOriginalPhrase(parsingAPhrase.getProduct().getName());
@@ -316,8 +324,8 @@ public class ShopProductParser {
 			 parseProductParsingObjectWithNamesComparison(parsingAPhrase);
 			ParsingResult singleResult=createResultObject(parsingAPhrase);
 
-			saveResultInDb(parsingAPhrase,batchObject);
-
+			ProductParsingResult dbResult=saveResultInDb(parsingAPhrase,batchObject);
+			saveFoundPhrasesInDb(parsingAPhrase,dbResult);
 			retValue.addResult(singleResult);
 
 
