@@ -1,11 +1,8 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
-import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
@@ -18,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,7 +41,7 @@ public class IngredientProductMatchingService extends AbstractParser {
 			IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
 
 			ParsingResult singleResult = createIngredientResultObject(parsingAPhrase);
-			IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultInDb(parsingAPhrase, batchObject);
+			IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
 
 			List<PhraseFound> ingredientPhrasesFound = parsingAPhrase.getPhrasesFound();
 			ingredientPhrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));

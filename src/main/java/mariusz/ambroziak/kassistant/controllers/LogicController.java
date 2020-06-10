@@ -38,7 +38,7 @@ public class LogicController {
 	public ParsingResultList phrasesParsing() throws IOException{
 //		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
 
-		ParsingResultList parseFromFile = this.ingredientParser.parseFromDb();
+		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
 
 
 		return parseFromFile;

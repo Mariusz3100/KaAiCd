@@ -9,9 +9,7 @@ import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
-import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
-import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.model.*;
 import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
@@ -26,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
@@ -100,20 +97,29 @@ public class IngredientPhraseParser extends AbstractParser {
 //
 //	}
 
-	public ParsingResultList parseLisOfCases(List<IngredientLearningCase> inputLines) throws IOException {
-		ParsingResultList retValue=new ParsingResultList();
-		ParsingBatch batchObject=new ParsingBatch();
-		parsingBatchRepository.save(batchObject);
+	public List<IngredientPhraseParsingProcessObject> parseListOfCasesToParsingObjects(List<IngredientLearningCase> inputLines) {
+		List<IngredientPhraseParsingProcessObject> retValue=new ArrayList<>();
 
 		for(IngredientLearningCase er:inputLines) {
 			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
-
-			ParsingResult singleResult = createResultObject(parsingAPhrase);
-			IngredientPhraseParsingResult ingredientPhraseParsingResult=saveResultInDb(parsingAPhrase,batchObject);
-			saveFoundPhrasesInDb(parsingAPhrase,ingredientPhraseParsingResult);
-			retValue.addResult(singleResult);
-
+			retValue.add(parsingAPhrase);
 		}
+		return retValue;
+	}
+
+
+
+	public ParsingResultList parseLisOfCasesAndSaveResults(List<IngredientLearningCase> inputLines) throws IOException {
+		List<IngredientPhraseParsingProcessObject> parsingObjects= parseListOfCasesToParsingObjects(inputLines);
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
+		parsingObjects.forEach(x-> saveResultAndPhrasesInDb(x,batchObject));
+
+		ParsingResultList retValue=new ParsingResultList();
+		List<ParsingResult> results = parsingObjects.stream().map(po -> createResultObject(po)).collect(Collectors.toList());
+		retValue.setResults(results);
+
+
 		return retValue;
 	}
 
@@ -126,29 +132,47 @@ public class IngredientPhraseParser extends AbstractParser {
 
 	}
 
-	public ParsingResultList parseFromDb() throws IOException {
-		List<IngredientLearningCase> inputLines = getIngredientLearningCasesFromDb();
-		ParsingResultList retValue=parseLisOfCases(inputLines);
-
-		return retValue;
-	}
-
 	public  List<IngredientLearningCase> getIngredientLearningCasesFromDb() {
 		List<IngredientLearningCase> inputLines= new ArrayList<>();//edamanNlpParsingService.retrieveDataFromFile();
 		this.ingredientPhraseLearningCaseRepository.findAll().forEach(e->inputLines.add(e));
 		return inputLines;
 	}
 
+
+	public ParsingResultList parseFromDb() throws IOException {
+		List<IngredientLearningCase> ingredientLearningCasesFromDb = this.getIngredientLearningCasesFromDb();
+		List<IngredientPhraseParsingProcessObject> parsings = this.parseListOfCasesToParsingObjects(ingredientLearningCasesFromDb);
+		List<ParsingResult> results = parsings.stream().map(p -> createResultObject(p)).collect(Collectors.toList());
+		ParsingResultList retValue=new ParsingResultList();
+		retValue.setResults(results);
+		return  retValue;
+	}
+
+	public ParsingResultList parseFromDbAndSaveAllToDb() throws IOException {
+		List<IngredientLearningCase> ingredientLearningCasesFromDb = this.getIngredientLearningCasesFromDb();
+		ParsingResultList parsingResultList = this.parseLisOfCasesAndSaveResults(ingredientLearningCasesFromDb);
+		return  parsingResultList;
+	}
+
 	public ParsingResultList parseFromFile() throws IOException {
 		ParsingResultList retValue=new ParsingResultList();
-
-		ParsingBatch batchObject=new ParsingBatch();
-		parsingBatchRepository.save(batchObject);
 		List<IngredientLearningCase> cases= edamanNlpParsingService.retrieveDataFromFile();
 
-		retValue=this.parseLisOfCases(cases);
+		List<IngredientPhraseParsingProcessObject> parsings = this.parseListOfCasesToParsingObjects(cases);
+		List<ParsingResult> results = parsings.stream().map(p -> createResultObject(p)).collect(Collectors.toList());
+		retValue.setResults(results);
 
 		return retValue;
+
+	}
+
+	public ParsingResultList parseFromFileAndSaveToDb() throws IOException {
+		List<IngredientLearningCase> cases= edamanNlpParsingService.retrieveDataFromFile();
+
+		ParsingResultList parsingResultList = parseLisOfCasesAndSaveResults(cases);
+
+
+		return parsingResultList;
 
 	}
 
@@ -193,8 +217,14 @@ public class IngredientPhraseParser extends AbstractParser {
 		}
 	}
 
-	public IngredientPhraseParsingResult saveResultInDb(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {
+	public IngredientPhraseParsingResult saveResultAndPhrasesInDb(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {
 
+		IngredientPhraseParsingResult toSave = saveIngredientPhraseParsingProcessObject(parsingAPhrase, batchObject);
+		saveFoundPhrasesInDb(parsingAPhrase,toSave);
+		return toSave;
+	}
+
+	private IngredientPhraseParsingResult saveIngredientPhraseParsingProcessObject(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {
 		IngredientPhraseParsingResult toSave=new IngredientPhraseParsingResult();
 		toSave.setOriginalName(parsingAPhrase.getLearningTuple().getOriginalPhrase());
 		toSave.setExtendedResultsCalculated(parsingAPhrase.getPermissiveFinalResultsString());
@@ -265,7 +295,7 @@ public class IngredientPhraseParser extends AbstractParser {
 
 
 	private void initializeCorrectedConnotations(IngredientPhraseParsingProcessObject parsingAPhrase) {
-		
+
 		TokenizationResults tokenized = parsingAPhrase.getCorrectedToknized();
 		DependencyTreeNode dependencyTreeRoot = tokenized.getDependencyTree();
 		List<ConnectionEntry> correctedConotations = tokenized.getAllTwoWordDependencies();
