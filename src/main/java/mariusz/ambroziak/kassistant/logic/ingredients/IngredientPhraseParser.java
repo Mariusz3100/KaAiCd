@@ -16,6 +16,7 @@ import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundReposi
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
+import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
@@ -41,7 +42,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 
 
 @Service
-public class IngredientPhraseParser {
+public class IngredientPhraseParser extends AbstractParser {
 	private TokenizationClientService tokenizator;
 	@Autowired
 	private NamedEntityRecognitionClientService nerRecognizer;
@@ -258,26 +259,7 @@ public class IngredientPhraseParser {
 
 
 
-	private CalculatedResults calculateWordsFound(String expected, List<QualifiedToken> finalResults) {
-		List<String> found=new ArrayList<String>();
-		List<String> mistakenlyFound=new ArrayList<String>();
 
-		for(QualifiedToken qt:finalResults) {
-			if(qt.getWordType()== WordType.ProductElement) {
-				if(expected.contains(qt.getText())) {
-					found.add(qt.getText());
-					expected=expected.replaceAll(qt.getText(), "").replaceAll("  ", " ");
-				}else {
-					mistakenlyFound.add(qt.getText());
-				}
-			}
-		}
-
-		List<String> notFound=Arrays.asList(expected.split(" "));
-		List<String> wordsMarked=finalResults.stream().filter(qualifiedToken -> qualifiedToken.getWordType()==WordType.ProductElement).map(qualifiedToken -> qualifiedToken.getText()).collect(Collectors.toList());
-
-		return new CalculatedResults(notFound,found,mistakenlyFound,wordsMarked);
-	}
 
 
 

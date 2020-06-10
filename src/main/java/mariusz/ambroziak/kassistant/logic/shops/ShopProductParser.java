@@ -14,6 +14,7 @@ import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundReposi
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
+import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.pojos.*;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
@@ -37,7 +38,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 
 
 @Service
-public class ShopProductParser {
+public class ShopProductParser  extends AbstractParser {
 	@Autowired
 	private TokenizationClientService tokenizator;
 	@Autowired
@@ -220,32 +221,7 @@ public class ShopProductParser {
 
 
 
-	private CalculatedResults calculateWordsFound(List<String> expected, List<QualifiedToken> finalResults) {
-		List<String> found=new ArrayList<String>();
-		List<String> mistakenlyFound=new ArrayList<String>();
 
-		for(QualifiedToken qt:finalResults) {
-			String qtText = qt.getText().toLowerCase();
-			String qtLemma=qt.getLemma();
-			if(qt.getWordType()== WordType.ProductElement) {
-				if(expected.contains(qtText)||expected.contains(qtLemma)) {
-					if(expected.contains(qtText)){
-						found.add(qtText);
-						expected=expected.stream().filter(s->!s.equals(qtText)).collect(Collectors.toList());
-					}else {
-						found.add(qtLemma);
-						expected = expected.stream().filter(s -> !s.equals(qtLemma)).collect(Collectors.toList());
-					}
-				}else {
-					mistakenlyFound.add(qtText);
-				}
-			}
-		}
-
-		List<String> wordsMarked=finalResults.stream().filter(qualifiedToken -> qualifiedToken.getWordType()==WordType.ProductElement).map(qualifiedToken -> qualifiedToken.getText()).collect(Collectors.toList());
-
-		return new CalculatedResults(expected,found,mistakenlyFound,wordsMarked);
-	}
 
 //	private CalculatedResults calculateWordsFound(ProductParsingProcessObject parsingAPhrase) {
 //		List<String> found=new ArrayList<String>();

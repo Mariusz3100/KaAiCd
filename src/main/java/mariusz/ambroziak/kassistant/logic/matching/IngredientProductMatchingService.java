@@ -6,6 +6,7 @@ import mariusz.ambroziak.kassistant.hibernate.model.*;
 import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
+import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class IngredientProductMatchingService {
+public class IngredientProductMatchingService extends AbstractParser {
 
 	@Autowired
 	IngredientPhraseParser ingredientParser;
@@ -169,52 +170,5 @@ public class IngredientProductMatchingService {
 	}
 
 
-	private CalculatedResults calculateWordsFound(String expected, List<QualifiedToken> finalResults) {
-		List<String> found=new ArrayList<String>();
-		List<String> mistakenlyFound=new ArrayList<String>();
-
-		for(QualifiedToken qt:finalResults) {
-			if(qt.getWordType()== WordType.ProductElement) {
-				if(expected.contains(qt.getText())||expected.contains(qt.getLemma())) {
-					found.add(qt.getLemma());
-					expected=expected.replaceAll(qt.getText(), "").replaceAll(qt.getLemma(), "").replaceAll("  ", " ");
-				}else {
-					mistakenlyFound.add(qt.getLemma());
-				}
-			}
-		}
-
-		List<String> notFound=Arrays.asList(expected.split(" "));
-		List<String> wordsMarked=finalResults.stream().filter(qualifiedToken -> qualifiedToken.getWordType()==WordType.ProductElement).map(qualifiedToken -> qualifiedToken.getText()).collect(Collectors.toList());
-
-		return new CalculatedResults(notFound,found,mistakenlyFound,wordsMarked);
-	}
-
-	private CalculatedResults calculateWordsFound(List<String> expected, List<QualifiedToken> finalResults) {
-		List<String> found=new ArrayList<String>();
-		List<String> mistakenlyFound=new ArrayList<String>();
-
-		for(QualifiedToken qt:finalResults) {
-			String qtText = qt.getText().toLowerCase();
-			String qtLemma=qt.getLemma();
-			if(qt.getWordType()== WordType.ProductElement) {
-				if(expected.contains(qtText)||expected.contains(qtLemma)) {
-					if(expected.contains(qtText)){
-						found.add(qtText);
-						expected=expected.stream().filter(s->!s.equals(qtText)).collect(Collectors.toList());
-					}else {
-						found.add(qtLemma);
-						expected = expected.stream().filter(s -> !s.equals(qtLemma)).collect(Collectors.toList());
-					}
-				}else {
-					mistakenlyFound.add(qtText);
-				}
-			}
-		}
-
-		List<String> wordsMarked=finalResults.stream().filter(qualifiedToken -> qualifiedToken.getWordType()==WordType.ProductElement).map(qualifiedToken -> qualifiedToken.getText()).collect(Collectors.toList());
-
-		return new CalculatedResults(expected,found,mistakenlyFound,wordsMarked);
-	}
 
 }
