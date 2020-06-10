@@ -71,9 +71,22 @@ public class ShopProductParser  extends AbstractParser {
 
 
 
+	public ParsingResultList tescoSearchForAndSaveResults(String phrase) {
+		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
+
+		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
+				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
+
+		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
+		parsingProcessObjects.forEach(parsingProcessObject->saveResultInDb(parsingProcessObject,batchObject));
 
 
+		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
+		return retValue;
 
+	}
 
 
 
@@ -82,9 +95,8 @@ public class ShopProductParser  extends AbstractParser {
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
 				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
-		ParsingBatch batchObject=new ParsingBatch();
-		parsingBatchRepository.save(batchObject);
-		ParsingResultList retValue = parseListOfCases(parsingProcessObjects, batchObject);
+
+		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
 
 		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
 		return retValue;
@@ -96,9 +108,7 @@ public class ShopProductParser  extends AbstractParser {
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
 				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
-		ParsingBatch batchObject=new ParsingBatch();
-		parsingBatchRepository.save(batchObject);
-		ParsingResultList retValue = parseListOfCases(parsingProcessObjects, batchObject);
+		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
 
 		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
 		return parsingProcessObjects;
@@ -222,38 +232,6 @@ public class ShopProductParser  extends AbstractParser {
 
 
 
-
-//	private CalculatedResults calculateWordsFound(ProductParsingProcessObject parsingAPhrase) {
-//		List<String> found=new ArrayList<String>();
-//		List<String> mistakenlyFound=new ArrayList<String>();
-//		String expected=parsingAPhrase.getExpectedWords().stream().collect(Collectors.joining(" ")).toLowerCase();
-//		for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
-//			if(qt.getWordType()==WordType.ProductElement) {
-//				if(expected.contains(qt.getText().toLowerCase())) {
-//					found.add(qt.getText());
-//					expected=expected.replaceAll(qt.getText().toLowerCase(), "").replaceAll("  ", " ");
-//				}else {
-//					mistakenlyFound.add(qt.getText());
-//				}
-//			}
-//		}
-//
-//		List<String> notFound=Arrays.asList(expected.split(" "));
-//		List<String> wordsMarked=parsingAPhrase.getFinalResults().stream().filter(qualifiedToken -> qualifiedToken.getWordType()==WordType.ProductElement).map(qualifiedToken -> qualifiedToken.getText()).collect(Collectors.toList());
-//
-//		return new CalculatedResults(notFound,found,mistakenlyFound,wordsMarked);
-//
-//	}
-
-
-
-
-
-
-
-
-
-
 	
 
 	public TokenizationResults tokenizeSingleWord(String phrase) throws WordNotFoundException {
@@ -285,23 +263,34 @@ public class ShopProductParser  extends AbstractParser {
 
 		List<ProductParsingProcessObject> inputs= getTestCases();
 
-		ParsingBatch batchObject=new ParsingBatch();
-		parsingBatchRepository.save(batchObject);
-
-		ParsingResultList retValue = parseListOfCases(inputs, batchObject);
+		ParsingResultList retValue = parseListOfCases(inputs);
 
 		return retValue;
 	}
 
-	private ParsingResultList parseListOfCases(List<ProductParsingProcessObject> inputs, ParsingBatch batchObject) {
+
+	public ParsingResultList parseAllTestCasesAndSaveResults() throws IOException {
+
+		List<ProductParsingProcessObject> inputs= getTestCases();
+
+		ParsingResultList retValue = parseListOfCases(inputs);
+
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
+
+		inputs.forEach(input->saveResultInDb(input,batchObject));
+
+		return retValue;
+	}
+
+	private ParsingResultList parseListOfCases(List<ProductParsingProcessObject> inputs) {
 		ParsingResultList retValue=new ParsingResultList();
 
 		for(ProductParsingProcessObject parsingAPhrase:inputs) {
 			 parseProductParsingObjectWithNamesComparison(parsingAPhrase);
 			ParsingResult singleResult=createResultObject(parsingAPhrase);
 
-			ProductParsingResult dbResult=saveResultInDb(parsingAPhrase,batchObject);
-			saveFoundPhrasesInDb(parsingAPhrase,dbResult);
+
 			retValue.addResult(singleResult);
 
 
@@ -394,7 +383,13 @@ public class ShopProductParser  extends AbstractParser {
 
 
 	public ProductParsingResult saveResultInDb(ProductParsingProcessObject parsingAPhrase, ParsingBatch pb) {
+		ProductParsingResult toSave = saveProductParsingResult(parsingAPhrase, pb);
+		saveFoundPhrasesInDb(parsingAPhrase,toSave);
 
+		return toSave;
+	}
+
+	private ProductParsingResult saveProductParsingResult(ProductParsingProcessObject parsingAPhrase, ParsingBatch pb) {
 		ProductParsingResult toSave=new ProductParsingResult();
 		toSave.setOriginalName(parsingAPhrase.getOriginalPhrase());
 		toSave.setProduct(parsingAPhrase.getProduct());

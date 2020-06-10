@@ -46,9 +46,9 @@ public class TescoController {
     public ParsingResultList tescoSearchAndParse(@RequestParam(value="param", required = false) String param) throws IOException{
 		ParsingResultList retValue=null;
 		if(param==null||param.isEmpty()){
-			retValue=this.productParserService.parseAllTestCases();
+			retValue=this.productParserService.parseAllTestCasesAndSaveResults();
 		}else{
-			retValue=this.productParserService.tescoSearchForResults(param);
+			retValue=this.productParserService.tescoSearchForAndSaveResults(param);
 		}
     	return retValue;
 
