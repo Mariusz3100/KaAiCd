@@ -1,6 +1,8 @@
 package mariusz.ambroziak.kassistant.logic.shops;
 
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 
 import java.util.ArrayList;
@@ -11,8 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ParseCompareProductNames {
-    private String firstPhrase;
-    private String secondPhrase;
+    private TokenizationResults firstPhrase;
+    private TokenizationResults secondPhrase;
 
 
 //    private String shorterPhrase;
@@ -24,64 +26,56 @@ public class ParseCompareProductNames {
     private int currentSecondPhraseReadingIndex;
 
 
-    public ParseCompareProductNames(String firstPhrase, String secondPhrase) {
+    public ParseCompareProductNames(TokenizationResults firstPhrase, TokenizationResults secondPhrase) {
         if(firstPhrase==null||secondPhrase==null){
             throw new IllegalArgumentException("empty arguments");
         }
         this.firstPhrase = firstPhrase;
         this.secondPhrase = secondPhrase;
 
-//        if(firstPhrase.length()>secondPhrase.length()){
-//            longerPhrase=firstPhrase;
-//            shorterPhrase=secondPhrase;
-//        }else {
-//            longerPhrase=secondPhrase;
-//            shorterPhrase=firstPhrase;
-//        }
-
         firstPhraseResults=new ArrayList<>();
         secondPhraseResults=new ArrayList<>();
     }
 
-    public static ProductNamesComparison parseTwoPhrases(String firstPhrase, String secondPhrase){
+    public static ProductNamesComparison parseTwoPhrases(TokenizationResults firstPhrase, TokenizationResults secondPhrase) {
         ParseCompareProductNames thisObject=new ParseCompareProductNames(firstPhrase,secondPhrase);
         return thisObject.calculateResults();
 
     }
+
+
 
     private ProductNamesComparison calculateResults(){
         ProductNamesComparison retValue=checkForEmptyPhrases();
         if(retValue!=null){
             return retValue;
         }else {
-            List<String> firstPhraseSplitted = Arrays.asList(firstPhrase.split(" "));
-            List<String> secondPhraseSplitted = Arrays.asList(secondPhrase.split(" "));
-
-            int max = Math.max(firstPhrase.split(" ").length, secondPhrase.split(" ").length);
+            List<Token> firstPhraseTokens = firstPhrase.getTokens();
+            List<Token> secondPhraseTokens = secondPhrase.getTokens();
 
             currentFirstPhraseReadingIndex = 0;
             currentSecondPhraseReadingIndex = 0;
-            while (currentFirstPhraseReadingIndex < firstPhraseSplitted.size() || currentSecondPhraseReadingIndex < secondPhraseSplitted.size()) {
+            while (currentFirstPhraseReadingIndex < firstPhraseTokens.size() || currentSecondPhraseReadingIndex < secondPhraseTokens.size()) {
 
 
-                if (currentFirstPhraseReadingIndex >= firstPhraseSplitted.size() && currentSecondPhraseReadingIndex < secondPhraseSplitted.size()) {
-                    String secondPhraseWord = secondPhraseSplitted.get(currentSecondPhraseReadingIndex);
+                if (currentFirstPhraseReadingIndex >= firstPhraseTokens.size() && currentSecondPhraseReadingIndex < secondPhraseTokens.size()) {
+                    Token secondPhraseWord = secondPhraseTokens.get(currentSecondPhraseReadingIndex);
                     currentSecondPhraseReadingIndex++;
-                    addWordToSecondListEmptyToFirstList(secondPhraseWord);
-                } else if (currentSecondPhraseReadingIndex >= secondPhraseSplitted.size() && currentFirstPhraseReadingIndex < firstPhraseSplitted.size()) {
-                    String firstPhraseWord = firstPhraseSplitted.get(currentFirstPhraseReadingIndex);
+                    addWordToSecondListEmptyToFirstList(secondPhraseWord.getText());
+                } else if (currentSecondPhraseReadingIndex >= secondPhraseTokens.size() && currentFirstPhraseReadingIndex < firstPhraseTokens.size()) {
+                    Token firstPhraseWord = firstPhraseTokens.get(currentFirstPhraseReadingIndex);
                     currentFirstPhraseReadingIndex++;
-                    addWordToFirstListEmptyToSecondList(firstPhraseWord);
+                    addWordToFirstListEmptyToSecondList(firstPhraseWord.getText());
                 } else {
-                    String firstPhraseWord = firstPhraseSplitted.get(currentFirstPhraseReadingIndex);
-                    String secondPhraseWord = secondPhraseSplitted.get(currentSecondPhraseReadingIndex);
+                    String firstPhraseWord = firstPhraseTokens.get(currentFirstPhraseReadingIndex).getText();
+                    String secondPhraseWord = secondPhraseTokens.get(currentSecondPhraseReadingIndex).getText();
                     boolean equals = compareWords(firstPhraseWord, secondPhraseWord);
 
                     if (equals) {
                         addToBothResultLists(secondPhraseWord);
                     } else {
 
-                        neitherPhraseIsFinished(firstPhraseSplitted, secondPhraseSplitted, firstPhraseWord, secondPhraseWord);
+                        neitherPhraseIsFinished(firstPhraseTokens, secondPhraseTokens, firstPhraseWord, secondPhraseWord);
 
                     }
 
@@ -125,39 +119,58 @@ public class ParseCompareProductNames {
 
     private ProductNamesComparison checkForEmptyPhrases() {
         ProductNamesComparison retValue=null;
-        if((firstPhrase==null||firstPhrase.isEmpty())&&(secondPhrase==null||secondPhrase.isEmpty())){
-            retValue=new ProductNamesComparison();
-            retValue.setDetailsNameResults(new ArrayList<>());
-            retValue.setSearchNameResults(new ArrayList<>());
-            retValue.setResultPhrase("");
-            return retValue;
+        if(checkIfEmpty(firstPhrase)&&checkIfEmpty(secondPhrase)){
+            return handleForBothEmpty();
         }
 
-        if(firstPhrase==null||firstPhrase.isEmpty()){
-            retValue=new ProductNamesComparison();
-            secondPhraseResults= Arrays.asList(secondPhrase.split(" ")).stream().map(s->new WordComparisonResult(s,true)).collect(Collectors.toList());;
-            firstPhraseResults= Arrays.asList(secondPhrase.split(" ")).stream().map(s->new WordComparisonResult("",false)).collect(Collectors.toList());;
-            retValue=new ProductNamesComparison();
-            retValue.setDetailsNameResults(firstPhraseResults);
-            retValue.setSearchNameResults(secondPhraseResults);
-            retValue.setResultPhrase(secondPhrase);
-            return retValue;
+        if(checkIfEmpty(firstPhrase)){
+            return handleForFirstEmpty();
         }
-        if(secondPhrase==null||secondPhrase.isEmpty()){
-            firstPhraseResults= Arrays.asList(firstPhrase.split(" ")).stream().map(s->new WordComparisonResult(s,true)).collect(Collectors.toList());
-            secondPhraseResults= Arrays.asList(firstPhrase.split(" ")).stream().map(s->new WordComparisonResult("",false)).collect(Collectors.toList());
-            retValue=new ProductNamesComparison();
-            retValue.setDetailsNameResults(firstPhraseResults);
-            retValue.setSearchNameResults(secondPhraseResults);
-            retValue.setResultPhrase(firstPhrase);
-            return retValue;
+        if(checkIfEmpty(secondPhrase)){
+            return handleForSecondEmpty();
         }
         return null;
     }
 
-    private void neitherPhraseIsFinished(List<String> firstPhraseSplitted, List<String> secondPhraseSplitted, String firstPhraseWord, String secondPhraseWord) {
-        Optional<String> foundInFirstPhraseList = firstPhraseSplitted.subList(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).stream().filter(s -> compareWords(s, secondPhraseWord)).findFirst();
-        Optional<String> foundInSecondPhraseList = secondPhraseSplitted.subList(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).stream().filter(s -> compareWords(s, firstPhraseWord)).findFirst();
+    private ProductNamesComparison handleForSecondEmpty() {
+        ProductNamesComparison retValue;
+        firstPhraseResults= firstPhrase.getTokens().stream().map(s->new WordComparisonResult(s.getText(),true)).collect(Collectors.toList());
+        secondPhraseResults= firstPhrase.getTokens().stream().map(s->new WordComparisonResult("",false)).collect(Collectors.toList());
+        retValue=new ProductNamesComparison();
+        retValue.setDetailsNameResults(firstPhraseResults);
+        retValue.setSearchNameResults(secondPhraseResults);
+        retValue.setResultPhrase(firstPhrase.getPhrase());
+        return retValue;
+    }
+
+    private ProductNamesComparison handleForFirstEmpty() {
+        ProductNamesComparison retValue;
+        retValue=new ProductNamesComparison();
+        secondPhraseResults= secondPhrase.getTokens().stream().map(s->new WordComparisonResult(s.getText(),true)).collect(Collectors.toList());
+        firstPhraseResults=secondPhrase.getTokens().stream().map(s->new WordComparisonResult("",false)).collect(Collectors.toList());
+        retValue=new ProductNamesComparison();
+        retValue.setDetailsNameResults(firstPhraseResults);
+        retValue.setSearchNameResults(secondPhraseResults);
+        retValue.setResultPhrase(secondPhrase.getPhrase());
+        return retValue;
+    }
+
+    private ProductNamesComparison handleForBothEmpty() {
+        ProductNamesComparison retValue;
+        retValue=new ProductNamesComparison();
+        retValue.setDetailsNameResults(new ArrayList<>());
+        retValue.setSearchNameResults(new ArrayList<>());
+        retValue.setResultPhrase("");
+        return retValue;
+    }
+
+    private boolean checkIfEmpty(TokenizationResults tokenized) {
+        return tokenized ==null|| tokenized.getTokens()==null|| tokenized.getTokens().isEmpty();
+    }
+
+    private void neitherPhraseIsFinished(List<Token>  firstPhraseSplitted, List<Token> secondPhraseSplitted, String firstPhraseWord, String secondPhraseWord) {
+        Optional<Token> foundInFirstPhraseList = firstPhraseSplitted.subList(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).stream().filter(s -> compareWords(s.getLemma(), secondPhraseWord)).findFirst();
+        Optional<Token> foundInSecondPhraseList = secondPhraseSplitted.subList(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).stream().filter(s -> compareWords(s.getLemma(), firstPhraseWord)).findFirst();
 
         if(foundInFirstPhraseList.isPresent()&&foundInSecondPhraseList.isPresent()) {
             int foundInFirstPhraseIndex=IntStream.range(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).filter(i->firstPhraseSplitted.get(i).equals(secondPhraseWord)).findFirst().getAsInt();
