@@ -104,6 +104,18 @@ public class TestController {
 		this.phraseFoundRepo.saveIfNew(phrase);
 		return "Done";
 	}
+
+	@RequestMapping("/testFindingPhrases")
+	public String testFindingPhrases(@RequestParam(value="param", defaultValue="empty") String param){
+		List<PhraseFound> flax1 = this.phraseFoundRepo.findBySingleWordPhrase("flax");
+		List<PhraseFound> flax2 = this.phraseFoundRepo.findByPhraseContaining("flax");
+
+
+		return "Done";
+	}
+
+
+
 	@RequestMapping("/testProdDb")
 	public String testProdDb(@RequestParam(value="param", defaultValue="empty") String param){
 		Tesco_Product tesco_product = tescoProductRepository.findAll().get(0);
