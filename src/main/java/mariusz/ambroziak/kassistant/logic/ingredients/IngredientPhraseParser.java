@@ -257,7 +257,7 @@ public class IngredientPhraseParser extends AbstractParser {
 	}
 
 
-	private ParsingResult createResultObject(IngredientPhraseParsingProcessObject parsingAPhrase) {
+	public ParsingResult createResultObject(IngredientPhraseParsingProcessObject parsingAPhrase) {
 		ParsingResult object=new ParsingResult();
 		object.setOriginalPhrase(parsingAPhrase.getLearningTuple().getOriginalPhrase());
 		List<QualifiedToken> primaryResults = parsingAPhrase.getFinalResults();

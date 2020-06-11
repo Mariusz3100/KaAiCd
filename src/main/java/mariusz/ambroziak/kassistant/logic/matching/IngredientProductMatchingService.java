@@ -31,7 +31,10 @@ public class IngredientProductMatchingService extends AbstractParser {
 	ParsingBatchRepository parsingBatchRepository;
 
 
-	public List<MatchingProcessResult> parseAndMatch(){
+
+
+
+	public List<MatchingProcessResult> parseMatchAndSaveToDb(){
 		List<IngredientLearningCase> ingredientLearningCasesFromDb = this.ingredientParser.getIngredientLearningCasesFromDb();
 		List<MatchingProcessResult> retValue=new ArrayList<>();
 		ParsingBatch batchObject=new ParsingBatch();
@@ -40,11 +43,8 @@ public class IngredientProductMatchingService extends AbstractParser {
 		for(IngredientLearningCase er:ingredientLearningCasesFromDb) {
 			IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
 
-			ParsingResult singleResult = createIngredientResultObject(parsingAPhrase);
+			ParsingResult singleResult = this.ingredientParser.createResultObject(parsingAPhrase);
 			IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
-
-			List<PhraseFound> ingredientPhrasesFound = parsingAPhrase.getPhrasesFound();
-			ingredientPhrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));
 
 			MatchingProcessResult match=new MatchingProcessResult();
 
@@ -55,7 +55,7 @@ public class IngredientProductMatchingService extends AbstractParser {
 
 			for(ProductParsingProcessObject pr:parsingResultList){
 				this.productParser.parseProductParsingObjectWithNamesComparison(pr);
-				ParsingResult ppr=createProductResultObject(pr);
+				ParsingResult ppr = this.productParser.createResultObject(pr);
 				ProductMatchingResult pmr=new ProductMatchingResult(ppr);
 
 
@@ -86,8 +86,6 @@ public class IngredientProductMatchingService extends AbstractParser {
 
 				ProductParsingResult productParsingResult = this.productParser.saveResultInDb(pr, batchObject);
 
-				List<PhraseFound> productPhrasesFound = pr.getPhrasesFound();
-				productPhrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
 			}
 
 			retValue.add(match);
@@ -95,75 +93,74 @@ public class IngredientProductMatchingService extends AbstractParser {
 		}
 		return retValue;
 	}
+//	private ParsingResult createProductResultObject(ProductParsingProcessObject parsingAPhrase) {
+//		ParsingResult object=new ParsingResult();
+//		object.setOriginalPhrase(parsingAPhrase.getProduct().getName());
+//		String fused=parsingAPhrase.getEntities()==null||parsingAPhrase.getEntities().getEntities()==null?"":parsingAPhrase.getEntities().getEntities().stream().map(s->s.getText()).collect( Collectors.joining("<br>") );
+//
+//		object.setEntities(fused);
+//		object.setEntityLess(parsingAPhrase.getEntitylessString());
+//		object.setTokens(parsingAPhrase.getFinalResults());
+//		String expected=parsingAPhrase.getMinimalExpectedWords().stream().collect(Collectors.joining(" "));
+//		IngredientLearningCase lp=new IngredientLearningCase(parsingAPhrase.getOriginalPhrase(),0,"empty",expected,parsingAPhrase.getExpectedType());
+//		object.setExpectedResult(lp);
+//		object.setProductTypeFound(parsingAPhrase.getFoodTypeClassified().toString());
+//		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getFinalResults()));
+//		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
+//
+//		object.setRestrictivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getFinalResults()));
+//		object.setPermisivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
+//
+//		object.setBrand(parsingAPhrase.getProduct().getBrand());
+//		object.setBrandless(parsingAPhrase.getBrandlessPhrase());
+//
+//		if(parsingAPhrase.getProduct() instanceof Tesco_Product){
+//			String secondName="";
+//			Tesco_Product product = (Tesco_Product) parsingAPhrase.getProduct();
+//			secondName= product.getSearchApiName();
+//			object.setAlternateName(secondName);
+//
+//			object.setIngredientPhrase(product.getIngredients());
+//		}
+//
+//		object.setDescriptionPhrase(parsingAPhrase.getProduct().getDescription());
+//
+//		object.setInitialNames(parsingAPhrase.getInitialNames());
+//
+//		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
+//		object.setFinalNames(parsingAPhrase.getFinalNames());
+//
+//		return object;
+//	}
 
-	private ParsingResult createProductResultObject(ProductParsingProcessObject parsingAPhrase) {
-		ParsingResult object=new ParsingResult();
-		object.setOriginalPhrase(parsingAPhrase.getProduct().getName());
-		String fused=parsingAPhrase.getEntities()==null||parsingAPhrase.getEntities().getEntities()==null?"":parsingAPhrase.getEntities().getEntities().stream().map(s->s.getText()).collect( Collectors.joining("<br>") );
-
-		object.setEntities(fused);
-		object.setEntityLess(parsingAPhrase.getEntitylessString());
-		object.setTokens(parsingAPhrase.getFinalResults());
-		String expected=parsingAPhrase.getMinimalExpectedWords().stream().collect(Collectors.joining(" "));
-		IngredientLearningCase lp=new IngredientLearningCase(parsingAPhrase.getOriginalPhrase(),0,"empty",expected,parsingAPhrase.getExpectedType());
-		object.setExpectedResult(lp);
-		object.setProductTypeFound(parsingAPhrase.getFoodTypeClassified().toString());
-		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getFinalResults()));
-		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
-
-		object.setRestrictivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getFinalResults()));
-		object.setPermisivelyCalculatedResultForPhrase(calculateWordsFound(parsingAPhrase.getExtendedExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
-
-		object.setBrand(parsingAPhrase.getProduct().getBrand());
-		object.setBrandless(parsingAPhrase.getBrandlessPhrase());
-
-		if(parsingAPhrase.getProduct() instanceof Tesco_Product){
-			String secondName="";
-			Tesco_Product product = (Tesco_Product) parsingAPhrase.getProduct();
-			secondName= product.getSearchApiName();
-			object.setAlternateName(secondName);
-
-			object.setIngredientPhrase(product.getIngredients());
-		}
-
-		object.setDescriptionPhrase(parsingAPhrase.getProduct().getDescription());
-
-		object.setInitialNames(parsingAPhrase.getInitialNames());
-
-		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
-		object.setFinalNames(parsingAPhrase.getFinalNames());
-
-		return object;
-	}
-
-	private ParsingResult createIngredientResultObject(IngredientPhraseParsingProcessObject parsingAPhrase) {
-		ParsingResult object=new ParsingResult();
-		object.setOriginalPhrase(parsingAPhrase.getLearningTuple().getOriginalPhrase());
-		List<QualifiedToken> primaryResults = parsingAPhrase.getFinalResults();
-		object.setTokens(primaryResults);
-
-		String fused=parsingAPhrase.getCardinalEntities().stream().map(s->s.getText()).collect( Collectors.joining(" ") );
-
-
-		object.setEntities(fused);
-		object.setEntityLess(parsingAPhrase.getEntitylessString());
-		object.setCorrectedPhrase(parsingAPhrase.createCorrectedPhrase());
-		//	object.setCorrectedTokens(parsingAPhrase.getCorrectedtokens());
-		object.setExpectedResult(parsingAPhrase.getLearningTuple());
-		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getLearningTuple().getFoodMatch(),parsingAPhrase.getFinalResults()));
-		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getLearningTuple().getFoodMatch(),parsingAPhrase.getPermissiveFinalResults()));
-		object.setProductTypeFound(parsingAPhrase.getFoodTypeClassified()==null? ProductType.unknown.name():parsingAPhrase.getFoodTypeClassified().name());
-		object.setCorrectedConnotations(parsingAPhrase.getCorrectedConotations());
-		object.setOriginalConnotations(parsingAPhrase.getFromEntityLessConotations());
-		object.setAdjacentyConotationsFound(parsingAPhrase.getAdjacentyConotationsFound());
-		object.setDependencyConotationsFound(parsingAPhrase.getDependencyConotationsFound());
-
-
-		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
-
-
-		return object;
-	}
+//	private ParsingResult createIngredientResultObject(IngredientPhraseParsingProcessObject parsingAPhrase) {
+//		ParsingResult object=new ParsingResult();
+//		object.setOriginalPhrase(parsingAPhrase.getLearningTuple().getOriginalPhrase());
+//		List<QualifiedToken> primaryResults = parsingAPhrase.getFinalResults();
+//		object.setTokens(primaryResults);
+//
+//		String fused=parsingAPhrase.getCardinalEntities().stream().map(s->s.getText()).collect( Collectors.joining(" ") );
+//
+//
+//		object.setEntities(fused);
+//		object.setEntityLess(parsingAPhrase.getEntitylessString());
+//		object.setCorrectedPhrase(parsingAPhrase.createCorrectedPhrase());
+//		//	object.setCorrectedTokens(parsingAPhrase.getCorrectedtokens());
+//		object.setExpectedResult(parsingAPhrase.getLearningTuple());
+//		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getLearningTuple().getFoodMatch(),parsingAPhrase.getFinalResults()));
+//		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getLearningTuple().getFoodMatch(),parsingAPhrase.getPermissiveFinalResults()));
+//		object.setProductTypeFound(parsingAPhrase.getFoodTypeClassified()==null? ProductType.unknown.name():parsingAPhrase.getFoodTypeClassified().name());
+//		object.setCorrectedConnotations(parsingAPhrase.getCorrectedConotations());
+//		object.setOriginalConnotations(parsingAPhrase.getFromEntityLessConotations());
+//		object.setAdjacentyConotationsFound(parsingAPhrase.getAdjacentyConotationsFound());
+//		object.setDependencyConotationsFound(parsingAPhrase.getDependencyConotationsFound());
+//
+//
+//		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
+//
+//
+//		return object;
+//	}
 
 
 

@@ -104,7 +104,7 @@ public class ShopProductParser  extends AbstractParser {
 	}
 
 	public List<ProductParsingProcessObject> tescoSearchForParsings(String phrase) {
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
+		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,2);
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
 				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
@@ -123,7 +123,7 @@ public class ShopProductParser  extends AbstractParser {
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
 
 	}
-	private ParsingResult createResultObject(ProductParsingProcessObject parsingAPhrase) {
+	public ParsingResult createResultObject(ProductParsingProcessObject parsingAPhrase) {
 		ParsingResult object=new ParsingResult();
 		object.setOriginalPhrase(parsingAPhrase.getProduct().getName());
 		String fused=parsingAPhrase.getEntities()==null||parsingAPhrase.getEntities().getEntities()==null?"":parsingAPhrase.getEntities().getEntities().stream().map(s->s.getText()).collect( Collectors.joining("<br>") );
