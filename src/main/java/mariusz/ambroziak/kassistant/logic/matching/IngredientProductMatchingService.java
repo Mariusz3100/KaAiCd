@@ -1,6 +1,7 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
+import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
@@ -43,14 +44,14 @@ public class IngredientProductMatchingService extends AbstractParser {
 		for(IngredientLearningCase er:ingredientLearningCasesFromDb) {
 			IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
 
-			ParsingResult singleResult = this.ingredientParser.createResultObject(parsingAPhrase);
+			ParsingResult ingredientResult = this.ingredientParser.createResultObject(parsingAPhrase);
 			IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
 
 			MatchingProcessResult match=new MatchingProcessResult();
 
 
-			match.setIngredientParsingDetails(singleResult);
-			String markedWords=singleResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
+			match.setIngredientParsingDetails(ingredientResult);
+			String markedWords=ingredientResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
 			List<ProductParsingProcessObject> parsingResultList = this.productParser.tescoSearchForParsings(markedWords);
 
 			for(ProductParsingProcessObject pr:parsingResultList){
@@ -59,23 +60,23 @@ public class IngredientProductMatchingService extends AbstractParser {
 				ProductMatchingResult pmr=new ProductMatchingResult(ppr);
 
 
-				List<String> ingredientWordsMarked=singleResult.getRestrictivelyCalculatedResult().getMarkedWords();
-				List<String> productWordsMarked=ppr.getRestrictivelyCalculatedResult().getMarkedWords();
+				List<QualifiedToken> ingredientWordsMarked=parsingAPhrase.getFinalResults().stream().filter(t->t.getWordType()== WordType.ProductElement).collect(Collectors.toList());
+				List<QualifiedToken> productWordsMarked=pr.getFinalResults().stream().filter(t->t.getWordType()== WordType.ProductElement).collect(Collectors.toList());
 				List<String> matched=new ArrayList<>();
 				List<String> ingredientSurplus=new ArrayList<>();
 				List<String> productSurplus=new ArrayList<>();
 
 
 
-				for(String x:ingredientWordsMarked){
-					if(productWordsMarked.stream().filter(word->word.equals(x)).findAny().isPresent()){
-						matched.add(x);
+				for(QualifiedToken ingredientQt:ingredientWordsMarked){
+					if(productWordsMarked.stream().filter(productQt->productQt.compareWithToken(ingredientQt)).findAny().isPresent()){
+						matched.add(ingredientQt.getLemma());
 					}else {
-						ingredientSurplus.add(x);
+						ingredientSurplus.add(ingredientQt.getLemma());
 					}
 
 				}
-				productSurplus=productWordsMarked.stream().filter(s->!matched.contains(s)).collect(Collectors.toList());
+				productSurplus=productWordsMarked.stream().filter(qt->!matched.contains(qt.getLemma())).map(t->t.getLemma()).collect(Collectors.toList());
 
 
 				CalculatedResults cr=new CalculatedResults(ingredientSurplus,matched,productSurplus,matched);
