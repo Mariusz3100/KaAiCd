@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
@@ -59,7 +60,8 @@ public class WordClasifier {
 	@Autowired
 	PhraseDependenciesComparator dependenciesComparator;
 
-
+	@Autowired
+	CustomPhraseFoundRepository phraseFoundRepo;
 
 	public static ArrayList<String> productTypeKeywords;
 	public static ArrayList<String> irrelevanceKeywords;
@@ -526,8 +528,23 @@ public class WordClasifier {
 
 			return;
 		}
+		boolean found=checkWithPhrasesInDb(parsingAPhrase, index, t);
+		if(!found) {
+			checkWithResultsFromWordsApi(parsingAPhrase, index, t);
+		}
 
-		checkWithResultsFromWordsApi(parsingAPhrase, index, t);
+	}
+
+	private boolean checkWithPhrasesInDb(AbstractParsingObject parsingAPhrase, int index, Token t)
+			 {
+		List<PhraseFound> dbResults =this.phraseFoundRepo.findBySingleWordPhrase(t.getLemma());
+
+		if(dbResults!=null&&!dbResults.isEmpty()){
+			PhraseFound phraseFound = dbResults.get(0);
+			addResultBasedOnDb(parsingAPhrase,index,t,phraseFound);
+			return true;
+		}
+		return false;
 
 	}
 
@@ -669,7 +686,7 @@ public class WordClasifier {
 	}
 
 	private void addFoundSingleWordPhrase(AbstractParsingObject parsingAPhrase, QualifiedToken result) {
-		PhraseFound pf=new PhraseFound(result.getText(), result.getWordType(),result.getReasoning());
+		PhraseFound pf=new PhraseFound(result.getLemma(), result.getWordType(),result.getReasoning());
 		parsingAPhrase.addPhraseFound(pf);
 	//	this.phrasesRepo.save(pf);
 	}
@@ -697,7 +714,11 @@ public class WordClasifier {
 		result.setReasoning(reasoning);
 		parsingAPhrase.addResult(index,result);
 	}
-
+	protected void addResultBasedOnDb(AbstractParsingObject parsingAPhrase, int index, Token t,PhraseFound singleWordPhrase) {
+		QualifiedToken result=new QualifiedToken(t, singleWordPhrase.getType());
+		result.setReasoning("[DB: "+singleWordPhrase.getReasoning()+"]");
+		parsingAPhrase.addResult(index,result);
+	}
 
 	private void checkOtherTokens(AbstractParsingObject parsingAPhrase, int index,WordsApiResult productTypeRecognized) {
 		if(parsingAPhrase.getFutureTokens().containsKey(index)) {
