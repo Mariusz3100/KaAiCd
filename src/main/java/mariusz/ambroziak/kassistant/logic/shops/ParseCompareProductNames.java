@@ -45,7 +45,7 @@ public class ParseCompareProductNames {
 
 
 
-    private ProductNamesComparison calculateResults(){
+    ProductNamesComparison calculateResults(){
         ProductNamesComparison retValue=checkForEmptyPhrases();
         if(retValue!=null){
             return retValue;
@@ -67,8 +67,8 @@ public class ParseCompareProductNames {
                     currentFirstPhraseReadingIndex++;
                     addWordToFirstListEmptyToSecondList(firstPhraseWord.getText());
                 } else {
-                    String firstPhraseWord = firstPhraseTokens.get(currentFirstPhraseReadingIndex).getText();
-                    String secondPhraseWord = secondPhraseTokens.get(currentSecondPhraseReadingIndex).getText();
+                    Token firstPhraseWord = firstPhraseTokens.get(currentFirstPhraseReadingIndex);
+                    Token secondPhraseWord = secondPhraseTokens.get(currentSecondPhraseReadingIndex);
                     boolean equals = compareWords(firstPhraseWord, secondPhraseWord);
 
                     if (equals) {
@@ -98,8 +98,8 @@ public class ParseCompareProductNames {
         }
     }
 
-    private boolean compareWords(String firstPhraseWord, String secondPhraseWord) {
-        boolean equals= firstPhraseWord.equals(secondPhraseWord);
+    private boolean compareWords(Token firstPhraseWord, Token secondPhraseWord) {
+        boolean equals= firstPhraseWord.getLemma().equals(secondPhraseWord.getLemma());
 
         if(!equals){
             equals=checkForImproperEquals(firstPhraseWord,secondPhraseWord);
@@ -108,10 +108,10 @@ public class ParseCompareProductNames {
         return equals;
     }
 
-    private boolean checkForImproperEquals(String firstPhraseWord, String secondPhraseWord) {
-        if(firstPhraseWord.toLowerCase().equals("toms")&&secondPhraseWord.toLowerCase().equals("tomatoes"))
+    private boolean checkForImproperEquals(Token firstPhraseWord, Token secondPhraseWord) {
+        if(firstPhraseWord.getLemma().toLowerCase().equals("toms")&&secondPhraseWord.getLemma().toLowerCase().equals("tomatoes"))
             return true;
-        if(firstPhraseWord.toLowerCase().equals("fin")&&secondPhraseWord.toLowerCase().equals("finest"))
+        if(firstPhraseWord.getLemma().toLowerCase().equals("fin")&&secondPhraseWord.getLemma().toLowerCase().equals("finest"))
             return true;
 
         return false;
@@ -168,9 +168,9 @@ public class ParseCompareProductNames {
         return tokenized ==null|| tokenized.getTokens()==null|| tokenized.getTokens().isEmpty();
     }
 
-    private void neitherPhraseIsFinished(List<Token>  firstPhraseSplitted, List<Token> secondPhraseSplitted, String firstPhraseWord, String secondPhraseWord) {
-        Optional<Token> foundInFirstPhraseList = firstPhraseSplitted.subList(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).stream().filter(s -> compareWords(s.getLemma(), secondPhraseWord)).findFirst();
-        Optional<Token> foundInSecondPhraseList = secondPhraseSplitted.subList(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).stream().filter(s -> compareWords(s.getLemma(), firstPhraseWord)).findFirst();
+    private void neitherPhraseIsFinished(List<Token>  firstPhraseSplitted, List<Token> secondPhraseSplitted, Token firstPhraseWord, Token secondPhraseWord) {
+        Optional<Token> foundInFirstPhraseList = firstPhraseSplitted.subList(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).stream().filter(s -> compareWords(s, secondPhraseWord)).findFirst();
+        Optional<Token> foundInSecondPhraseList = secondPhraseSplitted.subList(currentSecondPhraseReadingIndex,secondPhraseSplitted.size()).stream().filter(s -> compareWords(s, firstPhraseWord)).findFirst();
 
         if(foundInFirstPhraseList.isPresent()&&foundInSecondPhraseList.isPresent()) {
             int foundInFirstPhraseIndex=IntStream.range(currentFirstPhraseReadingIndex,firstPhraseSplitted.size()).filter(i->firstPhraseSplitted.get(i).equals(secondPhraseWord)).findFirst().getAsInt();
@@ -178,10 +178,10 @@ public class ParseCompareProductNames {
             if(foundInFirstPhraseIndex==foundInSecondPhraseIndex){
                 addConflictingWordsToLists(firstPhraseWord,secondPhraseWord);
             }else if(foundInFirstPhraseIndex>foundInSecondPhraseIndex){
-                skipCurrentWordInSecondList(secondPhraseWord);
+                skipCurrentWordInSecondList(secondPhraseWord.getLemma());
             }else{
 
-                skipCurrentWordinFirstList(firstPhraseWord);
+                skipCurrentWordinFirstList(firstPhraseWord.getLemma());
 
             }
 
@@ -190,10 +190,10 @@ public class ParseCompareProductNames {
         }else{
             if(foundInFirstPhraseList.isPresent()){
                 //the word from second phrase is later in first phrase; we "skip over" the current word from first phrase
-                skipCurrentWordinFirstList(firstPhraseWord);
+                skipCurrentWordinFirstList(firstPhraseWord.getLemma());
             }
             if(foundInSecondPhraseList.isPresent()){
-                skipCurrentWordInSecondList(secondPhraseWord);
+                skipCurrentWordInSecondList(secondPhraseWord.getLemma());
             }
 
         }
@@ -209,17 +209,17 @@ public class ParseCompareProductNames {
         currentFirstPhraseReadingIndex++;
     }
 
-    private void addToBothResultLists(String word){
+    private void addToBothResultLists(Token word){
         currentFirstPhraseReadingIndex++;
         currentSecondPhraseReadingIndex++;
-        secondPhraseResults.add(new WordComparisonResult(word, true));
-        firstPhraseResults.add(new WordComparisonResult(word, true));
+        secondPhraseResults.add(new WordComparisonResult(word.getLemma(), true));
+        firstPhraseResults.add(new WordComparisonResult(word.getLemma(), true));
     }
-    private void addConflictingWordsToLists(String firstPhraseWord, String secondPhraseWord){
+    private void addConflictingWordsToLists(Token firstPhraseWord, Token secondPhraseWord){
         currentFirstPhraseReadingIndex++;
         currentSecondPhraseReadingIndex++;
-        secondPhraseResults.add(new WordComparisonResult(secondPhraseWord, false));
-        firstPhraseResults.add(new WordComparisonResult(firstPhraseWord, false));
+        secondPhraseResults.add(new WordComparisonResult(secondPhraseWord.getLemma(), false));
+        firstPhraseResults.add(new WordComparisonResult(firstPhraseWord.getLemma(), false));
     }
 //    private void addToSecondResultListOnly(String word){
 //        currentFirstPhraseReadingIndex++;

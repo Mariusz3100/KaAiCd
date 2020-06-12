@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.PhraseFoundRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
@@ -207,7 +206,7 @@ public class WordClasifier {
 		UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 20);
 		for(SingleResult sp:inApi.getFoods()) {
 			String desc = sp.getDescription();
-			boolean isSame=this.dependenciesComparator.comparePhrases(desc,quantitylessTokens);
+			boolean isSame=this.dependenciesComparator.comparePhrases(quantitylessTokens,desc);
 			System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
 
 			if(isSame){
@@ -547,7 +546,18 @@ public class WordClasifier {
 		return false;
 
 	}
+	private boolean checkWithResultsFromUsdaApi(AbstractParsingObject parsingAPhrase, int index, Token t){
+		UsdaResponse inApi = this.usdaApiClient.findInApi(t.getText(), 10);
 
+		for(SingleResult sp:inApi.getFoods()){
+			String desc=sp.getDescription();
+			if(desc.toLowerCase().equals(t.getText().toLowerCase())){
+				addProductResult(parsingAPhrase,index,t,"[usda api: " + sp.getFdcId() + "]");
+				return true;
+			}
+		}
+		return false;
+	}
 	private void checkWithResultsFromWordsApi(AbstractParsingObject parsingAPhrase, int index, Token t)
 			throws WordNotFoundException {
 		ArrayList<WordsApiResult> wordResults =new ArrayList<WordsApiResult>();

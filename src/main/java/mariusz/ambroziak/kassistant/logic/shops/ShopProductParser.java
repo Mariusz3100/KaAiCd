@@ -15,11 +15,8 @@ import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
-import mariusz.ambroziak.kassistant.pojos.*;
-import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
-import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
@@ -66,6 +63,13 @@ public class ShopProductParser  extends AbstractParser {
 	@Autowired
 	CustomPhraseFoundRepository phraseFoundRepo;
 
+	@Autowired
+	ProductNameComparatorSevice namesComparator;
+
+
+
+
+
 	private String spacelessRegex="(\\d+)(\\w+)";
 
 
@@ -104,7 +108,7 @@ public class ShopProductParser  extends AbstractParser {
 	}
 
 	public List<ProductParsingProcessObject> tescoSearchForParsings(String phrase) {
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,2);
+		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
 				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
@@ -177,7 +181,7 @@ public class ShopProductParser  extends AbstractParser {
 			searchApiName = tp.getSearchApiName()==null?"":tp.getSearchApiName();
 			ingredients = tp.getIngredients()==null?"":tp.getIngredients();
 
-			ProductNamesComparison productNamesComparison =ParseCompareProductNames.parseTwoPhrases(name,searchApiName);
+			ProductNamesComparison productNamesComparison =namesComparator.parseTwoPhrases(name,searchApiName);
 
 
 
@@ -309,7 +313,7 @@ public class ShopProductParser  extends AbstractParser {
 				.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
 				.map(t -> t.getText()).collect(Collectors.joining(" "));
 		if(secondName==null||secondName.isEmpty()) {
-			productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, "");
+			productNamesComparisonOfFinalTokens = namesComparator.parseTwoPhrases(detailsName, "");
 		}else{
 
 			Tesco_Product tempTp = tp.clone();
@@ -329,7 +333,7 @@ public class ShopProductParser  extends AbstractParser {
 					.map(t -> t.getText()).collect(Collectors.joining(" "));
 
 
-			productNamesComparisonOfFinalTokens = ParseCompareProductNames.parseTwoPhrases(detailsName, searchApiName);
+			productNamesComparisonOfFinalTokens = namesComparator.parseTwoPhrases(detailsName, searchApiName);
 		}
 		parsingAPhrase.setFinalNames(productNamesComparisonOfFinalTokens);
 
