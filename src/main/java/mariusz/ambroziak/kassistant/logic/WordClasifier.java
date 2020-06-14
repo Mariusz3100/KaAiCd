@@ -89,6 +89,8 @@ public class WordClasifier {
 		productTypeKeywords.add("citrous fruit");
 		productTypeKeywords.add("dish");
 		productTypeKeywords.add("victuals");
+		productTypeKeywords.add("alcohol");
+		productTypeKeywords.add("edible fat");
 
 
 
