@@ -171,7 +171,7 @@ public class WordClasifier {
 
 				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry);
 				if(!found){
-					found=checkUsdaApi(parsingAPhrase, adjacentyConotations.get(entry), entry);
+					found= checkUsdaApiForAdjacencies(parsingAPhrase, adjacentyConotations.get(entry), entry);
 				}
 
 			}
@@ -191,7 +191,7 @@ public class WordClasifier {
 				}
 
 				if (!found) {
-					found = checkUsdaApi(parsingAPhrase, quantitylessDependenciesConnotations);
+					found = checkUsdaApiForDependencies(parsingAPhrase, quantitylessDependenciesConnotations);
 				}
 			}
 		}
@@ -199,7 +199,7 @@ public class WordClasifier {
 
 	}
 
-	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,List<ConnectionEntry> quantitylessDependenciesConnotations) {
+	private boolean checkUsdaApiForDependencies(AbstractParsingObject parsingAPhrase, List<ConnectionEntry> quantitylessDependenciesConnotations) {
 		//TODO right now we do not consider shorter search phrases, to be thought about
 		String quantitylessTokens=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->t.getText().toLowerCase()).collect(Collectors.joining(" "));
 		String quantitylessTokensWithPluses=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().filter(t->!t.getText().equals(NlpConstants.of_Word)).map(t->"+"+t.getText().toLowerCase()).collect(Collectors.joining(" "));
@@ -245,7 +245,7 @@ public class WordClasifier {
 		return false;
 	}
 
-	private boolean checkUsdaApi(AbstractParsingObject parsingAPhrase,int index, String entry) {
+	private boolean checkUsdaApiForAdjacencies(AbstractParsingObject parsingAPhrase, int index, String entry) {
 		UsdaResponse inApi = this.usdaApiClient.findInApi(entry, 10);
 
 		for(SingleResult sp:inApi.getFoods()){
@@ -527,10 +527,18 @@ public class WordClasifier {
 
 			return;
 		}
-		boolean found=checkWithPhrasesInDb(parsingAPhrase, index, t);
+//		boolean found=checkWithPhrasesInDb(parsingAPhrase, index, t);
+//		if(!found) {
+		boolean found=checkWithResultsFromWordsApi(parsingAPhrase, index, t);
+
 		if(!found) {
-			checkWithResultsFromWordsApi(parsingAPhrase, index, t);
+			found=checkWithResultsFromUsdaApi(parsingAPhrase, index, t);
 		}
+
+		if(!found){
+			parsingAPhrase.addResult(index, new QualifiedToken(t,null));
+		}
+//		}
 
 	}
 
@@ -558,7 +566,8 @@ public class WordClasifier {
 		}
 		return false;
 	}
-	private void checkWithResultsFromWordsApi(AbstractParsingObject parsingAPhrase, int index, Token t)
+
+	private boolean checkWithResultsFromWordsApi(AbstractParsingObject parsingAPhrase, int index, Token t)
 			throws WordNotFoundException {
 		ArrayList<WordsApiResult> wordResults =new ArrayList<WordsApiResult>();
 		boolean found=searchForAllPossibleMeaningsInWordsApi(parsingAPhrase,wordResults, index, t);
@@ -567,6 +576,7 @@ public class WordClasifier {
 				WordsApiResult quantityTypeRecognized = checkQuantityTypesForWordObject(wordResults);
 				if(quantityTypeRecognized!=null) {
 					addQuantityResult(parsingAPhrase, index, t,quantityTypeRecognized);
+					return true;
 				} else {
 					WordsApiResult productTypeRecognized = checkProductTypesForWordObject(wordResults);
 					if(productTypeRecognized!=null) {
@@ -576,17 +586,20 @@ public class WordClasifier {
 
 						addProductResult(parsingAPhrase,index,t,productTypeRecognized);
 						addFoundSingleWordPhrase(parsingAPhrase,parsingAPhrase.getFinalResults().get(index));
-
+						return true;
 					}else {
-						parsingAPhrase.addResult(index, new QualifiedToken(t,null));
+					//	parsingAPhrase.addResult(index, new QualifiedToken(t,null));
+						return false;
 					}
 				}
 			}else {
 				parsingAPhrase.addResult(index, new QualifiedToken(t,WordType.Unknown));
-
+				return false;
 			}
 
 		}
+
+		return false;
 	}
 
 	private WordType improperlyFindType(AbstractParsingObject parsingAPhrase, int index,
@@ -750,6 +763,7 @@ public class WordClasifier {
 			Token t=parsingAPhrase.getEntitylessTokenized().getTokens().get(index);
 			parsingAPhrase.addResult(index, new QualifiedToken(t, WordType.ProductElement));
 		}
+//		}
 
 	}
 
