@@ -21,15 +21,15 @@ public class PhraseDependenciesComparator {
 
 
 
-    public boolean comparePhrases(String first,String second){
-        if(first.equals(second))
+    public boolean comparePhrases(String searched,String description){
+        if(searched.equals(description))
             return true;
 
-        TokenizationResults firstTokenized = tokenizer.parse(first.toLowerCase());
-        TokenizationResults secondTokenized = tokenizer.parse(second.toLowerCase());
+        TokenizationResults firstTokenized = tokenizer.parse(searched.toLowerCase());
+        TokenizationResults secondTokenized = tokenizer.parse(description.toLowerCase());
 
 
-        if(!arePhrasesSameLength(firstTokenized, secondTokenized))
+        if(!isSecondOneAtMostOneLonger(firstTokenized, secondTokenized))
         {
             return false;
         }else{
@@ -46,24 +46,24 @@ public class PhraseDependenciesComparator {
                 }
             }
 
-            if(allTwoWordDependenciesOfSecond.isEmpty()){
+       //     if(allTwoWordDependenciesOfSecond.isEmpty()){
                 return true;
 
-            }else{
-                System.err.println("USDA api covers all phrase dependencies, but has additional ones.");
-                return false;
-            }
+//            }else{
+//                System.err.println("USDA api covers all phrase dependencies, but has additional ones.");
+//                return false;
+//            }
 
         }
 
     }
 
-    private boolean arePhrasesSameLength(TokenizationResults firstTokenized, TokenizationResults secondTokenized) {
+    private boolean isSecondOneAtMostOneLonger(TokenizationResults firstTokenized, TokenizationResults secondTokenized) {
         List<Token> firstCollected = firstTokenized.getTokens().stream().filter(s -> !checkifPunctation(s)&&!isOfWord(s)).collect(Collectors.toList());
 
         List<Token> secondCollected = secondTokenized.getTokens().stream().filter(s -> !checkifPunctation(s)&&!isOfWord(s)).collect(Collectors.toList());
 
-        boolean result= firstCollected.size()==secondCollected.size();
+        boolean result= firstCollected.size()==secondCollected.size()||firstCollected.size()==secondCollected.size()-1;
 
         return result;
 
