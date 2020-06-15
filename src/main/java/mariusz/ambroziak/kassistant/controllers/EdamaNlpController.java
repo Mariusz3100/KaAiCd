@@ -1,8 +1,12 @@
 package mariusz.ambroziak.kassistant.controllers;
 
 import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.webclients.edamam.recipes.EdamanRecipeSearchService;
+import mariusz.ambroziak.kassistant.webclients.edamam.recipes.Ingredient;
+import mariusz.ambroziak.kassistant.webclients.edamam.recipes.RecipeHitOuter;
 import mariusz.ambroziak.kassistant.webclients.edamam.recipes.RecipeSearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,9 +52,43 @@ public class EdamaNlpController {
 	@RequestMapping("/recipeSearch")
 	public String recipeSearch(@RequestParam(value="param", defaultValue="") String param){
 
-		RecipeSearchResponse retValue=this.searchSevice.findInApi(param);
+		RecipeSearchResponse retValue=this.searchSevice.findInApi(param,0,10);
+
+		List<String> ingredient=new ArrayList<>();
+
+		printMatching(param, retValue,ingredient);
+		System.out.println();
+
+		retValue=this.searchSevice.findInApi(param,10,30);
+
+		printMatching(param, retValue,ingredient);
+
+		retValue=this.searchSevice.findInApi(param,30,50);
+
+		printMatching(param, retValue,ingredient);
+
+
+		retValue=this.searchSevice.findInApi(param,70,90);
+
+		printMatching(param, retValue,ingredient);
+
+		ingredient.sort(Comparator.comparingInt(String::length));
+		ingredient=ingredient.stream().distinct().collect(Collectors.toList());
+		ingredient.forEach(x->System.out.println(x));
 		return retValue.toJsonString();
 
+	}
+
+	private void printMatching(@RequestParam(value = "param", defaultValue = "") String param, RecipeSearchResponse retValue,List<String>  ingredient) {
+		for(RecipeHitOuter outer:retValue.getHits()){
+			List<Ingredient> ingredients = outer.getRecipe().getIngredients();
+
+			for (Ingredient i:ingredients){
+				if(i.getText().contains(param)){
+					ingredient.add(i.getText());
+				}
+			}
+		}
 	}
 
 
