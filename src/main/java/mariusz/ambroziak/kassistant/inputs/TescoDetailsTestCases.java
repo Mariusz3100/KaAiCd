@@ -4,8 +4,10 @@ package mariusz.ambroziak.kassistant.inputs;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductLearningCaseRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
+import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -30,6 +32,12 @@ public class TescoDetailsTestCases {
 	private Resource inputFileResource;
 	private TescoDetailsApiClientService tescoDetailsService;
 	private ProductLearningCaseRepository learningCaseRepository;
+
+	@Autowired
+	private TescoFromFileService tescoFromFileService;
+
+	@Autowired
+	private TescoProductRepository productRepository;
 
 	@Autowired
 	public TescoDetailsTestCases(ResourceLoader resourceLoader, TescoDetailsApiClientService searchService,ProductLearningCaseRepository learningCaseRepository) {
@@ -61,7 +69,27 @@ public class TescoDetailsTestCases {
 	}
 
 	private Tesco_Product getProductDataFromDbOrApi(ProductLearningCase c) {
-		return this.tescoDetailsService.getFullDataFromDbOrApi(c.getUrl());
+		return getFullDataFromDbOrApi(c.getName());
+
+
+	}
+
+	public Tesco_Product getFullDataFromDbOrApi(String name) {
+
+		List<Tesco_Product> found = this.productRepository.findByName(name);
+
+
+		if (!found.isEmpty() && found.get(0) != null) {
+			Tesco_Product foundInDb = found.get(0);
+			return foundInDb;
+		} else {
+			Tesco_Product fromApi = this.tescoFromFileService.getProductByName(name);
+			if(fromApi!=null) {
+				this.productRepository.save(fromApi);
+			}
+			return fromApi;
+		}
+
 	}
 
 
@@ -107,7 +135,7 @@ public class TescoDetailsTestCases {
 
 	public List<ProductParsingProcessObject> getParsingObjectsFromDb() {
 		List<ProductParsingProcessObject> retValue=getTestCasesFromDb().stream()
-				.map(s->new ProductParsingProcessObject(getProductDataFromDbOrApi(s),s)).collect(Collectors.toList());
+				.map(s->new ProductParsingProcessObject(getProductDataFromDbOrApi(s),s)).filter(s->s.getProduct()!=null).collect(Collectors.toList());
 		return retValue;
 	}
 
