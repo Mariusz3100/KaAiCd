@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
@@ -248,7 +249,7 @@ public abstract class AbstractParsingObject {
 				if(ner.getLabel().equals(PythonSpacyLabels.entitiesCardinalLabel)) {
 
 				}else {
-					retValue=retValue.replaceAll(ner.getText(),"").replaceAll("  ", " ").trim();
+					retValue=retValue.replaceAll(Pattern.quote(ner.getText()),"").replaceAll("  ", " ").trim();
 				}
 			}
 			retValue=retValue.replaceAll("( )+", " ");

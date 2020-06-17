@@ -19,6 +19,7 @@ import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntityRecognitionClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.*;
+import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
@@ -70,6 +71,9 @@ public class WordClasifier {
 
 	public static ArrayList<String> freshFoodKeywords;
 
+	public static ArrayList<String> pureeFoodKeywords;
+	public static ArrayList<String> juiceKeywords;
+
 
 	static {
 		productTypeKeywords=new ArrayList<String>();
@@ -104,6 +108,8 @@ public class WordClasifier {
 		quantityTypeKeywords.add("small indefinite quantity");
 		quantityTypeKeywords.add("weight unit");
 		quantityTypeKeywords.add("capacity unit");
+		quantityTypeKeywords.add("avoirdupois unit");
+		quantityTypeKeywords.add("package");
 
 
 		//presumably too specific ones:
@@ -114,6 +120,17 @@ public class WordClasifier {
 
 		freshFoodKeywords=new ArrayList<String>();
 		freshFoodKeywords.add("fresh");
+
+
+		pureeFoodKeywords=new ArrayList<>();
+		pureeFoodKeywords.add("puree");
+		pureeFoodKeywords.add("passata");
+		pureeFoodKeywords.add("paste");
+		pureeFoodKeywords.add("concentrate");
+
+		juiceKeywords=new ArrayList<>();
+		juiceKeywords.add("juice");
+
 
 	}
 
@@ -164,7 +181,31 @@ public class WordClasifier {
 
 	protected void calculateProductType(AbstractParsingObject parsingAPhrase) {
 	}
+	protected void extractAndMarkProductPropertyWords(AbstractParsingObject parsingAPhrase) {
+		for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
+			for(String keyword:freshFoodKeywords) {
+				if(keyword.equals(qt.getText())) {
+					qt.setWordType(WordType.ProductPropertyElement);
+					parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
+				}
+			}
 
+			for(String keyword:juiceKeywords) {
+				if(keyword.equals(qt.getText())) {
+					qt.setWordType(WordType.ProductPropertyElement);
+					parsingAPhrase.setFoodTypeClassified(ProductType.juice);
+				}
+			}
+
+			for(String keyword:pureeFoodKeywords) {
+				if(keyword.equals(qt.getText())) {
+					qt.setWordType(WordType.ProductPropertyElement);
+					parsingAPhrase.setFoodTypeClassified(ProductType.puree);
+				}
+			}
+		}
+
+	}
 	private void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {
 		Map<String, Integer> adjacentyConotations = calculateAdjacencies(parsingAPhrase);
 		boolean found=false;
