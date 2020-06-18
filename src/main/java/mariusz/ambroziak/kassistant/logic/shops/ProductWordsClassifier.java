@@ -41,20 +41,10 @@ public class ProductWordsClassifier extends WordClasifier {
 
 
     public void calculateProductType(AbstractParsingObject parsingAPhrase) {
-        extractAndMarkProductProperties(parsingAPhrase);
+        extractAndMarkProductPropertyWords(parsingAPhrase);
     }
 
-    protected void extractAndMarkProductProperties(AbstractParsingObject parsingAPhrase) {
-        for(QualifiedToken qt:parsingAPhrase.getFinalResults()) {
-            for(String keyword:freshFoodKeywords) {
-                if(keyword.equals(qt.getText())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
-                    parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
-                }
-            }
-        }
 
-    }
 
     public void calculateProductType(ProductParsingProcessObject parsingAPhrase) {
         ProductType result=checkDepartmentForKeywords(parsingAPhrase);

@@ -40,7 +40,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiResultImpostor;
 public class WordClasifier {
 	private static String wikipediaCheckRegex=".*[a-zA-Z].*";
 	private static String convertApiCheckRegex=".*[a-zA-Z].*";
-	public static String punctuationRegex="[\\.,\\-]*";
+	public static String punctuationRegex="[\\.,\\-\\*\\(\\)]*";
 
 
 	@Autowired
@@ -214,7 +214,7 @@ public class WordClasifier {
 
 				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry);
 				if(!found){
-					found= checkUsdaApiForAdjacencies(parsingAPhrase, adjacentyConotations.get(entry), entry);
+					found= checkUsdaApiForAdjacencyEntry(parsingAPhrase, adjacentyConotations.get(entry), entry);
 				}
 
 			}
@@ -234,7 +234,12 @@ public class WordClasifier {
 				}
 
 				if (!found) {
-					found = checkUsdaApiForDependencies(parsingAPhrase, quantitylessDependenciesConnotations);
+					found = checkUsdaApiWithRespectForDependencies(parsingAPhrase);
+				}
+				if(!found){
+					for(ConnectionEntry ce:quantitylessDependenciesConnotations){
+						checkUsdaApiForDependency(parsingAPhrase,ce);
+					}
 				}
 			}
 		}
@@ -242,7 +247,25 @@ public class WordClasifier {
 
 	}
 
-	private boolean checkUsdaApiForDependencies(AbstractParsingObject parsingAPhrase, List<ConnectionEntry> quantitylessDependenciesConnotations) {
+	private boolean checkUsdaApiForDependency(AbstractParsingObject parsingAPhrase, ConnectionEntry quantitylessDependenciesConnotation) {
+		//TODO right now we do not consider shorter search phrases, to be thought about
+		String quantitylessTokens=quantitylessDependenciesConnotation.getHead().getText()+" "+quantitylessDependenciesConnotation.getChild().getText();
+		String quantitylessTokensWithPluses="+"+quantitylessDependenciesConnotation.getHead().getText()+" +"+quantitylessDependenciesConnotation.getChild().getText();
+		UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 20);
+		for(SingleResult sp:inApi.getFoods()) {
+			String desc = sp.getDescription();
+			boolean isSame=this.dependenciesComparator.comparePhrases(quantitylessTokens,desc);
+			System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
+
+			if(isSame){
+				return markFoundDependencyResults(parsingAPhrase,sp);
+			}
+		}
+
+		return false;
+	}
+
+	private boolean checkUsdaApiWithRespectForDependencies(AbstractParsingObject parsingAPhrase) {
 		//TODO right now we do not consider shorter search phrases, to be thought about
 		String quantitylessTokens=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t->t.getText().toLowerCase()).collect(Collectors.joining(" "));
 		String quantitylessTokensWithPluses=parsingAPhrase.getQuantitylessTokenized().getTokens().stream().filter(t->!t.getText().equals(NlpConstants.of_Word)).map(t->"+"+t.getText().toLowerCase()).collect(Collectors.joining(" "));
@@ -253,14 +276,14 @@ public class WordClasifier {
 			System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
 
 			if(isSame){
-				return markFoundDependencyResults(parsingAPhrase, quantitylessDependenciesConnotations,sp);
+				return markFoundDependencyResults(parsingAPhrase,sp);
 			}
 		}
 
 		return false;
 	}
 
-	private boolean markFoundDependencyResults(AbstractParsingObject parsingAPhrase, List<ConnectionEntry> quantitylessDependenciesConnotations, SingleResult sp) {
+	private boolean markFoundDependencyResults(AbstractParsingObject parsingAPhrase, SingleResult sp) {
 		if(sp.getDescription()==null||sp.getDescription().isEmpty())
 			return false;
 
@@ -288,7 +311,7 @@ public class WordClasifier {
 		return false;
 	}
 
-	private boolean checkUsdaApiForAdjacencies(AbstractParsingObject parsingAPhrase, int index, String entry) {
+	private boolean checkUsdaApiForAdjacencyEntry(AbstractParsingObject parsingAPhrase, int index, String entry) {
 		UsdaResponse inApi = this.usdaApiClient.findInApi(entry, 10);
 
 		for(SingleResult sp:inApi.getFoods()){
@@ -505,7 +528,7 @@ public class WordClasifier {
 		String quantityPhrase="",productPhrase="";
 		for(int i=0;i<parsingAPhrase.getFinalResults().size();i++) {
 			QualifiedToken qt=parsingAPhrase.getFinalResults().get(i);
-			if(WordType.QuantityElement==qt.getWordType()&&productPhrase.equals("")) {
+			if(WordType.QuantityElement==qt.getWordType()){//&&productPhrase.equals("")) {
 				quantityPhrase+=qt.getText()+" ";
 			}else if(WordType.PunctuationElement==qt.getWordType()) {
 				//ignore
@@ -570,18 +593,18 @@ public class WordClasifier {
 
 			return;
 		}
-//		boolean found=checkWithPhrasesInDb(parsingAPhrase, index, t);
-//		if(!found) {
-		boolean found=checkWithResultsFromWordsApi(parsingAPhrase, index, t);
-
+		boolean found=checkWithPhrasesInDb(parsingAPhrase, index, t);
 		if(!found) {
-			found=checkWithResultsFromUsdaApi(parsingAPhrase, index, t);
-		}
+			found=checkWithResultsFromWordsApi(parsingAPhrase, index, t);
 
-		if(!found){
-			parsingAPhrase.addResult(index, new QualifiedToken(t,null));
+			if(!found) {
+				found=checkWithResultsFromUsdaApi(parsingAPhrase, index, t);
+			}
+
+			if(!found){
+				parsingAPhrase.addResult(index, new QualifiedToken(t,null));
+			}
 		}
-//		}
 
 	}
 
@@ -642,7 +665,10 @@ public class WordClasifier {
 
 		}
 
-		return false;
+		if(found)
+			return true;
+		else
+			return false;
 	}
 
 	private WordType improperlyFindType(AbstractParsingObject parsingAPhrase, int index,
@@ -1076,7 +1102,7 @@ public class WordClasifier {
 	}
 
 	private static WordsApiResult checkProductTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
-		WordsApiResult war = checkForTypes(wordResults,productTypeKeywords);
+		WordsApiResult war = checkForTypes(wordResults,productTypeKeywords,new ArrayList<>());
 		if (war != null)
 			return war;
 
@@ -1085,14 +1111,14 @@ public class WordClasifier {
 
 
 	private static WordsApiResult checkQuantityTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
-		WordsApiResult war = checkForTypes(wordResults,quantityTypeKeywords);
+		WordsApiResult war = checkForTypes(wordResults,quantityTypeKeywords,quantityAttributeKeywords);
 		if (war != null)
 			return war;
 
 		return null;
 	}
 
-	private static WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults, ArrayList<String> keywordsForTypeconsidered) {
+	private static WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults, ArrayList<String> keywordsForTypeconsidered,ArrayList<String> attributesForTypeConsidered) {
 		for(WordsApiResult war:wordResults) {
 			if(war instanceof WordsApiResultImpostor){
 				return war;
@@ -1103,7 +1129,7 @@ public class WordClasifier {
 				war.setReasoningForFound("WordsApi: "+war.getDefinition()+" ("+typeOfTagRecognized+")");
 				return war;
 			}
-			String attributeTagRecognized=checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(),war.getAttribute(),keywordsForTypeconsidered);
+			String attributeTagRecognized=checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(),war.getAttribute(),attributesForTypeConsidered);
 
 			if(attributeTagRecognized!=null&&!attributeTagRecognized.isEmpty()){
 				war.setReasoningForFound("WordsApi: "+war.getDefinition()+" ("+attributeTagRecognized+")");
@@ -1119,7 +1145,7 @@ public class WordClasifier {
 	private static String checkIfPropertiesFromWordsApiContainKeywords(String productName, ArrayList<String> typeResults, ArrayList<String> keywords) {
 		for(String typeToBeChecked:typeResults) {
 			for(String typeConsidered:keywords) {
-				if(typeToBeChecked.indexOf(typeConsidered)>=0) {
+				if(typeToBeChecked.equals(typeConsidered)) {
 //					System.out.println(productName+" -> "+typeToBeChecked+" : "+typeConsidered);
 
 					return typeToBeChecked;
@@ -1138,6 +1164,15 @@ public class WordClasifier {
 			if(department!=null&&department.toLowerCase().contains(keyword)){
 				return ProductType.fresh;
 			}
+
+			if(product instanceof Tesco_Product){
+				String superdepartment = ((Tesco_Product) product).getSuperdepartment();
+				if(superdepartment!=null&&superdepartment.toLowerCase().contains(keyword)){
+					return ProductType.fresh;
+				}
+
+			}
+
 		}
 
 		return ProductType.unknown;

@@ -185,9 +185,9 @@ public class IngredientPhraseParser extends AbstractParser {
 		NerResults entitiesFound = this.nerRecognizer.find(line);
 		parsingAPhrase.setEntities(entitiesFound);
 
-		String entitylessString=parsingAPhrase.calculateEntitylessString(parsingAPhrase.getBracketLessPhrase());
-
-		TokenizationResults tokens = this.tokenizator.parse(entitylessString);
+//		String entitylessString=parsingAPhrase.calculateEntitylessString(parsingAPhrase.getBracketLessPhrase());
+		parsingAPhrase.setEntitylessString(line);
+		TokenizationResults tokens = this.tokenizator.parse(line);
 		parsingAPhrase.setEntitylessTokenized(tokens);
 		this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
@@ -460,6 +460,10 @@ public class IngredientPhraseParser extends AbstractParser {
 
 		if(phrase.substring(0, phrase.length()<10?phrase.length():10).indexOf(" & ")>0) {
 			phrase=phrase.replaceFirst(" & ", " and ");
+		}
+
+		if(phrase.substring(0, phrase.length()<10?phrase.length():10).indexOf(" c. ")>0) {
+			phrase=phrase.replaceFirst(" c. ", " cup ");
 		}
 
 		return phrase;

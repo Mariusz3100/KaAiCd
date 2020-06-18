@@ -64,7 +64,9 @@ public class IngredientPhraseTokenizerTest {
 		if(phrase.substring(0, phrase.length()<10?phrase.length():10).indexOf(" c ")>0) {
 			phrase=phrase.replaceFirst(" c ", " cup ");
 		}
-
+		if(phrase.substring(0, phrase.length()<10?phrase.length():10).indexOf(" c. ")>0) {
+			phrase=phrase.replaceFirst(" c. ", " cup ");
+		}
 
 
 		return phrase;
