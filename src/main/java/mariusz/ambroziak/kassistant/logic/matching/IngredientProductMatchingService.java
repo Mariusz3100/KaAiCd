@@ -11,12 +11,15 @@ import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.parsing.*;
 import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
+import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -32,6 +35,8 @@ public class IngredientProductMatchingService extends AbstractParser {
 	ParsingBatchRepository parsingBatchRepository;
 
 
+	@Autowired
+	private TescoFromFileService tescoFromFileService;
 
 
 
@@ -52,7 +57,7 @@ public class IngredientProductMatchingService extends AbstractParser {
 
 			match.setIngredientParsingDetails(ingredientResult);
 			String markedWords=ingredientResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
-			List<ProductParsingProcessObject> parsingResultList = this.productParser.tescoSearchForParsings(markedWords);
+			List<ProductParsingProcessObject> parsingResultList = searchForProducts(markedWords);
 
 			for(ProductParsingProcessObject pr:parsingResultList){
 				this.productParser.parseProductParsingObjectWithNamesComparison(pr);
@@ -93,6 +98,23 @@ public class IngredientProductMatchingService extends AbstractParser {
 
 		}
 		return retValue;
+	}
+
+
+	private List<ProductParsingProcessObject> searchForProducts(String markedWords) {
+		List<ProductParsingProcessObject> retValue=new ArrayList<>();
+		//return this.productParser.tescoSearchForParsings(markedWords);
+		List<String> wordsToFind = Arrays.asList(markedWords.split(" "));
+		Set<String> names = tescoFromFileService.nameToProducts.keySet();
+
+		for(String name:names){
+			if(!(wordsToFind.stream().filter(wordToFind->!name.contains(wordToFind)).count()>0)){
+				Tesco_Product tesco_product = tescoFromFileService.nameToProducts.get(name);
+				ProductParsingProcessObject parse=new ProductParsingProcessObject(tesco_product,new ProductLearningCase());
+				retValue.add(parse);
+			}
+		}
+		return  retValue;
 	}
 //	private ParsingResult createProductResultObject(ProductParsingProcessObject parsingAPhrase) {
 //		ParsingResult object=new ParsingResult();
