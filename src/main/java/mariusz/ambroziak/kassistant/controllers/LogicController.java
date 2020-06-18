@@ -9,6 +9,7 @@ import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpResponseData;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpSingleIngredientInner;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
 import mariusz.ambroziak.kassistant.webclients.edamam.recipes.*;
+import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,9 @@ public class LogicController {
 	private IngredientPhraseParser ingredientParser;
 	private EdamanRecipeSearchService searchSevice;
 	private EdamanIngredientParsingService edamanNlpService;
+	@Autowired
+	TescoFromFileService fileTescoService;
+
 
 	@Autowired
 	public LogicController(IngredientPhraseParser ingredientParser,EdamanRecipeSearchService searchSevice, EdamanIngredientParsingService edamanNlpService) {
@@ -38,13 +42,30 @@ public class LogicController {
 	public ParsingResultList phrasesParsing() throws IOException{
 //		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
 
-		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
+		ParsingResultList parseFromFile = this.ingredientParser.parseFromDb();
 
 
 		return parseFromFile;
 
 	}
 
+	@CrossOrigin
+	@RequestMapping("/initializeLocalProducts")
+	@ResponseBody
+	public String initializeLocalProducts() throws IOException{
+//		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
+
+
+        try {
+			int size=fileTescoService.initializeProductMap();
+			return "Products accessible: "+size;
+        }catch (IOException e){
+            e.printStackTrace();
+			return "Excepton: "+e.getMessage();
+        }
+
+
+	}
 
 	@RequestMapping("/searchIngredientsFor")
 	public String searchIngredientsFor(@RequestParam(value="param", defaultValue="") String param){
