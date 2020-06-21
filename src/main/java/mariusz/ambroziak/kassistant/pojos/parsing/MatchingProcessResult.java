@@ -18,6 +18,9 @@ public class MatchingProcessResult {
     }
 
     public List<ProductMatchingResult> getProductsConsideredParsingResults() {
+        if(productsConsideredParsingResults==null)
+        productsConsideredParsingResults=new ArrayList<ProductMatchingResult>();
+
         return productsConsideredParsingResults;
     }
 
@@ -27,10 +30,7 @@ public class MatchingProcessResult {
 
 
     public void addProductsConsideredParsingResults(ProductMatchingResult result) {
-        if(productsConsideredParsingResults==null)
-            productsConsideredParsingResults=new ArrayList<ProductMatchingResult>();
-
-        this.productsConsideredParsingResults.add(result);
+        getProductsConsideredParsingResults().add(result);
     }
 
 }

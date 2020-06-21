@@ -21,6 +21,7 @@ import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
+import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,8 @@ public class ShopProductParser  extends AbstractParser {
 	@Autowired
 	ProductNameComparatorSevice namesComparator;
 
-
+	@Autowired
+	TescoFromFileService tescoFromFileService;
 
 
 
@@ -368,7 +370,13 @@ public class ShopProductParser  extends AbstractParser {
 
 	private List<ProductParsingProcessObject> getTestCases() throws IOException {
 		//return tescoTestCases.getProduktsFromFile();
-		return tescoTestCases.getParsingObjectsFromDb();
+	//	return tescoTestCases.getParsingObjectsFromDb();
+
+	//	List<ProductParsingProcessObject> collect = this.tescoFromFileService.nameToProducts.values().stream().map(s -> new ProductParsingProcessObject(s, new ProductLearningCase())).collect(Collectors.toList());
+		List<ProductParsingProcessObject> collect=new ArrayList<>();
+
+		collect.addAll(this.tescoFromFileService.nameToProducts.values().stream().map(s -> new ProductParsingProcessObject(s, new ProductLearningCase())).collect(Collectors.toList()));
+		return collect;
 	}
 
 	private String calculateBrandlessPhrase(String originalPhrase, String brand) {

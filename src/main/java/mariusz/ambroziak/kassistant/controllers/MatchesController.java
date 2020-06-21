@@ -30,12 +30,20 @@ public class MatchesController {
 	@ResponseBody
 	public MatchingProcessResultList findMatchesForIngredients() throws IOException{
 
-		MatchingProcessResultList retValue=new MatchingProcessResultList(matchingService.parseMatchAndSaveToDb());
+		MatchingProcessResultList retValue=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases());
 
 		return retValue;
 
 	}
-
+//if(param==null)
+//	{
+//		matchingProcessResults = matchingService.parseMatchAndGetResultsFromDbAllCases();
+//	}else{
+//		matchingProcessResults=matchingService.parseMatchAndGetResultsFromDbForSingleCase(param);
+//	}
+//	MatchingProcessResultList retValue=new MatchingProcessResultList(matchingProcessResults);
+//
+//		return retValue;
 
 
 
