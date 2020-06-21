@@ -255,7 +255,7 @@ public class WordClasifier {
 		for(SingleResult sp:inApi.getFoods()) {
 			String desc = sp.getDescription();
 			boolean isSame=this.dependenciesComparator.comparePhrases(quantitylessTokens,desc);
-			System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
+	//		System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
 
 			if(isSame){
 				return markFoundDependencyResults(parsingAPhrase,sp);
@@ -273,7 +273,7 @@ public class WordClasifier {
 		for(SingleResult sp:inApi.getFoods()) {
 			String desc = sp.getDescription();
 			boolean isSame=this.dependenciesComparator.comparePhrases(quantitylessTokens,desc);
-			System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
+	//		System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
 
 			if(isSame){
 				return markFoundDependencyResults(parsingAPhrase,sp);
@@ -871,7 +871,7 @@ public class WordClasifier {
 		for(ConnectionEntry connotationFromExendedPhrase:dependenciesFromExtendedWord) {
 			for(ConnectionEntry connotationFromPhrase:connotations) {
 				if(areThoseConnectionsBetweenTheSameWords(connotationFromExendedPhrase, connotationFromPhrase)) {
-					System.out.println("found");
+	//				System.out.println("found");
 
 					goThroughTokensAnMarkConnected(parsingAPhrase, connotationFromExendedPhrase);
 

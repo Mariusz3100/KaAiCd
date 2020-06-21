@@ -57,7 +57,7 @@ public class EdamaNlpController {
 		List<String> ingredient=new ArrayList<>();
 
 		printMatching(param, retValue,ingredient);
-		System.out.println();
+//		System.out.println();
 
 		retValue=this.searchSevice.findInApi(param,10,30);
 
@@ -74,7 +74,7 @@ public class EdamaNlpController {
 
 		ingredient.sort(Comparator.comparingInt(String::length));
 		ingredient=ingredient.stream().distinct().collect(Collectors.toList());
-		ingredient.forEach(x->System.out.println(x));
+//		ingredient.forEach(x->System.out.println(x));
 		return retValue.toJsonString();
 
 	}

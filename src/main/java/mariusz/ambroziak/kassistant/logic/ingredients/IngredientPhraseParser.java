@@ -213,7 +213,7 @@ public class IngredientPhraseParser extends AbstractParser {
 				permissive += x;
 			}
 			line += permissive + csvSeparator + restrictive;
-			System.out.println(line);
+//			System.out.println(line);
 		}
 	}
 

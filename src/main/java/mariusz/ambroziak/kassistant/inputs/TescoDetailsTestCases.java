@@ -115,7 +115,7 @@ public class TescoDetailsTestCases {
 				learningCase.setName(name);
 				learningCase.setType_expected(foundType);
 				learningCase.setUrl(url);
-				System.out.println("Parsed from file" + learningCase.getName());
+		//		System.out.println("Parsed from file" + learningCase.getName());
 				retValue.add(learningCase);
 			}
 			line=br.readLine();

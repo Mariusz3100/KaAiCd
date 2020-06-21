@@ -95,7 +95,7 @@ public class LogicController {
 						for(EdamamNlpSingleIngredientInner inner:outer.getParsed()) {
 							String lineOut=original+EdamanIngredientParsingService.csvSeparator+inner.getFoodMatch()+EdamanIngredientParsingService.csvSeparator
 									+inner.getQuantity()+EdamanIngredientParsingService.csvSeparator+inner.getMeasure();
-							System.out.println(lineOut);
+				//			System.out.println(lineOut);
 						}
 					}
 
@@ -103,8 +103,8 @@ public class LogicController {
 				}
 			}
 		}
-		System.out.println("All amount: "+allCount);
-		System.out.println("Counted amount: "+count);
+	//	System.out.println("All amount: "+allCount);
+	//	System.out.println("Counted amount: "+count);
 
 		return searchRecipeResponse.toJsonString();
 

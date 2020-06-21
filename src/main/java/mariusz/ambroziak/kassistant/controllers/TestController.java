@@ -139,7 +139,6 @@ public class TestController {
 	public List<TokenizationResults> phrasesParsing() throws IOException{
 		Map<String, TokenizationResults> parseFromFile = this.testTokenizerService.parseFromFile();
 		
-		System.out.println();
 		ArrayList<TokenizationResults> retValue=new ArrayList<TokenizationResults>();
 		retValue.addAll(parseFromFile.values());
 		
@@ -150,7 +149,7 @@ public class TestController {
 				resultLine+=r.getText()+" | ";
 			}
 			
-			System.out.println(resultLine);
+		//	System.out.println(resultLine);
 		}
 		return retValue;
 
