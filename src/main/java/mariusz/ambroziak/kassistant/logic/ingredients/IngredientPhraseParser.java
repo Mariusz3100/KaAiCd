@@ -67,7 +67,7 @@ public class IngredientPhraseParser extends AbstractParser {
 
 
 
-	private String spacelessRegex="(\\d+)(\\w+)";
+	private String spacelessRegex="(\\d+)([a-zA-Z]+)";
 
 
 
@@ -178,7 +178,7 @@ public class IngredientPhraseParser extends AbstractParser {
 
 	public IngredientPhraseParsingProcessObject processSingleCase(IngredientLearningCase er) {
 		String line=correctErrors(er.getOriginalPhrase());
-		er.setOriginalPhrase(line);
+	//	er.setOriginalPhrase(line);
 		IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
 		handleBracketsAndSetBracketLess(parsingAPhrase);
 
