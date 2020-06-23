@@ -9,6 +9,8 @@ import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
 import mariusz.ambroziak.kassistant.hibernate.repository.*;
 import mariusz.ambroziak.kassistant.logic.PhraseDependenciesComparator;
+import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
+import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
@@ -51,6 +53,9 @@ public class TestController {
 
 	@Autowired
 	PhraseDependenciesComparator phraseDependenciesComparator;
+
+	@Autowired
+	MorrisonsClientService morrisonsClientService;
 
 	public TestController(TokenizationClientService tokenizationService, NamedEntityRecognitionClientService nerService,
 						  ProductParsingResultRepository productParsingRepo, IngredientPhraseParsingResultRepository ingredientParsingRepo,
@@ -131,6 +136,14 @@ public class TestController {
 		UsdaResponse inApi = this.usdaApiClient.findInApi(param, 10);
 
 		return inApi.toJsonString();
+	}
+
+
+	@RequestMapping("/testMorrisons")
+	public String testMorrisons(@RequestParam(value="param", defaultValue="empty") String param){
+		List<Morrisons_Product>  products = this.morrisonsClientService.searchInDbAndApiFor(param);
+
+		return ""+products.size();
 	}
 
 	@CrossOrigin
