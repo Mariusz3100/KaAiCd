@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
 import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.MorrisonProductRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
 import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
@@ -19,6 +20,8 @@ import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
+import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
+import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
@@ -70,7 +73,8 @@ public class ShopProductParser  extends AbstractParser {
 	@Autowired
 	TescoFromFileService tescoFromFileService;
 
-
+	@Autowired
+	MorrisonProductRepository morrisonProductRepository;
 
 	private String spacelessRegex="(\\d+)(\\w+)";
 
@@ -202,6 +206,7 @@ public class ShopProductParser  extends AbstractParser {
 			ProductNamesComparison p=new ProductNamesComparison();
 			p.setDetailsNameResults(nameWordsList.stream().map(s->new WordComparisonResult(s,true))
 					.collect(Collectors.toList()));
+			p.setResultPhrase(name);
 			return p;
 		}
 
@@ -307,9 +312,14 @@ public class ShopProductParser  extends AbstractParser {
 	public void parseProductParsingObjectWithNamesComparison(ProductParsingProcessObject parsingAPhrase) {
 		parseAProductParsingObject(parsingAPhrase);
 
-		Tesco_Product tp=(Tesco_Product)parsingAPhrase.getProduct();
+		ProductData product=parsingAPhrase.getProduct();
 
-		String secondName=tp.getSearchApiName();
+		String secondName="";
+
+		if(product instanceof Tesco_Product){
+			secondName=((Tesco_Product)product).getSearchApiName();
+		}
+
 		ProductNamesComparison productNamesComparisonOfFinalTokens=null;
 		String detailsName = parsingAPhrase.getFinalResults().stream()
 				.filter(t -> t.getWordType()==null||!t.getWordType().equals(WordType.QuantityElement))
@@ -317,10 +327,10 @@ public class ShopProductParser  extends AbstractParser {
 		if(secondName==null||secondName.isEmpty()) {
 			productNamesComparisonOfFinalTokens = namesComparator.parseTwoPhrases(detailsName, "");
 		}else{
-
-			Tesco_Product tempTp = tp.clone();
+			//TODO check if works for more than one name
+			ProductData tempTp = product.clone();
 			tempTp.setName(secondName);
-			tempTp.setSearchApiName(tp.getName());
+	//		tempTp.setSearchApiName(tp.getName());
 
 			ProductParsingProcessObject tempParsingObject = new ProductParsingProcessObject(tempTp, parsingAPhrase.getTestCase());
 			parseAProductParsingObject(tempParsingObject);
@@ -375,7 +385,10 @@ public class ShopProductParser  extends AbstractParser {
 	//	List<ProductParsingProcessObject> collect = this.tescoFromFileService.nameToProducts.values().stream().map(s -> new ProductParsingProcessObject(s, new ProductLearningCase())).collect(Collectors.toList());
 		List<ProductParsingProcessObject> collect=new ArrayList<>();
 
-		collect.addAll(this.tescoFromFileService.nameToProducts.values().stream().map(s -> new ProductParsingProcessObject(s, new ProductLearningCase())).collect(Collectors.toList()));
+	//	collect.addAll(this.tescoFromFileService.nameToProducts.values().stream().map(s -> new ProductParsingProcessObject(s, new ProductLearningCase())).collect(Collectors.toList()));
+		collect.addAll(this.morrisonProductRepository.findAll().stream().map(s -> new ProductParsingProcessObject(s, new ProductLearningCase())).collect(Collectors.toList()));
+
+		;
 		return collect;
 	}
 
@@ -410,7 +423,13 @@ public class ShopProductParser  extends AbstractParser {
 		toSave.setTypeCalculated(parsingAPhrase.getFoodTypeClassified());
 		toSave.setParsingBatch(pb);
 
-		this.productParsingResultRepository.save(toSave);
+		ProductParsingResult byOriginalName = this.productParsingResultRepository.findByOriginalName(parsingAPhrase.getOriginalPhrase());
+
+		if(byOriginalName==null||!byOriginalName.equals(toSave)){
+			this.productParsingResultRepository.save(toSave);
+		}
+
+
 		return toSave;
 	}
 

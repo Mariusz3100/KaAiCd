@@ -14,6 +14,8 @@ import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.parsing.*;
 import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
+import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
+import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,9 +151,9 @@ public class IngredientProductMatchingService extends AbstractParser {
                 List<ProductParsingResult> parsingResultList = searchForProductResults(markedWords);
                 parsingResultList = parsingResultList.subList(0, Math.min(30, parsingResultList.size()));
                 for (ProductParsingResult pr : parsingResultList) {
-                    Tesco_Product tesco_product = getProductFromDb(pr);
-                    if (tesco_product != null) {
-                        ProductParsingProcessObject pppo = new ProductParsingProcessObject(tesco_product, new ProductLearningCase());
+                    ProductData product = getProductFromDb(pr);
+                    if (product != null) {
+                        ProductParsingProcessObject pppo = new ProductParsingProcessObject(product, new ProductLearningCase());
                         this.productParser.parseProductParsingObjectWithNamesComparison(pppo);
                         ParsingResult ppr = this.productParser.createResultObject(pppo);
                         ProductMatchingResult pmr = new ProductMatchingResult(ppr);
@@ -195,11 +197,11 @@ public class IngredientProductMatchingService extends AbstractParser {
         return retValue;
     }
 
-    private Tesco_Product getProductFromDb(ProductParsingResult pr) {
-        List<Tesco_Product> byName = this.tescoProductRepository.findByName(pr.getOriginalName());
-
-        if (byName.size() > 0)
-            return byName.get(0);
+    private ProductData getProductFromDb(ProductParsingResult pr) {
+       // List<Tesco_Product> byName = this.tescoProductRepository.findByName(pr.getOriginalName());
+        List<Morrisons_Product> morrisons_products = this.morrisonProductRepository.findByName(pr.getOriginalName());
+        if (morrisons_products.size() > 0)
+            return morrisons_products.get(0);
         else
             return null;
 
@@ -209,13 +211,13 @@ public class IngredientProductMatchingService extends AbstractParser {
         List<ProductParsingProcessObject> retValue = new ArrayList<>();
         //return this.productParser.tescoSearchForParsings(markedWords);
         List<String> wordsToFind = Arrays.asList(markedWords.split(" "));
-        Set<String> names = tescoFromFileService.nameToProducts.keySet();
+        List<Morrisons_Product> names = morrisonsClientService.searchInDbAndApiFor(markedWords);
 
-        for (String name : names) {
-            String nameLowercase = name.toLowerCase();
+        for (Morrisons_Product product : names) {
+            String nameLowercase = product.getName().toLowerCase();
             if (!(wordsToFind.stream().filter(wordToFind -> !nameLowercase.contains(wordToFind)).count() > 0)) {
-                Tesco_Product tesco_product = tescoFromFileService.nameToProducts.get(name);
-                ProductParsingProcessObject parse = new ProductParsingProcessObject(tesco_product, new ProductLearningCase());
+        //        Tesco_Product tesco_product = tescoFromFileService.nameToProducts.get(name);
+                ProductParsingProcessObject parse = new ProductParsingProcessObject(product, new ProductLearningCase());
                 retValue.add(parse);
             }
         }
