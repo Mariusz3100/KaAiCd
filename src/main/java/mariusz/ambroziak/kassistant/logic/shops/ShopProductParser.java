@@ -145,6 +145,9 @@ public class ShopProductParser  extends AbstractParser {
 		IngredientLearningCase lp=new IngredientLearningCase(parsingAPhrase.getOriginalPhrase(),0,"empty",expected,parsingAPhrase.getExpectedType());
 		object.setExpectedResult(lp);
 		object.setProductTypeFound(parsingAPhrase.getFoodTypeClassified().toString());
+		object.setProductTypeReasoning(parsingAPhrase.createProductReasoningList());
+
+
 		object.setRestrictivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getFinalResults()));
 		object.setPermisivelyCalculatedResult(calculateWordsFound(parsingAPhrase.getMinimalExpectedWords(),parsingAPhrase.getPermissiveFinalResults()));
 

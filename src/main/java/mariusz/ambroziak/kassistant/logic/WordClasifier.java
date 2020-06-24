@@ -187,6 +187,7 @@ public class WordClasifier {
 				if(keyword.equals(qt.getText())) {
 					qt.setWordType(WordType.ProductPropertyElement);
 					parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
+					parsingAPhrase.getProductTypeReasoning().put("keyword: "+keyword,ProductType.fresh);
 				}
 			}
 
@@ -194,6 +195,8 @@ public class WordClasifier {
 				if(keyword.equals(qt.getText())) {
 					qt.setWordType(WordType.ProductPropertyElement);
 					parsingAPhrase.setFoodTypeClassified(ProductType.juice);
+					parsingAPhrase.getProductTypeReasoning().put("keyword: "+keyword,ProductType.juice);
+
 				}
 			}
 
@@ -201,6 +204,8 @@ public class WordClasifier {
 				if(keyword.equals(qt.getText())) {
 					qt.setWordType(WordType.ProductPropertyElement);
 					parsingAPhrase.setFoodTypeClassified(ProductType.puree);
+					parsingAPhrase.getProductTypeReasoning().put("keyword: "+keyword,ProductType.puree);
+
 				}
 			}
 		}
@@ -1162,12 +1167,16 @@ public class WordClasifier {
 		String department=product.getDepartment();
 		for(String keyword:freshFoodKeywords){
 			if(department!=null&&department.toLowerCase().contains(keyword)){
+				parsingAPhrase.getProductTypeReasoning().put("department keyword: "+keyword,ProductType.fresh);
+
 				return ProductType.fresh;
 			}
 
 			if(product instanceof Tesco_Product){
 				String superdepartment = ((Tesco_Product) product).getSuperdepartment();
 				if(superdepartment!=null&&superdepartment.toLowerCase().contains(keyword)){
+					parsingAPhrase.getProductTypeReasoning().put("department keyword: "+keyword,ProductType.fresh);
+
 					return ProductType.fresh;
 				}
 
@@ -1181,6 +1190,8 @@ public class WordClasifier {
 	public ProductType checkQuantities(ProductParsingProcessObject parsingAPhrase) {
 		ProductData product=parsingAPhrase.getProduct();
 		if(product.getTotalQuantity()!=null&&product.getTotalQuantity().equals(product.getQuantity())){
+			parsingAPhrase.getProductTypeReasoning().put("quantity difference",ProductType.processed);
+
 			return ProductType.processed;
 
 		}else{

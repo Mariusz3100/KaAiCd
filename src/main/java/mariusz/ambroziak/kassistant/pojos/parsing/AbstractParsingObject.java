@@ -33,6 +33,7 @@ public abstract class AbstractParsingObject {
 	private List<QualifiedToken> finalResults;
 	private List<QualifiedToken> permissiveFinalResults;
 	private ProductType foodTypeClassified;
+	private Map<String,ProductType> productTypeReasoning;
 	List<ConnectionEntry> entitylessConotations;
 	List<ConnectionEntry> correctedConotations;
 	List<ConnectionEntry> quantitylessConnotations;
@@ -45,6 +46,16 @@ public abstract class AbstractParsingObject {
 
 	private List<PhraseFound> phrasesFound;
 
+
+	public Map<String, ProductType> getProductTypeReasoning() {
+		if(productTypeReasoning==null)
+			productTypeReasoning=new HashMap<>();
+		return productTypeReasoning;
+	}
+
+	public void setProductTypeReasoning(Map<String, ProductType> productTypeReasoning) {
+		this.productTypeReasoning = productTypeReasoning;
+	}
 
 	public List<List<String>> getAdjacentyConotationsFound() {
 		if(this.adjacentyConotationsFound==null)
@@ -347,5 +358,20 @@ public abstract class AbstractParsingObject {
 
 	public void addPhraseFound(PhraseFound phraseFound) {
 		this.getPhrasesFound().add(phraseFound);
+	}
+
+	public List<List<String>> createProductReasoningList() {
+		List<List<String>> retValue=new ArrayList<>();
+
+		for(String key: getProductTypeReasoning().keySet()){
+			List<String> entry=new ArrayList<>();
+
+			entry.add(key);
+			entry.add(""+ getProductTypeReasoning().get(key));
+
+			retValue.add(entry);
+		}
+
+		return retValue;
 	}
 }

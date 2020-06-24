@@ -31,6 +31,7 @@ public class ParsingResult{
 	private String correctedPhrase;
 	private List<Token> correctedTokens;
 	private String productTypeFound;
+	private List<List<String>> productTypeReasoning;
 	private ProductNamesComparison initialNames;
 	private ProductNamesComparison finalNames;
 
@@ -63,6 +64,14 @@ public class ParsingResult{
 
 	public void setRestrictivelyCalculatedResultForPhrase(CalculatedResults restrictivelyCalculatedResultForPhrase) {
 		this.restrictivelyCalculatedResultForPhrase = restrictivelyCalculatedResultForPhrase;
+	}
+
+	public List<List<String>> getProductTypeReasoning() {
+		return productTypeReasoning;
+	}
+
+	public void setProductTypeReasoning(List<List<String>> productTypeReasoning) {
+		this.productTypeReasoning = productTypeReasoning;
 	}
 
 	public CalculatedResults getPermisivelyCalculatedResultForPhrase() {
