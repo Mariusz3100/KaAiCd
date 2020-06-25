@@ -64,6 +64,8 @@ public class WordClasifier {
 	CustomPhraseFoundRepository phraseFoundRepo;
 
 	public static ArrayList<String> productTypeKeywords;
+	public static ArrayList<String> freshTypeKeywords;
+
 	public static ArrayList<String> irrelevanceKeywords;
 	public static ArrayList<String> quantityTypeKeywords;
 	public static ArrayList<String> quantityAttributeKeywords;
@@ -82,7 +84,7 @@ public class WordClasifier {
 
 
 		productTypeKeywords.add("flavouring");
-		productTypeKeywords.add("herb");
+	//	productTypeKeywords.add("herb");
 
 		productTypeKeywords.add("seasoning");
 		productTypeKeywords.add("dairy");
@@ -96,6 +98,9 @@ public class WordClasifier {
 		productTypeKeywords.add("alcohol");
 		productTypeKeywords.add("edible fat");
 
+		freshTypeKeywords=new ArrayList<String>();
+		freshTypeKeywords.add("vegetable");
+		freshTypeKeywords.add("fruit");
 
 
 		irrelevanceKeywords=new ArrayList<String>();
@@ -390,6 +395,8 @@ public class WordClasifier {
 		ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
 		WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
 		if(wordsApiResult!=null){
+			checkForProductTypeProperties(parsingAPhrase,wordsApiResult);
+
 			int index=adjacentyConotations.get(entry);
 			String[] x=entry.split(" ");
 			if(!(parsingAPhrase.getFinalResults().get(index).getText().equals(x[0])||parsingAPhrase.getFinalResults().get(index+1).getText().equals(x[1]))){
@@ -402,6 +409,21 @@ public class WordClasifier {
 			return false;
 		}
 		return false;
+	}
+
+	private void checkForProductTypeProperties(AbstractParsingObject parsingAPhrase, WordsApiResult wordsApiResult) {
+		ArrayList<String> typeOf = wordsApiResult.getTypeOf();
+
+		for(String keyword:freshFoodKeywords) {
+			for (String type:typeOf) {
+				if (type.indexOf(keyword)>0) {
+					parsingAPhrase.getProductTypeReasoning().put("api keyword for fresh found: "+keyword, ProductType.fresh);
+					parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
+				}
+			}
+
+		}
+
 	}
 
 	private void markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, WordsApiResult wordsApiResult, int index,String reasoning) {
