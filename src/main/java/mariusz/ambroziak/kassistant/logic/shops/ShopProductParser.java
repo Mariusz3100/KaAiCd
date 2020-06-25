@@ -130,6 +130,12 @@ public class ShopProductParser  extends AbstractParser {
 
 		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
 
+		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
+
+		if(productParsingResult.getTypeCalculated()!=null) {
+			phrasesFound.forEach(pf -> pf.setProductType(productParsingResult.getTypeCalculated()));
+		}
+
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
 
 	}
@@ -426,9 +432,9 @@ public class ShopProductParser  extends AbstractParser {
 		toSave.setTypeCalculated(parsingAPhrase.getFoodTypeClassified());
 		toSave.setParsingBatch(pb);
 
-		ProductParsingResult byOriginalName = this.productParsingResultRepository.findByOriginalName(parsingAPhrase.getOriginalPhrase());
+		List<ProductParsingResult> byOriginalName = this.productParsingResultRepository.findByOriginalName(parsingAPhrase.getOriginalPhrase());
 
-		if(byOriginalName==null||!byOriginalName.equals(toSave)){
+		if(byOriginalName==null||byOriginalName.isEmpty()||!(byOriginalName.stream().filter(ppr->ppr.equals(toSave)).count()>0)){
 			this.productParsingResultRepository.save(toSave);
 		}
 

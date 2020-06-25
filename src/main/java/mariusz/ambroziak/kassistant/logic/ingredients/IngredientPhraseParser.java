@@ -127,6 +127,9 @@ public class IngredientPhraseParser extends AbstractParser {
 		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 		phrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));
+		if(ingredientPhraseParsingResult.getTypeCalculated()!=null) {
+			phrasesFound.forEach(pf -> pf.setProductType(ingredientPhraseParsingResult.getTypeCalculated()));
+		}
 
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
 

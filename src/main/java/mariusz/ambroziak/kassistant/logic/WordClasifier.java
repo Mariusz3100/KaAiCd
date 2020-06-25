@@ -812,7 +812,7 @@ public class WordClasifier {
 		parsingAPhrase.addResult(index,result);
 	}
 	protected void addResultBasedOnDb(AbstractParsingObject parsingAPhrase, int index, Token t,PhraseFound singleWordPhrase) {
-		QualifiedToken result=new QualifiedToken(t, singleWordPhrase.getType());
+		QualifiedToken result=new QualifiedToken(t, singleWordPhrase.getWordType());
 		result.setReasoning("[DB: "+singleWordPhrase.getReasoning()+"]");
 		parsingAPhrase.addResult(index,result);
 	}
