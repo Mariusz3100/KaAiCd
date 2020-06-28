@@ -218,22 +218,25 @@ public class WordClasifier {
 	}
 	private void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {
 		Map<String, Integer> adjacentyConotations = calculateAdjacencies(parsingAPhrase);
-		boolean found=false;
+		boolean found=false;//TODO
 		if(adjacentyConotations!=null) {
 			for (String entry : adjacentyConotations.keySet()) {
-
-				found=checkWordsApi(parsingAPhrase, adjacentyConotations, entry);
-				if(!found){
-					found= checkUsdaApiForAdjacencyEntry(parsingAPhrase, adjacentyConotations.get(entry), entry);
+				String[] splitted=entry.split(" ");
+				if(!Pattern.matches(punctuationRegex,splitted[0])&&!Pattern.matches(punctuationRegex,splitted[1])) {
+					found = checkWordsApi(parsingAPhrase, adjacentyConotations, entry);
+					if (!found) {
+						found = checkUsdaApiForAdjacencyEntry(parsingAPhrase, adjacentyConotations.get(entry), entry);
+					}
 				}
-
 			}
 		}
 
 		if(!found) {
 			List<ConnectionEntry> quantitylessDependenciesConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s -> !s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
 			quantitylessDependenciesConnotations=quantitylessDependenciesConnotations.stream()
-					.filter(t->!NlpConstants.of_Word.equals(t.getHead().getText())&&!NlpConstants.of_Word.equals(t.getChild().getText())).collect(Collectors.toList());
+					.filter(t->!NlpConstants.of_Word.equals(t.getHead().getText())&&!NlpConstants.of_Word.equals(t.getChild().getText()))
+					.filter(ce->!Pattern.matches(punctuationRegex,ce.getChild().getText())&&!Pattern.matches(punctuationRegex,ce.getHead().getText()))
+					.collect(Collectors.toList());
 
 			if (quantitylessDependenciesConnotations != null) {
 				for (ConnectionEntry entry : quantitylessDependenciesConnotations) {
