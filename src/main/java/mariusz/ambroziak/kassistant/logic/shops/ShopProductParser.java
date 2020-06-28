@@ -364,7 +364,7 @@ public class ShopProductParser  extends AbstractParser {
 
 
 		String resultOfComparison=compareNames(parsingAPhrase).toLowerCase();
-
+		resultOfComparison=correctErrors(resultOfComparison);
 		String brandlessPhrase= calculateBrandlessPhrase(resultOfComparison,parsingAPhrase.getProduct().getBrand());
 		parsingAPhrase.setBrandlessPhrase(brandlessPhrase);
 
@@ -377,7 +377,16 @@ public class ShopProductParser  extends AbstractParser {
 		this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
 	}
+	private String correctErrors(String phrase) {
 
+		if(phrase.startsWith("M ")) {
+			phrase=phrase.replaceFirst("M ", "Morrisons ");
+		}
+		if(phrase.startsWith("m ")) {
+			phrase=phrase.replaceFirst("m ", "Morrisons ");
+		}
+		return phrase;
+	}
 	private String compareNames(ProductParsingProcessObject parsingAPhrase) {
 		ProductNamesComparison comparison=createNamesComparison(parsingAPhrase);
 		parsingAPhrase.setInitialNames(comparison);
