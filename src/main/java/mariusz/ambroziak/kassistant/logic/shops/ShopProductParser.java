@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
 import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
@@ -129,12 +130,6 @@ public class ShopProductParser  extends AbstractParser {
 		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
-
-		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
-
-		if(productParsingResult.getTypeCalculated()!=null) {
-			phrasesFound.forEach(pf -> pf.setProductType(productParsingResult.getTypeCalculated()));
-		}
 
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
 
