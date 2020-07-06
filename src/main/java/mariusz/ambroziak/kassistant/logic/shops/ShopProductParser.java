@@ -368,7 +368,6 @@ public class ShopProductParser  extends AbstractParser {
 		parsingAPhrase.setEntitylessTokenized(tokens);
 
 
-		this.shopWordClacifier.calculateProductType(parsingAPhrase);
 		this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
 	}

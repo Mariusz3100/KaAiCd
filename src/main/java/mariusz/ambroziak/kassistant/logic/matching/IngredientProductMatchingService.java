@@ -3,10 +3,7 @@ package mariusz.ambroziak.kassistant.logic.matching;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
-import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.*;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
@@ -51,6 +48,11 @@ public class IngredientProductMatchingService extends AbstractParser {
 
     @Autowired
     IngredientPhraseLearningCaseRepository ingredientPhraseLearningCaseRepository;
+    @Autowired
+    MorrisonsClientService morrisonsClientService;
+
+    @Autowired
+    MorrisonProductRepository morrisonProductRepository;
 
 
     public List<MatchingProcessResult> parseMatchAndSaveToDb() {

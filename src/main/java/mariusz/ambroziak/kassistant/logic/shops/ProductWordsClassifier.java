@@ -57,7 +57,7 @@ public class ProductWordsClassifier extends WordClasifier {
             calculateTypeFromReasonings(parsingAPhrase);
         }
 
-        if(parsingAPhrase.getFoodTypeClassified()!=null&&parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)) {
+        if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)) {
             parsingAPhrase.getPhrasesFound().forEach(pf->pf.setProductType(parsingAPhrase.getFoodTypeClassified()));
 
         }else{

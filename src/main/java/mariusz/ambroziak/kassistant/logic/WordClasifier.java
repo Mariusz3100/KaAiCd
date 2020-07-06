@@ -1253,13 +1253,13 @@ public class WordClasifier {
             String typeOfTagRecognized = checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(), war.getTypeOf(), keywordsForTypeconsidered);
 
             if (typeOfTagRecognized != null && !typeOfTagRecognized.isEmpty()) {
-                war.setReasoningForFound("WordsApi: " + war.getDefinition() + " (" + typeOfTagRecognized + ")");
+                war.setReasoningForFound("[WordsApi: " + war.getDefinition() + " (" + typeOfTagRecognized + ")]");
                 return war;
             }
             String attributeTagRecognized = checkIfPropertiesFromWordsApiContainKeywords(war.getOriginalWord(), war.getAttribute(), attributesForTypeConsidered);
 
             if (attributeTagRecognized != null && !attributeTagRecognized.isEmpty()) {
-                war.setReasoningForFound("WordsApi: " + war.getDefinition() + " (" + attributeTagRecognized + ")");
+                war.setReasoningForFound("[WordsApi: " + war.getDefinition() + " (" + attributeTagRecognized + ")]");
 
                 return war;
             }
