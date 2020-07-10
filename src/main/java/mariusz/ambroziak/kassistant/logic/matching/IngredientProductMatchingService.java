@@ -1,6 +1,5 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
-import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
 import mariusz.ambroziak.kassistant.hibernate.repository.*;
@@ -14,14 +13,12 @@ import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
 import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
-import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -54,85 +51,97 @@ public class IngredientProductMatchingService extends AbstractParser {
     @Autowired
     MorrisonProductRepository morrisonProductRepository;
 
+    @Autowired
+    MatchFoundRepository matchFoundRepository;
 
-    public List<MatchingProcessResult> parseMatchAndSaveToDb() {
+
+
+
+
+
+
+    public List<MatchingProcessResult> parseMatchAndGetResultsFromDbAllCases(boolean saveInDb) {
         List<IngredientLearningCase> ingredientLearningCasesFromDb = this.ingredientParser.getIngredientLearningCasesFromDb();
-        List<MatchingProcessResult> retValue = new ArrayList<>();
-        ParsingBatch batchObject = new ParsingBatch();
-        parsingBatchRepository.save(batchObject);
-
-        for (IngredientLearningCase er : ingredientLearningCasesFromDb) {
-            IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
-
-            ParsingResult ingredientResult = this.ingredientParser.createResultObject(parsingAPhrase);
-            IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
-
-            MatchingProcessResult match = new MatchingProcessResult();
-
-
-            match.setIngredientParsingDetails(ingredientResult);
-            String markedWords = ingredientResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
-            List<ProductParsingProcessObject> parsingResultList = searchForProducts(markedWords);
-
-            for (ProductParsingProcessObject pr : parsingResultList) {
-                this.productParser.parseProductParsingObjectWithNamesComparison(pr);
-                ParsingResult ppr = this.productParser.createResultObject(pr);
-                ProductMatchingResult pmr = new ProductMatchingResult(ppr);
-
-
-                List<QualifiedToken> ingredientWordsMarked = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
-                List<QualifiedToken> productWordsMarked = pr.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
-                List<String> matched = new ArrayList<>();
-                List<String> ingredientSurplus = new ArrayList<>();
-                List<String> productSurplus = new ArrayList<>();
-
-
-                for (QualifiedToken ingredientQt : ingredientWordsMarked) {
-                    if (productWordsMarked.stream().filter(productQt -> productQt.compareWithToken(ingredientQt)).findAny().isPresent()) {
-                        matched.add(ingredientQt.getLemma());
-                    } else {
-                        ingredientSurplus.add(ingredientQt.getLemma());
-                    }
-
-                }
-                productSurplus = productWordsMarked.stream().filter(qt -> !matched.contains(qt.getLemma())).map(t -> t.getLemma()).collect(Collectors.toList());
-
-
-                CalculatedResults cr = new CalculatedResults(ingredientSurplus, matched, productSurplus, matched);
-                pmr.setWordsMatching(cr);
-                pmr.setVerdict(ingredientSurplus.isEmpty() && productSurplus.isEmpty());
-
-                match.addProductsConsideredParsingResults(pmr);
-
-                ProductParsingResult productParsingResult = this.productParser.saveResultInDb(pr, batchObject);
-
-            }
-
-            retValue.add(match);
-
-        }
-        return retValue;
-    }
-
-    public List<MatchingProcessResult> parseMatchAndGetResultsFromDbAllCases() {
-        List<IngredientLearningCase> ingredientLearningCasesFromDb = this.ingredientParser.getIngredientLearningCasesFromDb();
-        List<MatchingProcessResult> parseMatchAndGetResultsFromDb = parseMatchAndGetResultsFromDb(ingredientLearningCasesFromDb);
+        List<MatchingProcessResult> parseMatchAndGetResultsFromDb = parseMatchList(ingredientLearningCasesFromDb,saveInDb);
 
         return parseMatchAndGetResultsFromDb;
 
     }
 
-    public List<MatchingProcessResult> parseMatchAndGetResultsFromDbForSingleCase(long ingredientLEarningCaseID) {
+    public List<MatchingProcessResult> parseMatchAndGetResultsFromDbForSingleCase(long ingredientLEarningCaseID,boolean saveInDb) {
         List<IngredientLearningCase> ingredientLearningCasesFromDb = new ArrayList<>();
 
         ingredientLearningCasesFromDb.add(this.ingredientPhraseLearningCaseRepository.findById(ingredientLEarningCaseID));
-        List<MatchingProcessResult> parseMatchAndGetResultsFromDb = parseMatchAndGetResultsFromDb(ingredientLearningCasesFromDb);
+        List<MatchingProcessResult> parseMatchAndGetResultsFromDb = parseMatchList(ingredientLearningCasesFromDb,saveInDb);
 
         return parseMatchAndGetResultsFromDb;
 
     }
 
-    public List<MatchingProcessResult> parseMatchAndGetResultsFromDb(List<IngredientLearningCase> ingredientLearningCasesFromDb) {
+
+
+    public List<MatchingProcessResult> parseMatchList(List<IngredientLearningCase> ingredientLearningCasesFromDb,boolean saveInDb) {
+        List<MatchingProcessResult> retValue = new ArrayList<>();
+        ParsingBatch batchObject = null;
+        for (IngredientLearningCase er : ingredientLearningCasesFromDb) {
+            try {
+                IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
+                ParsingResult ingredientResult = this.ingredientParser.createResultObject(parsingAPhrase);
+                IngredientPhraseParsingResult ingredientPhraseParsingResult=null;
+
+                MatchingProcessResult match = new MatchingProcessResult();
+                match.setIngredientParsingDetails(ingredientResult);
+                List<ProductParsingResult> parsingResultList = retrieveProductCandidates(parsingAPhrase);
+                for (ProductParsingResult pr : parsingResultList) {
+                    ProductData product = getProductFromDb(pr);
+                    if (product != null) {
+                        ProductParsingProcessObject pppo = new ProductParsingProcessObject(product, new ProductLearningCase());
+                        this.productParser.parseProductParsingObjectWithNamesComparison(pppo);
+                        ParsingResult ppr = this.productParser.createResultObject(pppo);
+                        ProductMatchingResult pmr = calculateMatchingResult(parsingAPhrase, pppo, ppr);
+                        match.addProductsConsideredParsingResults(pmr);
+
+                        if(saveInDb) {
+                            if (batchObject == null) {
+                                batchObject = new ParsingBatch();
+                                parsingBatchRepository.save(batchObject);
+                            }
+                            if (ingredientPhraseParsingResult == null)
+                                ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
+                            saveProductAndMatchInDb(batchObject, ingredientPhraseParsingResult, pppo, pmr);
+                        }
+                    }
+                }
+                match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isVerdict() ? 1 : (o2.isVerdict() ? -1 : 0)).collect(Collectors.toList()));
+                retValue.add(match);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return retValue;
+    }
+
+    private void saveProductAndMatchInDb(ParsingBatch batchObject, IngredientPhraseParsingResult ingredientPhraseParsingResult, ProductParsingProcessObject pppo, ProductMatchingResult pmr) {
+        ProductParsingResult productParsingResult = this.productParser.saveResultInDb(pppo, batchObject);
+        MatchFound mf=new MatchFound();
+        mf.setProduct(productParsingResult);
+        mf.setBatch(batchObject);
+        mf.setIngredient(ingredientPhraseParsingResult);
+        mf.setVerdict(pmr.isVerdict());
+
+        this.matchFoundRepository.save(mf);
+    }
+
+    private List<ProductParsingResult> retrieveProductCandidates(IngredientPhraseParsingProcessObject parsingAPhrase) {
+        String markedWords = parsingAPhrase.getFinalResults().stream().filter(s -> s.getWordType() == WordType.ProductElement).map(s -> s.getLemma()).collect(Collectors.joining(" "));//ingredientResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
+        List<ProductParsingResult> parsingResultList = searchForProductResults(markedWords);
+        parsingResultList = parsingResultList.subList(0, Math.min(20, parsingResultList.size()));
+        return parsingResultList;
+    }
+
+
+    public List<MatchingProcessResult> parseMatchAndSaveResultsToDb(List<IngredientLearningCase> ingredientLearningCasesFromDb) {
 
         List<MatchingProcessResult> retValue = new ArrayList<>();
         ParsingBatch batchObject = new ParsingBatch();
@@ -143,49 +152,25 @@ public class IngredientProductMatchingService extends AbstractParser {
                 IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
 
                 ParsingResult ingredientResult = this.ingredientParser.createResultObject(parsingAPhrase);
-                IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
+                //IngredientPhraseParsingResult ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
+
 
                 MatchingProcessResult match = new MatchingProcessResult();
 
 
                 match.setIngredientParsingDetails(ingredientResult);
-                String markedWords = parsingAPhrase.getFinalResults().stream().filter(s -> s.getWordType() == WordType.ProductElement).map(s -> s.getLemma()).collect(Collectors.joining(" "));//ingredientResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
-                List<ProductParsingResult> parsingResultList = searchForProductResults(markedWords);
-                parsingResultList = parsingResultList.subList(0, Math.min(30, parsingResultList.size()));
+                List<ProductParsingResult> parsingResultList = retrieveProductCandidates(parsingAPhrase);
                 for (ProductParsingResult pr : parsingResultList) {
                     ProductData product = getProductFromDb(pr);
                     if (product != null) {
                         ProductParsingProcessObject pppo = new ProductParsingProcessObject(product, new ProductLearningCase());
                         this.productParser.parseProductParsingObjectWithNamesComparison(pppo);
                         ParsingResult ppr = this.productParser.createResultObject(pppo);
-                        ProductMatchingResult pmr = new ProductMatchingResult(ppr);
-
-
-                        List<QualifiedToken> ingredientWordsMarked = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
-                        List<QualifiedToken> productWordsMarked = pppo.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
-                        List<String> matched = new ArrayList<>();
-                        List<String> ingredientSurplus = new ArrayList<>();
-                        List<String> productSurplus = new ArrayList<>();
-
-
-                        for (QualifiedToken ingredientQt : ingredientWordsMarked) {
-                            if (productWordsMarked.stream().filter(productQt -> productQt.compareWithToken(ingredientQt)).findAny().isPresent()) {
-                                matched.add(ingredientQt.getLemma());
-                            } else {
-                                ingredientSurplus.add(ingredientQt.getLemma());
-                            }
-
-                        }
-                        productSurplus = productWordsMarked.stream().filter(qt -> !matched.contains(qt.getLemma())).map(t -> t.getLemma()).collect(Collectors.toList());
-
-
-                        CalculatedResults cr = new CalculatedResults(ingredientSurplus, matched, productSurplus, matched);
-                        pmr.setWordsMatching(cr);
-                        pmr.setVerdict(ingredientSurplus.isEmpty() && productSurplus.isEmpty());
+                        ProductMatchingResult pmr = calculateMatchingResult(parsingAPhrase, pppo, ppr);
 
                         match.addProductsConsideredParsingResults(pmr);
 
-                        ProductParsingResult productParsingResult = this.productParser.saveResultInDb(pppo, batchObject);
+                        //  ProductParsingResult productParsingResult = this.productParser.saveResultInDb(pppo, batchObject);
 
                     }
                 }
@@ -197,6 +182,34 @@ public class IngredientProductMatchingService extends AbstractParser {
         }
 
         return retValue;
+    }
+
+    private ProductMatchingResult calculateMatchingResult(IngredientPhraseParsingProcessObject parsingAPhrase, ProductParsingProcessObject pppo, ParsingResult ppr) {
+        ProductMatchingResult pmr = new ProductMatchingResult(ppr);
+
+
+        List<QualifiedToken> ingredientWordsMarked = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+        List<QualifiedToken> productWordsMarked = pppo.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+        List<String> matched = new ArrayList<>();
+        List<String> ingredientSurplus = new ArrayList<>();
+        List<String> productSurplus = new ArrayList<>();
+
+
+        for (QualifiedToken ingredientQt : ingredientWordsMarked) {
+            if (productWordsMarked.stream().filter(productQt -> productQt.compareWithToken(ingredientQt)).findAny().isPresent()) {
+                matched.add(ingredientQt.getLemma());
+            } else {
+                ingredientSurplus.add(ingredientQt.getLemma());
+            }
+
+        }
+        productSurplus = productWordsMarked.stream().filter(qt -> !matched.contains(qt.getLemma())).map(t -> t.getLemma()).collect(Collectors.toList());
+
+
+        CalculatedResults cr = new CalculatedResults(ingredientSurplus, matched, productSurplus, matched);
+        pmr.setWordsMatching(cr);
+        pmr.setVerdict(ingredientSurplus.isEmpty() && productSurplus.isEmpty());
+        return pmr;
     }
 
     private ProductData getProductFromDb(ProductParsingResult pr) {
