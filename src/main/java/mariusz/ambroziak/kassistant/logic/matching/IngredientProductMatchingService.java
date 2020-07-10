@@ -112,7 +112,7 @@ public class IngredientProductMatchingService extends AbstractParser {
                         }
                     }
                 }
-                match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isVerdict() ? 1 : (o2.isVerdict() ? -1 : 0)).collect(Collectors.toList()));
+                match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isCalculatedVerdict() ? 1 : (o2.isCalculatedVerdict() ? -1 : 0)).collect(Collectors.toList()));
                 retValue.add(match);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -128,7 +128,7 @@ public class IngredientProductMatchingService extends AbstractParser {
         mf.setProduct(productParsingResult);
         mf.setBatch(batchObject);
         mf.setIngredient(ingredientPhraseParsingResult);
-        mf.setVerdict(pmr.isVerdict());
+        mf.setVerdict(pmr.isCalculatedVerdict());
 
         this.matchFoundRepository.save(mf);
     }
@@ -174,7 +174,7 @@ public class IngredientProductMatchingService extends AbstractParser {
 
                     }
                 }
-                match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isVerdict() ? 1 : (o2.isVerdict() ? -1 : 0)).collect(Collectors.toList()));
+                match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isCalculatedVerdict() ? 1 : (o2.isCalculatedVerdict() ? -1 : 0)).collect(Collectors.toList()));
                 retValue.add(match);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -208,7 +208,7 @@ public class IngredientProductMatchingService extends AbstractParser {
 
         CalculatedResults cr = new CalculatedResults(ingredientSurplus, matched, productSurplus, matched);
         pmr.setWordsMatching(cr);
-        pmr.setVerdict(ingredientSurplus.isEmpty() && productSurplus.isEmpty());
+        pmr.setCalculatedVerdict(ingredientSurplus.isEmpty() && productSurplus.isEmpty());
         return pmr;
     }
 

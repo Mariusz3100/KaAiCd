@@ -352,7 +352,7 @@ public class WordClasifier {
     }
 
     private boolean checkUsdaApiForAdjacencyEntry(AbstractParsingObject parsingAPhrase, int index, String entry) {
-        UsdaResponse inApi = this.usdaApiClient.findInApi(entry, 10);
+        UsdaResponse inApi = this.usdaApiClient.findInApi("\""+entry+"\"", 10);
 
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();

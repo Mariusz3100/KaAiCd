@@ -5,17 +5,25 @@ import java.util.List;
 public class ProductMatchingResult {
      ParsingResult baseResult;
 
-    private  boolean verdict;
+    private  boolean calculatedVerdict;
+    private  boolean expectedVerdict;
 
     private CalculatedResults wordsMatching;
 
-
-    public boolean isVerdict() {
-        return verdict;
+    public boolean isCalculatedVerdict() {
+        return calculatedVerdict;
     }
 
-    public void setVerdict(boolean verdict) {
-        this.verdict = verdict;
+    public void setCalculatedVerdict(boolean calculatedVerdict) {
+        this.calculatedVerdict = calculatedVerdict;
+    }
+
+    public boolean isExpectedVerdict() {
+        return expectedVerdict;
+    }
+
+    public void setExpectedVerdict(boolean expectedVerdict) {
+        this.expectedVerdict = expectedVerdict;
     }
 
     public CalculatedResults getWordsMatching() {

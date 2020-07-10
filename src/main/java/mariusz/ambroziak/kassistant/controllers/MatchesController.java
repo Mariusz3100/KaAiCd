@@ -35,19 +35,18 @@ public class MatchesController {
 		return retValue;
 
 	}
-//if(param==null)
-//	{
-//		matchingProcessResults = matchingService.parseMatchAndGetResultsFromDbAllCases();
-//	}else{
-//		matchingProcessResults=matchingService.parseMatchAndGetResultsFromDbForSingleCase(param);
-//	}
-//	MatchingProcessResultList retValue=new MatchingProcessResultList(matchingProcessResults);
-//
-//		return retValue;
 
 
+	@CrossOrigin
+	@RequestMapping("/checkMatchesFound")
+	@ResponseBody
+	public MatchingProcessResultList checkMatchesFound() throws IOException{
 
+		MatchingProcessResultList retValue=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases(true));
 
+		return retValue;
+
+	}
 
 
 }
