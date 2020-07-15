@@ -40,7 +40,8 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 
 @Service
 public class IngredientPhraseParser extends AbstractParser {
-	private TokenizationClientService tokenizator;
+	@Autowired
+	protected TokenizationClientService tokenizator;
 	@Autowired
 	private NamedEntityRecognitionClientService nerRecognizer;
 	private ResourceLoader resourceLoader;
@@ -127,7 +128,39 @@ public class IngredientPhraseParser extends AbstractParser {
 		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 		phrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));
+
+		addLemmatizedVersions(phrasesFound);
+
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
+
+	}
+
+	private void addLemmatizedVersions(List<PhraseFound> phrasesFound) {
+		if(phrasesFound!=null) {
+			List<PhraseFound> newOnes=new ArrayList<>();
+
+			for (PhraseFound phraseFound:phrasesFound){
+				String phrase = phraseFound.getPhrase();
+				TokenizationResults tokenizationResults = this.tokenizator.parse(phrase);
+				String lemmatizedVersion="";
+				for(Token t:tokenizationResults.getTokens()){
+
+					if(t.getPos().equals(NlpConstants.nounPos)&&t.getTag().equals(NlpConstants.pluralNounTag)){
+						lemmatizedVersion+=t.getLemma()+" ";
+					}else{
+						lemmatizedVersion+=t.getText()+" ";
+					}
+				}
+				lemmatizedVersion=lemmatizedVersion.trim();
+				if(!lemmatizedVersion.equals(phrase)) {
+					PhraseFound phraseLemmatized = new PhraseFound(lemmatizedVersion, phraseFound.getWordType(), "{ lemmatized: \""+phraseFound.getPhrase()+"\n " + phraseFound.getReasoning() + "}");
+					phraseLemmatized.setProductType(phraseFound	.getProductType());
+					newOnes.add(phraseLemmatized);
+				}
+			}
+			phrasesFound.addAll(newOnes);
+
+		}
 
 	}
 

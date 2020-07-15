@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
@@ -23,6 +24,7 @@ import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
 import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
+import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
@@ -42,7 +44,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 @Service
 public class ShopProductParser  extends AbstractParser {
 	@Autowired
-	private TokenizationClientService tokenizator;
+	protected TokenizationClientService tokenizator;
 	@Autowired
 	private NamedEntityRecognitionClientService nerRecognizer;
 	@Autowired
@@ -131,7 +133,38 @@ public class ShopProductParser  extends AbstractParser {
 
 		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
 
+		addLemmatizedVersions(phrasesFound);
+
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
+
+	}
+
+	private void addLemmatizedVersions(List<PhraseFound> phrasesFound) {
+		if(phrasesFound!=null) {
+			List<PhraseFound> newOnes=new ArrayList<>();
+
+			for (PhraseFound phraseFound:phrasesFound){
+				String phrase = phraseFound.getPhrase();
+				TokenizationResults tokenizationResults = this.tokenizator.parse(phrase);
+				String lemmatizedVersion="";
+				for(Token t:tokenizationResults.getTokens()){
+
+					if(t.getPos().equals(NlpConstants.nounPos)&&t.getTag().equals(NlpConstants.pluralNounTag)){
+						lemmatizedVersion+=t.getLemma()+" ";
+					}else{
+						lemmatizedVersion+=t.getText()+" ";
+					}
+				}
+				lemmatizedVersion=lemmatizedVersion.trim();
+				if(!lemmatizedVersion.equals(phrase)) {
+					PhraseFound phraseLemmatized = new PhraseFound(lemmatizedVersion, phraseFound.getWordType(), "{ lemmatized: \""+phraseFound.getPhrase()+"\n " + phraseFound.getReasoning() + "}");
+					phraseLemmatized.setProductType(phraseFound	.getProductType());
+					newOnes.add(phraseLemmatized);
+				}
+			}
+			phrasesFound.addAll(newOnes);
+
+		}
 
 	}
 	public ParsingResult createResultObject(ProductParsingProcessObject parsingAPhrase) {
