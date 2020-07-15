@@ -7,6 +7,8 @@ import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
+import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
+import mariusz.ambroziak.kassistant.pojos.matching.ProductMatchingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.*;
 import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
