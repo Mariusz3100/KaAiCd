@@ -1228,7 +1228,7 @@ public class WordClasifier {
         }
     }
 
-    private static WordsApiResult checkProductTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
+    private  WordsApiResult checkProductTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
         WordsApiResult war = checkForTypes(wordResults, productTypeKeywords, new ArrayList<>());
         if (war != null)
             return war;
@@ -1237,7 +1237,7 @@ public class WordClasifier {
     }
 
 
-    private static WordsApiResult checkQuantityTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
+    private  WordsApiResult checkQuantityTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
         WordsApiResult war = checkForTypes(wordResults, quantityTypeKeywords, quantityAttributeKeywords);
         if (war != null)
             return war;
@@ -1245,7 +1245,7 @@ public class WordClasifier {
         return null;
     }
 
-    private static WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults, ArrayList<String> keywordsForTypeconsidered, ArrayList<String> attributesForTypeConsidered) {
+    private WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults, ArrayList<String> keywordsForTypeconsidered, ArrayList<String> attributesForTypeConsidered) {
         for (WordsApiResult war : wordResults) {
             if (war instanceof WordsApiResultImpostor) {
                 return war;
@@ -1262,6 +1262,24 @@ public class WordClasifier {
                 war.setReasoningForFound("[WordsApi: " + war.getDefinition() + " (" + attributeTagRecognized + ")]");
 
                 return war;
+            }
+
+
+
+            for(String typeOf:war.getTypeOf()) {
+                List<PhraseFound> byPhrase = this.phraseFoundRepo.findByPhrase(typeOf);
+
+                if(byPhrase!=null&&!byPhrase.isEmpty()){
+                    for(PhraseFound pf:byPhrase){
+                        if(pf.getWordType().equals(WordType.ProductElement)){
+                            war.setReasoningForFound("[WordsApi transitive, subtype of:'"+pf.getPhrase()+"']");
+
+                            return war;
+                        }
+                    }
+                }
+
+
             }
 
         }
