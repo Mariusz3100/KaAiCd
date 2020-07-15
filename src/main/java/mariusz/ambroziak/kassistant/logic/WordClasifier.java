@@ -213,7 +213,7 @@ public class WordClasifier {
         for (QualifiedToken qt : parsingAPhrase.getFinalResults()) {
             for (String keyword : freshFoodKeywords) {
                 if (keyword.equals(qt.getText())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
+                    //qt.setWordType(WordType.ProductPropertyElement);
                     //parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.fresh);
                 }
@@ -221,7 +221,7 @@ public class WordClasifier {
 
             for (String keyword : juiceKeywords) {
                 if (keyword.equals(qt.getText())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
+                    //qt.setWordType(WordType.ProductPropertyElement);
                    // parsingAPhrase.setFoodTypeClassified(ProductType.juice);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.juice);
 
@@ -230,7 +230,7 @@ public class WordClasifier {
 
             for (String keyword : pureeFoodKeywords) {
                 if (keyword.equals(qt.getText())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
+                   // qt.setWordType(WordType.ProductPropertyElement);
                     //parsingAPhrase.setFoodTypeClassified(ProductType.puree);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.puree);
 
