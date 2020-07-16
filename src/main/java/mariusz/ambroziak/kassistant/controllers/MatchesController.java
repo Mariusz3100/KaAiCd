@@ -3,6 +3,7 @@ package mariusz.ambroziak.kassistant.controllers;
 import mariusz.ambroziak.kassistant.hibernate.repository.MatchExpectedRepository;
 import mariusz.ambroziak.kassistant.logic.matching.ExpectedMatchesService;
 import mariusz.ambroziak.kassistant.logic.matching.IngredientProductMatchingService;
+import mariusz.ambroziak.kassistant.pojos.matching.InputCases;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResultList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -57,5 +58,15 @@ public class MatchesController {
 
 	}
 
+	@CrossOrigin
+	@ResponseBody
+	@RequestMapping("/retrieveInputCases")
+	public InputCases retrieveInputCases() throws IOException{
+		InputCases inputCases = this.matchingService.retrieveAllIngredientsProductsAndMatchesExpectedConsidered();
+
+		return inputCases;
+
+
+	}
 
 }
