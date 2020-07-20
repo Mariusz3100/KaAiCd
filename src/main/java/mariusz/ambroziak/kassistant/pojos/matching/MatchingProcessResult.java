@@ -1,4 +1,7 @@
-package mariusz.ambroziak.kassistant.pojos.parsing;
+package mariusz.ambroziak.kassistant.pojos.matching;
+
+import mariusz.ambroziak.kassistant.pojos.matching.ProductMatchingResult;
+import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 
 import java.util.ArrayList;
 import java.util.List;

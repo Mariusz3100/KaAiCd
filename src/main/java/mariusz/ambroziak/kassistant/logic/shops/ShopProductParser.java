@@ -318,13 +318,14 @@ public class ShopProductParser  extends AbstractParser {
 
 
 	public ParsingResultList parseAllTestCasesAndSaveResults() throws IOException {
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
 
 		List<ProductParsingProcessObject> inputs= getTestCases();
 
 		ParsingResultList retValue = parseListOfCases(inputs);
 
-		ParsingBatch batchObject=new ParsingBatch();
-		parsingBatchRepository.save(batchObject);
+
 
 		inputs.forEach(input->saveResultInDb(input,batchObject));
 
