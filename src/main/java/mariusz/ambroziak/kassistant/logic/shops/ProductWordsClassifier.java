@@ -3,6 +3,7 @@ package mariusz.ambroziak.kassistant.logic.shops;
 import mariusz.ambroziak.kassistant.constants.MetadataConstants;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.model.PhraseFoundProductType;
 import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
@@ -58,7 +59,10 @@ public class ProductWordsClassifier extends WordClasifier {
         }
 
         if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)) {
-            parsingAPhrase.getPhrasesFound().forEach(pf->pf.setProductType(parsingAPhrase.getFoodTypeClassified()));
+          //add productType to phrases
+            parsingAPhrase.getPhrasesFound().stream()
+                 //   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
+                    .forEach(pf->pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),null,pf.getRelatedProductResult(),pf)));
 
         }else{
                 calculateReasoningsBaseOnClassifiedPhrases(parsingAPhrase);
@@ -89,8 +93,8 @@ public class ProductWordsClassifier extends WordClasifier {
 
 
         for(PhraseFound pf:phrasesFound){
-            if(pf.getPf_id()!=null&&pf.getProductType()!=null&&!pf.getProductType().equals(ProductType.unknown)){
-                parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: "+pf.getPhrase()+"]", pf.getProductType());
+            if(pf.getPf_id()!=null&&pf.getTypesFoundForPhraseAndBase()!=null&&!pf.getTypesFoundForPhraseAndBase().equals(ProductType.unknown)){
+                parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: "+pf.getPhrase()+"]", pf.getLeadingProductType());
             }
         }
 

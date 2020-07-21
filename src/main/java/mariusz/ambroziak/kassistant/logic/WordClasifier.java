@@ -720,7 +720,7 @@ public class WordClasifier {
         if(dbResults==null||dbResults.isEmpty())
             return new ArrayList<>();
 
-	    Optional<PhraseFound> reduce = dbResults.stream().reduce((phraseFound, phraseFound2) -> pickOneWithProductTypeSet(phraseFound, phraseFound2));
+	    Optional<PhraseFound> reduce = dbResults.stream().reduce((phraseFound, phraseFound2) -> pickOneWithBiggerProductTypesList(phraseFound, phraseFound2));
 
         if(reduce.isPresent()){
             List<PhraseFound> retValue=new ArrayList<>();
@@ -732,14 +732,21 @@ public class WordClasifier {
         }
     }
 
-    PhraseFound pickOneWithProductTypeSet(PhraseFound p1,PhraseFound p2){
-	    if(p1.getProductType()!=null&&!p1.getProductType().equals(ProductType.unknown)){
-	        return p1;
+    PhraseFound pickOneWithBiggerProductTypesList(PhraseFound p1, PhraseFound p2){
+	    if(p1==null||p1.getTypesFoundForPhraseAndBase()==null){
+	        return p2;
         }
-        if(p2.getProductType()!=null&&!p2.getProductType().equals(ProductType.unknown)){
+        if(p2==null||p2.getTypesFoundForPhraseAndBase()==null){
+            return p1;
+        }
+
+
+        if(p1.getTypesFoundForPhraseAndBase().size()>=p2.getTypesFoundForPhraseAndBase().size()){
+            return p1;
+        }else{
             return p2;
         }
-        return p1;
+
     }
 
     private boolean checkWithResultsFromUsdaApi(AbstractParsingObject parsingAPhrase, int index, Token t) {
