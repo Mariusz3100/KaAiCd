@@ -3,10 +3,7 @@ package mariusz.ambroziak.kassistant.controllers;
 import mariusz.ambroziak.kassistant.enums.AmountTypes;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientPhraseParsingResult;
-import mariusz.ambroziak.kassistant.hibernate.model.ParsingBatch;
-import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.model.*;
 import mariusz.ambroziak.kassistant.hibernate.repository.*;
 import mariusz.ambroziak.kassistant.logic.PhraseDependenciesComparator;
 import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
@@ -46,6 +43,7 @@ public class TestController {
 	TescoProductRepository tescoProductRepository;
 
 
+
 	@Autowired
 	CustomPhraseFoundRepository phraseFoundRepo;
 	@Autowired
@@ -56,6 +54,11 @@ public class TestController {
 
 	@Autowired
 	MorrisonsClientService morrisonsClientService;
+
+	@Autowired
+	PhraseFoundProductTypeRepository phraseFoundProductTypeRepository;
+
+
 
 	public TestController(TokenizationClientService tokenizationService, NamedEntityRecognitionClientService nerService,
 						  ProductParsingResultRepository productParsingRepo, IngredientPhraseParsingResultRepository ingredientParsingRepo,
@@ -105,6 +108,22 @@ public class TestController {
 
 		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,"test",x,null);
 
+		this.ingredientParsingRepo.save(x);
+		this.phraseFoundRepo.saveIfNew(phrase);
+		return "Done";
+	}
+
+
+	@RequestMapping("/testOneToManyRelation")
+	public String testOneToManyRelation(){
+		IngredientPhraseParsingResult x=new IngredientPhraseParsingResult("test",12, AmountTypes.pcs, ProductType.fresh,"test","Test",ProductType.unknown);
+		x.setParsingBatch(new ParsingBatch());
+
+		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,"test",x,null);
+
+		PhraseFoundProductType y=new PhraseFoundProductType(ProductType.unknown,x,null,phrase);
+		phraseFoundProductTypeRepository.save(y);
+	//	phrase.getPhraseFoundProductType().add(y);
 		this.ingredientParsingRepo.save(x);
 		this.phraseFoundRepo.saveIfNew(phrase);
 		return "Done";
