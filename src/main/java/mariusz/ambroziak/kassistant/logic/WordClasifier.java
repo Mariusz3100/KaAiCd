@@ -756,6 +756,8 @@ public class WordClasifier {
             String desc = sp.getDescription();
             if (desc.toLowerCase().equals(t.getText().toLowerCase())) {
                 addProductResult(parsingAPhrase, index, t, "[usda api: " + sp.getFdcId() + "]");
+                addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index));
+
                 return true;
             }
         }
