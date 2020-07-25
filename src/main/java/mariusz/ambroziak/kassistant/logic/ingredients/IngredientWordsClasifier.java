@@ -17,7 +17,7 @@ public class IngredientWordsClasifier extends WordClasifier {
 
         extractAndMarkProductPropertyWords(parsingAPhrase);
 
-
+        calculateBasedOnPhrasesOrUpdatePhrasesWithTypes(parsingAPhrase);
 
     }
 

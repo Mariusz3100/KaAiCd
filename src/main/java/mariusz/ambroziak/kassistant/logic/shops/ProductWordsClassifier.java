@@ -48,57 +48,22 @@ public class ProductWordsClassifier extends WordClasifier {
 
 
     public void calculateProductType(AbstractParsingObject parsingAPhrase) {
-        extractAndMarkProductPropertyWords(parsingAPhrase);
-
-
-        calculateTypeFromReasonings(parsingAPhrase);
+        super.calculateProductType(parsingAPhrase);
 
         if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
             calculateReasoningsBaseOnPackagingAndPrepInstructions(parsingAPhrase);
             calculateTypeFromReasonings(parsingAPhrase);
         }
 
-        if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)) {
-          //add productType to phrases
-            parsingAPhrase.getPhrasesFound().stream()
-                 //   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
-                    .forEach(pf->pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),null,pf.getRelatedProductResult(),pf)));
-
-        }else{
-                calculateReasoningsBaseOnClassifiedPhrases(parsingAPhrase);
-                calculateTypeFromReasonings(parsingAPhrase);
-
-        }
-
-
+        calculateBasedOnPhrasesOrUpdatePhrasesWithTypes(parsingAPhrase);
 
 
     }
 
-    private boolean calculateTypeFromReasonings(AbstractParsingObject parsingAPhrase) {
-        List<ProductType> foundTypes=parsingAPhrase.getProductTypeReasoning().values().stream().filter(pt->!pt.equals(ProductType.unknown)).distinct().collect(Collectors.toList());
-        if(foundTypes.size()==1){
-            parsingAPhrase.setFoodTypeClassified(foundTypes.get(0));
-            return true;
-        }else if(foundTypes.size()>1){
-            parsingAPhrase.getProductTypeReasoning().put("[conflicting types found]", ProductType.unknown);
-            return true;
-        }else {
-            return false;
-        }
-    }
-
-    private void calculateReasoningsBaseOnClassifiedPhrases(AbstractParsingObject parsingAPhrase) {
-        List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 
-        for(PhraseFound pf:phrasesFound){
-            if(pf.getPf_id()!=null&&pf.getTypesFoundForPhraseAndBase()!=null&&!pf.getTypesFoundForPhraseAndBase().equals(ProductType.unknown)){
-                parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: "+pf.getPhrase()+"]", pf.getLeadingProductType());
-            }
-        }
 
-    }
+
 
 
 
@@ -136,15 +101,15 @@ public class ProductWordsClassifier extends WordClasifier {
     }
 
 
-    public void calculateProductType(ProductParsingProcessObject parsingAPhrase) {
-        checkDepartmentForKeywords(parsingAPhrase);
-
-
-        checkQuantities(parsingAPhrase);
-
-
-
-    }
+//    public void calculateProductType(ProductParsingProcessObject parsingAPhrase) {
+//        checkDepartmentForKeywords(parsingAPhrase);
+//
+//
+//        checkQuantities(parsingAPhrase);
+//
+//
+//
+//    }
 
 
 }

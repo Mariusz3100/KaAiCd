@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.model.PhraseFoundProductType;
 import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
@@ -131,7 +132,8 @@ public class WordClasifier {
 		pureeFoodKeywords.add("puree");
 		pureeFoodKeywords.add("passata");
 		pureeFoodKeywords.add("paste");
-		pureeFoodKeywords.add("concentrate");
+        pureeFoodKeywords.add("sieved");
+   //     pureeFoodKeywords.add("concentrate");
 
 		juiceKeywords=new ArrayList<>();
 		juiceKeywords.add("juice");
@@ -152,14 +154,17 @@ public class WordClasifier {
         fillQuanAndProdPhrases(parsingAPhrase);
         initializeProductPhraseTokensAndConnotations(parsingAPhrase);
         //if(parsingAPhrase.getFinalResults().stream().filter(t->t.getWordType()==null||t.getWordType()==WordType.Unknown).findAny().isPresent()) {
-        parsingAPhrase.getFinalResults().stream().filter(qt -> qt.getWordType() == WordType.ProductElement).forEach(qt -> qt.setWordType(null));
-        if(checkifAreUnclassifiedTokesLeft(parsingAPhrase)){
-            categorizationFromConnotations(parsingAPhrase);
-        }
-        if(checkifAreUnclassifiedTokesLeft(parsingAPhrase)){
-            categorizeSingleTokens(parsingAPhrase);
-        }
 
+        if(checkifAreUnclassifiedTokesLeft(parsingAPhrase)) {
+            emptyProductTokensAndPhrases(parsingAPhrase);
+            //lookForWholePhrasesInDb(parsingAPhrase);
+
+            categorizationFromConnotations(parsingAPhrase);
+
+            if (checkifAreUnclassifiedTokesLeft(parsingAPhrase)) {
+                categorizeSingleTokens(parsingAPhrase);
+            }
+        }
         recategorize(parsingAPhrase);
         //}
         calculateProductType(parsingAPhrase);
@@ -182,6 +187,10 @@ public class WordClasifier {
             }
 
         }
+    }
+    private void emptyProductTokensAndPhrases(AbstractParsingObject parsingAPhrase) {
+        parsingAPhrase.getFinalResults().stream().filter(qt -> qt.getWordType() == WordType.ProductElement).forEach(qt -> qt.setWordType(null));
+        parsingAPhrase.setPhrasesFound(new ArrayList<>());
     }
 
     private void handleEntities(AbstractParsingObject parsingAPhrase) {
@@ -208,7 +217,48 @@ public class WordClasifier {
     }
 
     protected void calculateProductType(AbstractParsingObject parsingAPhrase) {
+        extractAndMarkProductPropertyWords(parsingAPhrase);
+        calculateTypeFromReasonings(parsingAPhrase);
     }
+
+    protected boolean calculateTypeFromReasonings(AbstractParsingObject parsingAPhrase) {
+        List<ProductType> foundTypes=parsingAPhrase.getProductTypeReasoning().values().stream().filter(pt->!pt.equals(ProductType.unknown)).distinct().collect(Collectors.toList());
+        if(foundTypes.size()==1){
+            parsingAPhrase.setFoodTypeClassified(foundTypes.get(0));
+            return true;
+        }else if(foundTypes.size()>1){
+            parsingAPhrase.getProductTypeReasoning().put("[conflicting types found]", ProductType.unknown);
+            return true;
+        }else {
+            return false;
+        }
+    }
+    protected void calculateBasedOnPhrasesOrUpdatePhrasesWithTypes(AbstractParsingObject parsingAPhrase) {
+        if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)) {
+            //add productType to phrases
+            parsingAPhrase.getPhrasesFound().stream()
+                    //   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
+                    .forEach(pf->pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),null,pf.getRelatedProductResult(),pf)));
+
+        }else{
+            calculateReasoningsBaseOnClassifiedPhrases(parsingAPhrase);
+            calculateTypeFromReasonings(parsingAPhrase);
+
+        }
+    }
+
+    private void calculateReasoningsBaseOnClassifiedPhrases(AbstractParsingObject parsingAPhrase) {
+        List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
+
+
+        for(PhraseFound pf:phrasesFound){
+            if(pf.getPf_id()!=null&&pf.getTypesFoundForPhraseAndBase()!=null&&!pf.getTypesFoundForPhraseAndBase().equals(ProductType.unknown)){
+                parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: "+pf.getPhrase()+"]", pf.getLeadingProductType());
+            }
+        }
+
+    }
+
     protected void extractAndMarkProductPropertyWords(AbstractParsingObject parsingAPhrase) {
         for (QualifiedToken qt : parsingAPhrase.getFinalResults()) {
             for (String keyword : freshFoodKeywords) {
