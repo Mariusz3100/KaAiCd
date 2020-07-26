@@ -247,7 +247,7 @@ public class WordClasifier {
         }
     }
 
-    private void calculateReasoningsBaseOnClassifiedPhrases(AbstractParsingObject parsingAPhrase) {
+    protected void calculateReasoningsBaseOnClassifiedPhrases(AbstractParsingObject parsingAPhrase) {
         List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 

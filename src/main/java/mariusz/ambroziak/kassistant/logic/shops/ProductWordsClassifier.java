@@ -54,16 +54,13 @@ public class ProductWordsClassifier extends WordClasifier {
             calculateReasoningsBaseOnPackagingAndPrepInstructions(parsingAPhrase);
             calculateTypeFromReasonings(parsingAPhrase);
         }
+        if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
 
-        calculateBasedOnPhrasesOrUpdatePhrasesWithTypes(parsingAPhrase);
-
+            calculateReasoningsBaseOnClassifiedPhrases(parsingAPhrase);
+            calculateTypeFromReasonings(parsingAPhrase);
+        }
 
     }
-
-
-
-
-
 
 
 

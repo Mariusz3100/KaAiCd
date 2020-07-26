@@ -133,7 +133,17 @@ public class ShopProductParser  extends AbstractParser {
 
 		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
 
+		if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)){
+//			phrasesFound.forEach(pf->pf.getPhraseFoundProductType().forEach(pfpt -> {if(pfpt.getPfpt_id()==null)pfpt.setRelatedProductResult(productParsingResult);}));
+
+			parsingAPhrase.getPhrasesFound().stream()
+					//   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
+					.forEach(pf->pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),null,productParsingResult,pf)));
+
+		}
+
 		addLemmatizedVersions(phrasesFound);
+		//phrasesFound.forEach(pf->pf.prepareNewTypesForSave(productParsingResult));
 
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
 

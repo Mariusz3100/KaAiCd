@@ -102,7 +102,7 @@ public class IngredientPhraseParser extends AbstractParser {
 		List<IngredientPhraseParsingProcessObject> retValue=new ArrayList<>();
 
 		for(IngredientLearningCase er:inputLines) {
-			IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
+			IngredientPhraseParsingProcessObject parsingAPhrase =  processSingleCase(er);
 			retValue.add(parsingAPhrase);
 		}
 		return retValue;
@@ -128,6 +128,13 @@ public class IngredientPhraseParser extends AbstractParser {
 		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 		phrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));
+
+		if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)){
+			parsingAPhrase.getPhrasesFound().stream()
+					//   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
+					.forEach(pf->pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),ingredientPhraseParsingResult,null,pf)));
+
+		}
 
 		addLemmatizedVersions(phrasesFound);
 
