@@ -23,8 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ExpectedMatchesService {
@@ -37,7 +36,11 @@ public class ExpectedMatchesService {
 
 	@Autowired
 	MatchExpectedRepository matchExpectedRepository;
+	@Autowired
+	IngredientPhraseLearningCaseRepository ingredientPhraseLearningCaseRepository;
 
+	@Autowired
+	EdamanIngredientParsingService edamanParsingService;
 
 	public static final String csvSeparator=";";
 
@@ -53,6 +56,47 @@ public class ExpectedMatchesService {
 
 	}
 
+	public void retrieveAllMatchExpectedAndIngredientData() throws IOException {
+
+		InputStream inputStream = inputFileResource.getInputStream();
+		BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
+		String line=br.readLine();
+		String phrase="";
+		Set<String> ingredients=new HashSet<>();
+		while(line!=null) {
+			if(!line.startsWith("#")) {
+				try {
+					if(line.startsWith("+")){
+						phrase=line.substring(1);
+					}else if(line.startsWith("-")){
+						String productName=line.substring(1);
+
+						if(phrase==null||phrase.isEmpty()){
+							System.err.println("Empty ingedient phrase");
+						}else{
+							ingredients.add(phrase);
+
+							MatchExpected me=new MatchExpected();
+							me.setIngredient(phrase);
+							me.setProduct(productName);
+							me.setExpectedVerdict(true);
+							this.matchExpectedRepository.save(me);
+						}
+
+					}
+				} catch (Exception e) {
+					System.out.println(line + ";" + e.getLocalizedMessage());
+				}
+			}
+			line=br.readLine();
+		}
+
+		for(String ingredient:ingredients) {
+
+			this.edamanParsingService.createAndSaveIngredientLearningCase(ingredient);
+		}
+
+	}
 
 
 	public void retrieveMatchesExpectedDataFromFileSequentially() throws IOException {
@@ -87,23 +131,6 @@ public class ExpectedMatchesService {
 			}
 			line=br.readLine();
 		}
-
-//		String name= elements[0];
-//
-//		String type = elements[2];
-//		ProductType foundType = ProductType.parseType(type);
-//		String url=elements[1];
-//		String minimalExpected = elements[3].toLowerCase();
-//		String extendedExpected = elements[4].toLowerCase();
-//		ProductLearningCase learningCase=new ProductLearningCase();
-//		learningCase.setExtended_words_expected(extendedExpected);
-//		learningCase.setMinimal_words_expected(minimalExpected);
-//		learningCase.setName(name);
-//		learningCase.setType_expected(foundType);
-//		learningCase.setUrl(url);
-
-
-
 
 	}
 

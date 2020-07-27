@@ -58,6 +58,15 @@ public class MatchesController {
 
 	}
 
+	@ResponseBody
+	@RequestMapping("/retrieveAllMatchExpectedAndIngredientData")
+	public String retrieveAllMatchExpectedAndIngredientData() throws IOException{
+
+		this.expectedMatchesService.retrieveAllMatchExpectedAndIngredientData();;
+		return "Done";
+
+	}
+
 	@CrossOrigin
 	@ResponseBody
 	@RequestMapping("/retrieveInputCases")
