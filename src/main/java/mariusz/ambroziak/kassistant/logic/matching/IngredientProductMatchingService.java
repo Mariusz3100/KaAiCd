@@ -115,7 +115,7 @@ public class IngredientProductMatchingService extends AbstractParser {
           //      mpr.setProductsNotFound(missing);
 
             }
-
+            mpr.setIncorrectProductsConsideredParsingResults(mpr.getProductsConsideredParsingResults().stream().filter(result->result.isCalculatedVerdict()!=result.isExpectedVerdict()).collect(Collectors.toList()));
         }
 
         return matchingProcessResults;
@@ -153,6 +153,7 @@ public class IngredientProductMatchingService extends AbstractParser {
                 MatchingProcessResult match = new MatchingProcessResult();
                 match.setIngredientParsingDetails(ingredientResult);
                 List<ProductParsingResult> parsingResultList = retrieveProductCandidates(parsingAPhrase);
+                parsingResultList.sort((o1, o2) -> {return o1.getOriginalName().compareTo(o2.getOriginalName());});
                 for (ProductParsingResult pr : parsingResultList) {
                     ProductData product = getProductFromDb(pr);
                     if (product != null) {
@@ -173,7 +174,10 @@ public class IngredientProductMatchingService extends AbstractParser {
                         }
                     }
                 }
-                match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isCalculatedVerdict() ? 1 : (o2.isCalculatedVerdict() ? -1 : 0)).collect(Collectors.toList()));
+          //      match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isCalculatedVerdict() ? 1 : (o2.isCalculatedVerdict() ? -1 : 0)).collect(Collectors.toList()));
+
+
+
                 retValue.add(match);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -227,7 +231,9 @@ public class IngredientProductMatchingService extends AbstractParser {
 
         CalculatedResults cr = new CalculatedResults(ingredientSurplus, matched, productSurplus, matched);
         pmr.setWordsMatching(cr);
-        pmr.setCalculatedVerdict(ingredientSurplus.isEmpty() && productSurplus.isEmpty());
+        boolean namesMatch=ingredientSurplus.isEmpty() && productSurplus.isEmpty();
+        boolean typesMatch=parsingAPhrase.getFoodTypeClassified().equals(pppo.getFoodTypeClassified());
+        pmr.setCalculatedVerdict(namesMatch&&typesMatch);
         return pmr;
     }
 

@@ -10,6 +10,7 @@ public class MatchingProcessResult {
     ParsingResult ingredientParsingDetails;
 
     List<ProductMatchingResult> productsConsideredParsingResults;
+    List<ProductMatchingResult> incorrectProductsConsideredParsingResults;
 
 
     public ParsingResult getIngredientParsingDetails() {
@@ -36,4 +37,11 @@ public class MatchingProcessResult {
         getProductsConsideredParsingResults().add(result);
     }
 
+    public List<ProductMatchingResult> getIncorrectProductsConsideredParsingResults() {
+        return incorrectProductsConsideredParsingResults;
+    }
+
+    public void setIncorrectProductsConsideredParsingResults(List<ProductMatchingResult> incorrectProductsConsideredParsingResults) {
+        this.incorrectProductsConsideredParsingResults = incorrectProductsConsideredParsingResults;
+    }
 }
