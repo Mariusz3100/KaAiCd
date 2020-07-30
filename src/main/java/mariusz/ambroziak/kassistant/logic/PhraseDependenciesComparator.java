@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -45,10 +46,24 @@ public class PhraseDependenciesComparator {
                     return false;
                 }
             }
+            if(!allTwoWordDependenciesOfSecond.isEmpty()){
+                String missingMessage=allTwoWordDependenciesOfSecond.stream().map(e->e.getHead().getText()+" "+e.getChild().getText()).collect(Collectors.joining(","));
 
-       //     if(allTwoWordDependenciesOfSecond.isEmpty()){
+                Optional<Token> any = secondTokenized.getTokens().stream().filter(t1 -> !firstTokenized.getTokens().stream().anyMatch(t2 -> t2.getText().equals(t1.getText()))).findAny();
+                String missingOne="";
+                if(any.isPresent())
+                {
+                    missingOne=any.get().getText();
+                }
+
+
+                System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: "+missingOne);
+                return false;
+            }else {
+
+                //     if(allTwoWordDependenciesOfSecond.isEmpty()){
                 return true;
-
+            }
 //            }else{
 //                System.err.println("USDA api covers all phrase dependencies, but has additional ones.");
 //                return false;
