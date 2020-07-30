@@ -77,6 +77,8 @@ public class WordClasifier {
 	public static ArrayList<String> pureeFoodKeywords;
 	public static ArrayList<String> juiceKeywords;
 
+    public static ArrayList<String> impromperProductPropertyKeywords;
+    public static ArrayList<String> impromperQuantityKeywords;
 
 	static {
 		productTypeKeywords=new ArrayList<String>();
@@ -138,8 +140,13 @@ public class WordClasifier {
 		juiceKeywords=new ArrayList<>();
 		juiceKeywords.add("juice");
 
+        impromperProductPropertyKeywords=new ArrayList<>();
+        impromperProductPropertyKeywords.add("organic");
 
-	}
+        impromperQuantityKeywords=new ArrayList<>();
+        impromperQuantityKeywords.add("medium");
+
+    }
 
 
 	public void calculateWordTypesForWholePhrase(AbstractParsingObject parsingAPhrase) {
@@ -858,9 +865,11 @@ public class WordClasifier {
         TokenizationResults tokens = parsingAPhrase.getEntitylessTokenized();
         Token t = tokens.getTokens().get(index);
 
-        if (t.getText().equals("medium"))
+        if (impromperQuantityKeywords.contains(t.getText().toLowerCase()))
             return WordType.QuantityElement;
 
+        if (impromperProductPropertyKeywords.contains(t.getText().toLowerCase()))
+            return WordType.ProductPropertyElement;
 
         return null;
     }
