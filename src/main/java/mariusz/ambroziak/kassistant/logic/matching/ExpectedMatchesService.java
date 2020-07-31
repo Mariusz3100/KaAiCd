@@ -1,5 +1,6 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
+import mariusz.ambroziak.kassistant.enums.AmountTypes;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.hibernate.model.MatchExpected;
@@ -68,7 +69,14 @@ public class ExpectedMatchesService {
 				try {
 					if(line.startsWith("+")){
 						phrase=line.substring(1);
-					}else if(line.startsWith("-")){
+					}else if(line.startsWith("=")){
+							ingredients.add(phrase);
+							MatchExpected me=new MatchExpected();
+							me.setIngredient(phrase);
+							me.setProduct("");
+							me.setExpectedVerdict(false);
+							this.matchExpectedRepository.save(me);
+						}else if(line.startsWith("-")){
 						String productName=line.substring(1);
 
 						if(phrase==null||phrase.isEmpty()){
@@ -92,8 +100,14 @@ public class ExpectedMatchesService {
 		}
 
 		for(String ingredient:ingredients) {
+			boolean saved=this.edamanParsingService.createAndSaveIngredientLearningCase(ingredient);
 
-			this.edamanParsingService.createAndSaveIngredientLearningCase(ingredient);
+			if(!saved) {
+
+				IngredientLearningCase ilc = new IngredientLearningCase(ingredient,1,AmountTypes.pcs);
+				this.ingredientPhraseLearningCaseRepository.save(ilc);
+			}
+
 		}
 
 	}

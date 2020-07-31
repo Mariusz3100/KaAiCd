@@ -103,11 +103,17 @@ public class IngredientProductMatchingService extends AbstractParser {
 
                     List<MatchExpected> collect = expectedForIngredient.stream().filter(me -> me.getProduct().trim().equals(productName)).collect(Collectors.toList());
 
-                    if (collect.size()>0){
-                        pmr.setExpectedVerdict(true);
-                    }else{
+                    if(collect.stream().filter(me->!me.isExpectedVerdict()&&me.getProduct().isEmpty()).count()>0){
                         pmr.setExpectedVerdict(false);
-                        expectedForIngredient = expectedForIngredient.stream().filter(me -> !me.getProduct().equals(productName)).collect(Collectors.toList());
+                    }else {
+                        if (collect.size() > 0) {
+                            if (collect.get(0).isExpectedVerdict()) {
+                                pmr.setExpectedVerdict(true);
+                            }
+                        } else {
+                            pmr.setExpectedVerdict(false);
+                            expectedForIngredient = expectedForIngredient.stream().filter(me -> !me.getProduct().equals(productName)).collect(Collectors.toList());
+                        }
                     }
                 }
 
