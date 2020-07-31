@@ -1,6 +1,7 @@
 package mariusz.ambroziak.kassistant.logic;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
+import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
@@ -51,14 +52,21 @@ public class PhraseDependenciesComparator {
 
                 Optional<Token> any = secondTokenized.getTokens().stream().filter(t1 -> !firstTokenized.getTokens().stream().anyMatch(t2 -> t2.getText().equals(t1.getText()))).findAny();
                 String missingOne="";
-                if(any.isPresent())
-                {
-                    missingOne=any.get().getText();
+
+
+                List<Token> missingWords = secondTokenized.getTokens().stream().filter(st -> !st.getPos().equals(PythonSpacyLabels.punctPos) && firstTokenized.getTokens().stream().filter(ft -> ft.getLemma().equals(st.getLemma())).count() == 0).collect(Collectors.toList());
+
+                if(missingWords.stream().filter(t->WordClasifier.freshFoodKeywords.contains(t.getText())).count()>0){
+                    System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word in preparation: "+missingOne);
+                    return true;
+
+                }else{
+
+                    System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: "+missingOne);
+                    return false;
                 }
 
 
-                System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: "+missingOne);
-                return false;
             }else {
 
                 //     if(allTwoWordDependenciesOfSecond.isEmpty()){

@@ -80,7 +80,7 @@ public class WordClasifier {
     public static ArrayList<String> impromperProductPropertyKeywords;
     public static ArrayList<String> impromperQuantityKeywords;
 
-	static {
+    static {
 		productTypeKeywords=new ArrayList<String>();
 
 		productTypeKeywords.add("vegetable");
@@ -128,6 +128,7 @@ public class WordClasifier {
 
 		freshFoodKeywords=new ArrayList<String>();
 		freshFoodKeywords.add("fresh");
+        freshFoodKeywords.add("raw");
 
 
 		pureeFoodKeywords=new ArrayList<>();
