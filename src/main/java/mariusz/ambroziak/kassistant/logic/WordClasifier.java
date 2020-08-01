@@ -76,6 +76,7 @@ public class WordClasifier {
 
 	public static ArrayList<String> pureeFoodKeywords;
 	public static ArrayList<String> juiceKeywords;
+    public static ArrayList<String> usdaIgnoreKeywords;
 
     public static ArrayList<String> impromperProductPropertyKeywords;
     public static ArrayList<String> impromperQuantityKeywords;
@@ -146,6 +147,10 @@ public class WordClasifier {
 
         impromperQuantityKeywords=new ArrayList<>();
         impromperQuantityKeywords.add("medium");
+
+        usdaIgnoreKeywords=new ArrayList<>();
+
+        usdaIgnoreKeywords.add("slices");
 
     }
 
@@ -261,7 +266,7 @@ public class WordClasifier {
 
         for(PhraseFound pf:phrasesFound){
             if(pf.getPf_id()!=null&&pf.getTypesFoundForPhraseAndBase()!=null&&!pf.getTypesFoundForPhraseAndBase().equals(ProductType.unknown)){
-                parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: "+pf.getPhrase()+"]", pf.getLeadingProductType());
+                parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: "+pf.getPhrase()+"]", pf.getWeightedLeadingProductType());
             }
         }
 
@@ -306,6 +311,7 @@ public class WordClasifier {
             List<ConnectionEntry> quantitylessDependenciesConnotations = parsingAPhrase.getQuantitylessConnotations().stream().filter(s -> !s.getHead().getText().equals("ROOT")).collect(Collectors.toList());
             List<ConnectionEntry> filteredQuantitylessDependenciesConnotations = quantitylessDependenciesConnotations.stream()
                     .filter(t -> !NlpConstants.of_Word.equals(t.getHead().getText()) && !NlpConstants.of_Word.equals(t.getChild().getText()))
+                    .filter(t -> !t.getHead().getText().trim().isEmpty() && !t.getChild().getText().trim().isEmpty())
                     .filter(ce -> !Pattern.matches(punctuationRegex, ce.getChild().getText()) && !Pattern.matches(punctuationRegex, ce.getHead().getText()))
                     .collect(Collectors.toList());
 
@@ -350,7 +356,7 @@ public class WordClasifier {
         //TODO right now we do not consider shorter search phrases, to be thought about
         String quantitylessTokens = quantitylessDependenciesConnotation.getHead().getText() + " " + quantitylessDependenciesConnotation.getChild().getText();
         String quantitylessTokensWithPluses = "+" + quantitylessDependenciesConnotation.getHead().getText() + " +" + quantitylessDependenciesConnotation.getChild().getText();
-        UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 20);
+        UsdaResponse inApi = findInUsdaApi(quantitylessTokensWithPluses, 20);
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
             boolean isSame = this.dependenciesComparator.comparePhrases(quantitylessTokens, desc);
@@ -363,11 +369,15 @@ public class WordClasifier {
         return false;
     }
 
+    private UsdaResponse findInUsdaApi(String quantitylessTokensWithPluses, int i) {
+        return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i);
+    }
+
     private boolean checkAllTokensInUsdaApiWithRespectForDependencies(AbstractParsingObject parsingAPhrase) {
         //TODO right now we do not consider shorter search phrases, to be thought about
         String quantitylessTokens = parsingAPhrase.getQuantitylessTokenized().getTokens().stream().map(t -> t.getText().toLowerCase()).collect(Collectors.joining(" "));
         String quantitylessTokensWithPluses = parsingAPhrase.getQuantitylessTokenized().getTokens().stream().filter(t -> !t.getText().equals(NlpConstants.of_Word)).map(t -> "+" + t.getText().toLowerCase()).collect(Collectors.joining(" "));
-        UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 20);
+        UsdaResponse inApi = findInUsdaApi(quantitylessTokensWithPluses, 20);
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
             boolean isSame = this.dependenciesComparator.comparePhrases(quantitylessTokens, desc);
@@ -410,7 +420,7 @@ public class WordClasifier {
     }
 
     private boolean checkUsdaApiForAdjacencyEntry(AbstractParsingObject parsingAPhrase, int index, String entry) {
-        UsdaResponse inApi = this.usdaApiClient.findInApi("\""+entry+"\"", 10);
+        UsdaResponse inApi = findInUsdaApi("\""+entry+"\"", 10);
 
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
@@ -808,7 +818,7 @@ public class WordClasifier {
     }
 
     private boolean checkWithResultsFromUsdaApi(AbstractParsingObject parsingAPhrase, int index, Token t) {
-        UsdaResponse inApi = this.usdaApiClient.findInApi(t.getText(), 10);
+        UsdaResponse inApi = findInUsdaApi(t.getText(), 10);
 
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
