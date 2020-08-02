@@ -219,8 +219,8 @@ public class IngredientProductMatchingService extends AbstractParser {
 
         List<QualifiedToken> ingredientWordsMarked = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
         List<QualifiedToken> productWordsMarked = pppo.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
-        List<String> matched = new ArrayList<>();
-        List<String> ingredientSurplus = new ArrayList<>();
+        Set<String> matched = new HashSet<>();
+        Set<String> ingredientSurplus = new HashSet<>();
         List<String> productSurplus = new ArrayList<>();
 
 
@@ -232,10 +232,15 @@ public class IngredientProductMatchingService extends AbstractParser {
             }
 
         }
-        productSurplus = productWordsMarked.stream().filter(qt -> !matched.contains(qt.getLemma())).map(t -> t.getLemma()).collect(Collectors.toList());
+        productSurplus = productWordsMarked.stream().filter(qt -> !matched.contains(qt.getLemma())).map(t -> t.getLemma()).distinct().collect(Collectors.toList());
 
+        List<String> ingSurplusList=new ArrayList<>();
+        ingSurplusList.addAll(ingredientSurplus);
 
-        CalculatedResults cr = new CalculatedResults(ingredientSurplus, matched, productSurplus, matched);
+        List<String> matchedList=new ArrayList<>();
+        matchedList.addAll(matched);
+
+        CalculatedResults cr = new CalculatedResults(ingSurplusList, matchedList, productSurplus, matchedList);
         pmr.setWordsMatching(cr);
         boolean namesMatch=ingredientSurplus.isEmpty() && productSurplus.isEmpty();
         boolean typesMatch=parsingAPhrase.getFoodTypeClassified().equals(pppo.getFoodTypeClassified());
