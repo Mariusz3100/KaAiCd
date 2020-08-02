@@ -47,7 +47,10 @@ public class PhraseDependenciesComparator {
                     return false;
                 }
             }
-            if(!allTwoWordDependenciesOfSecond.isEmpty()){
+            if(allTwoWordDependenciesOfSecond.isEmpty()){
+             //     if(allTwoWordDependenciesOfSecond.isEmpty()){
+                return true;
+            }else{
                 String missingMessage=allTwoWordDependenciesOfSecond.stream().map(e->e.getHead().getText()+" "+e.getChild().getText()).collect(Collectors.joining(","));
 
                 Optional<Token> any = secondTokenized.getTokens().stream().filter(t1 -> !firstTokenized.getTokens().stream().anyMatch(t2 -> t2.getText().equals(t1.getText()))).findAny();
@@ -56,21 +59,20 @@ public class PhraseDependenciesComparator {
 
                 List<Token> missingWords = secondTokenized.getTokens().stream().filter(st -> !st.getPos().equals(PythonSpacyLabels.punctPos) && firstTokenized.getTokens().stream().filter(ft -> ft.getLemma().equals(st.getLemma())).count() == 0).collect(Collectors.toList());
 
-                if(missingWords.stream().filter(t->WordClasifier.freshFoodKeywords.contains(t.getText())).count()>0){
-                    System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word in preparation: "+missingOne);
+                if(missingWords.size()==0){
+                    return true;
+                }else if(missingWords.stream().filter(t->WordClasifier.freshFoodKeywords.contains(t.getText())).count()>0){
+
+                    System.out.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word is acceptable: "+missingWords.get(0));
                     return true;
 
                 }else{
-
-                    System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: "+missingOne);
+                    String missingWordsString=missingWords.stream().map(t->t.getText()).collect(Collectors.joining(", "));
+                    System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: ["+missingWordsString+"]");
                     return false;
                 }
 
 
-            }else {
-
-                //     if(allTwoWordDependenciesOfSecond.isEmpty()){
-                return true;
             }
 //            }else{
 //                System.err.println("USDA api covers all phrase dependencies, but has additional ones.");
