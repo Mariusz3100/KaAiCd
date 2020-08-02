@@ -73,6 +73,7 @@ public class WordClasifier {
 	public static ArrayList<String> punctationTypeKeywords;
 
 	public static ArrayList<String> freshFoodKeywords;
+    public static ArrayList<String> foodFlavouredKeywords;
 
 	public static ArrayList<String> pureeFoodKeywords;
 	public static ArrayList<String> juiceKeywords;
@@ -149,8 +150,15 @@ public class WordClasifier {
         impromperQuantityKeywords.add("medium");
 
         usdaIgnoreKeywords=new ArrayList<>();
-
         usdaIgnoreKeywords.add("slices");
+
+        foodFlavouredKeywords=new ArrayList<>();
+        foodFlavouredKeywords.add("flavoured");
+        foodFlavouredKeywords.add("scented");
+        foodFlavouredKeywords.add("infused");
+
+
+
 
     }
 
@@ -296,6 +304,16 @@ public class WordClasifier {
                    // qt.setWordType(WordType.ProductPropertyElement);
                     //parsingAPhrase.setFoodTypeClassified(ProductType.puree);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.puree);
+
+                }
+            }
+
+
+            for (String keyword : foodFlavouredKeywords) {
+                if (keyword.equals(qt.getText())) {
+                    // qt.setWordType(WordType.ProductPropertyElement);
+                    //parsingAPhrase.setFoodTypeClassified(ProductType.puree);
+                    parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.flavoured);
 
                 }
             }
@@ -512,7 +530,7 @@ public class WordClasifier {
     private void checkForProductTypeProperties(AbstractParsingObject parsingAPhrase, WordsApiResult wordsApiResult) {
         ArrayList<String> typeOf = wordsApiResult.getTypeOf();
 
-        for (String keyword : freshFoodKeywords) {
+        for (String keyword : freshTypeKeywords) {
             for (String type : typeOf) {
                 if (type.indexOf(keyword) > 0) {
                     parsingAPhrase.getProductTypeReasoning().put("api keyword for fresh found: " + keyword, ProductType.fresh);
@@ -1312,6 +1330,10 @@ public class WordClasifier {
         if (war != null)
             return war;
 
+        WordsApiResult war1 = checkWordsTypesWithPhrasesInDb(wordResults,WordType.ProductElement);
+        if (war1 != null)
+            return war1;
+
         return null;
     }
 
@@ -1321,6 +1343,32 @@ public class WordClasifier {
         if (war != null)
             return war;
 
+        WordsApiResult war1 = checkWordsTypesWithPhrasesInDb(wordResults,WordType.QuantityElement);
+        if (war1 != null)
+            return war1;
+
+        return null;
+    }
+
+    private WordsApiResult checkWordsTypesWithPhrasesInDb(ArrayList<WordsApiResult> wordResults, WordType WordType) {
+        for (WordsApiResult war1 : wordResults) {
+
+            for (String typeOf : war1.getTypeOf()) {
+                List<PhraseFound> byPhrase = this.phraseFoundRepo.findByPhrase(typeOf);
+
+                if (byPhrase != null && !byPhrase.isEmpty()) {
+                    for (PhraseFound pf : byPhrase) {
+                        if (pf.getWordType().equals(WordType)) {
+                            war1.setReasoningForFound("[WordsApi transitive, subtype of:'" + pf.getPhrase() + "']");
+
+                            return war1;
+                        }
+                    }
+                }
+
+
+            }
+        }
         return null;
     }
 
@@ -1345,21 +1393,7 @@ public class WordClasifier {
 
 
 
-            for(String typeOf:war.getTypeOf()) {
-                List<PhraseFound> byPhrase = this.phraseFoundRepo.findByPhrase(typeOf);
 
-                if(byPhrase!=null&&!byPhrase.isEmpty()){
-                    for(PhraseFound pf:byPhrase){
-                        if(pf.getWordType().equals(WordType.ProductElement)){
-                            war.setReasoningForFound("[WordsApi transitive, subtype of:'"+pf.getPhrase()+"']");
-
-                            return war;
-                        }
-                    }
-                }
-
-
-            }
 
         }
         return null;
