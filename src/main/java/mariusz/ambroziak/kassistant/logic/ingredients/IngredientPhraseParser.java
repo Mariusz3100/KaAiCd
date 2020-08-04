@@ -10,10 +10,7 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
-import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseParsingResultRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.*;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
@@ -62,6 +59,10 @@ public class IngredientPhraseParser extends AbstractParser {
 	@Autowired
 	CustomPhraseFoundRepository phraseFoundRepo;
 
+	@Autowired
+	CustomStatsRepository customStatsRepository;
+
+
 
 	private final String csvSeparator=";";
 	private final String wordSeparator=",";
@@ -103,10 +104,19 @@ public class IngredientPhraseParser extends AbstractParser {
 
 		for(IngredientLearningCase er:inputLines) {
 			IngredientPhraseParsingProcessObject parsingAPhrase =  processSingleCase(er);
+
 			retValue.add(parsingAPhrase);
 		}
 		return retValue;
 	}
+
+	private void saveStatisticsData(IngredientPhraseParsingProcessObject parsingAPhrase, IngredientPhraseParsingResult toSave) {
+		List<QualifiedToken> collect = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+
+		this.customStatsRepository.saveIngredientStatsData(collect,toSave);
+
+	}
+
 
 
 
@@ -261,6 +271,7 @@ public class IngredientPhraseParser extends AbstractParser {
 
 		IngredientPhraseParsingResult toSave = saveIngredientPhraseParsingProcessObject(parsingAPhrase, batchObject);
 		saveFoundPhrasesInDb(parsingAPhrase,toSave);
+		saveStatisticsData(parsingAPhrase,toSave);
 		return toSave;
 	}
 

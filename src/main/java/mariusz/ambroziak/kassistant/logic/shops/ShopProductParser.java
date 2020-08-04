@@ -12,14 +12,13 @@ import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.model.*;
-import mariusz.ambroziak.kassistant.hibernate.repository.CustomPhraseFoundRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.MorrisonProductRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.ParsingBatchRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.ProductParsingResultRepository;
+import mariusz.ambroziak.kassistant.hibernate.repository.*;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
+import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
+import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
@@ -78,6 +77,9 @@ public class ShopProductParser  extends AbstractParser {
 
 	@Autowired
 	MorrisonProductRepository morrisonProductRepository;
+
+	@Autowired
+	CustomStatsRepository customStatsRepository;
 
 	private String spacelessRegex="(\\d+)(\\w+)";
 
@@ -467,9 +469,18 @@ public class ShopProductParser  extends AbstractParser {
 	public ProductParsingResult saveResultInDb(ProductParsingProcessObject parsingAPhrase, ParsingBatch pb) {
 		ProductParsingResult toSave = saveProductParsingResult(parsingAPhrase, pb);
 		saveFoundPhrasesInDb(parsingAPhrase,toSave);
-
+		saveStatisticsData(parsingAPhrase,toSave);
 		return toSave;
 	}
+
+	private void saveStatisticsData(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {
+		List<QualifiedToken> collect = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+
+
+		this.customStatsRepository.saveProductStatsData(collect,toSave);
+
+	}
+
 
 	private ProductParsingResult saveProductParsingResult(ProductParsingProcessObject parsingAPhrase, ParsingBatch pb) {
 		ProductParsingResult toSave=new ProductParsingResult();
