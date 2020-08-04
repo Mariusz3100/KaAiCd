@@ -158,13 +158,6 @@ public class TestController {
 	}
 
 
-	@RequestMapping("/testMorrisons")
-	public String testMorrisons(@RequestParam(value="param", defaultValue="empty") String param){
-		List<Morrisons_Product>  products = this.morrisonsClientService.searchInDbAndApiFor(param);
-
-		return ""+products.size();
-	}
-
 	@CrossOrigin
 	@RequestMapping("/springTokenizerFromFile")
 	@ResponseBody
