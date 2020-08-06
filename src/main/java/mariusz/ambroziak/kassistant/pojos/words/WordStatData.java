@@ -5,7 +5,7 @@ public class WordStatData {
     private String lemma;
     private int productCount;
     private int ingredientCount;
-
+    private String calculatedType;
 
     public String getText() {
         return text;
@@ -39,8 +39,17 @@ public class WordStatData {
         this.ingredientCount = ingredientCount;
     }
 
+    public String getCalculatedType() {
+        return calculatedType;
+    }
+
+    public void setCalculatedType(String calculatedType) {
+        this.calculatedType = calculatedType;
+    }
+
     public WordStatData(String text, String lemma) {
         this.text = text;
         this.lemma = lemma;
+        this.calculatedType = StatsWordType.Unknown.toString();
     }
 }

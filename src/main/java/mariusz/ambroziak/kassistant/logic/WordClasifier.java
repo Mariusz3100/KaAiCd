@@ -45,17 +45,17 @@ public class WordClasifier {
 
 
 	@Autowired
-	private WordsApiClient wordsApiClient;
+	protected WordsApiClient wordsApiClient;
 
 	@Autowired
-	private UsdaApiClient usdaApiClient;
+	protected UsdaApiClient usdaApiClient;
 
 	@Autowired
 	private WikipediaApiClient wikipediaClient;
 	@Autowired
 	private ConvertApiClient convertClient;
 	@Autowired
-	private TokenizationClientService tokenizator;
+    protected TokenizationClientService tokenizator;
 	@Autowired
 	private NamedEntityRecognitionClientService nerRecognizer;
 	@Autowired
@@ -83,29 +83,38 @@ public class WordClasifier {
     public static ArrayList<String> impromperQuantityKeywords;
 
     static {
-		productTypeKeywords=new ArrayList<String>();
-
-		productTypeKeywords.add("vegetable");
 
 
-		productTypeKeywords.add("flavouring");
-	//	productTypeKeywords.add("herb");
 
-		productTypeKeywords.add("seasoning");
-		productTypeKeywords.add("dairy");
-		productTypeKeywords.add("meat");
-		productTypeKeywords.add("food");
-		productTypeKeywords.add("sweetener");
-		productTypeKeywords.add("cheese");
-		productTypeKeywords.add("citrous fruit");
-		productTypeKeywords.add("dish");
-		productTypeKeywords.add("victuals");
-		productTypeKeywords.add("alcohol");
-		productTypeKeywords.add("edible fat");
+//		productTypeKeywords.add("flavouring");
+//	//	productTypeKeywords.add("herb");
+//
+//		productTypeKeywords.add("seasoning");
+//		productTypeKeywords.add("dairy");
+//		productTypeKeywords.add("meat");
+//		productTypeKeywords.add("food");
+//		productTypeKeywords.add("sweetener");
+//		productTypeKeywords.add("cheese");
+//		productTypeKeywords.add("citrous fruit");
+//		productTypeKeywords.add("dish");
+//		productTypeKeywords.add("victuals");
+//		productTypeKeywords.add("alcohol");
+//		productTypeKeywords.add("edible fat");
 
-		freshTypeKeywords=new ArrayList<String>();
+        productTypeKeywords=new ArrayList<String>();
+
+//        productTypeKeywords.add("vegetable");
+        productTypeKeywords.add("dairy");
+//        productTypeKeywords.add("fruit");
+        productTypeKeywords.add("food");
+
+
+        freshTypeKeywords=new ArrayList<String>();
 		freshTypeKeywords.add("vegetable");
 		freshTypeKeywords.add("fruit");
+        productTypeKeywords.addAll(freshTypeKeywords);
+
+
 
 
 		irrelevanceKeywords=new ArrayList<String>();
@@ -123,7 +132,7 @@ public class WordClasifier {
 
 
 		//presumably too specific ones:
-		productTypeKeywords.add("dressing");
+	//	productTypeKeywords.add("dressing");
 
 		quantityAttributeKeywords=new ArrayList<String>();
 		quantityAttributeKeywords.add("size");
@@ -438,7 +447,7 @@ public class WordClasifier {
     }
 
     private boolean checkUsdaApiForAdjacencyEntry(AbstractParsingObject parsingAPhrase, int index, String entry) {
-        UsdaResponse inApi = findInUsdaApi("\""+entry+"\"", 10);
+        UsdaResponse inApi = findInUsdaApi(entry, 10);
 
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
@@ -978,7 +987,7 @@ public class WordClasifier {
         return false;
     }
 
-    private void ifEmptyUpdateForLemma(String lemma, ArrayList<WordsApiResult> wordResults) {
+    protected void ifEmptyUpdateForLemma(String lemma, ArrayList<WordsApiResult> wordResults) {
         if (wordResults == null || wordResults.isEmpty()) {
 
 			if(lemma!=null&&!lemma.isEmpty()&&!lemma.equals("O"))
@@ -1325,7 +1334,7 @@ public class WordClasifier {
         }
     }
 
-    private  WordsApiResult checkProductTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
+    protected  WordsApiResult checkProductTypesForWordObject(ArrayList<WordsApiResult> wordResults) {
         WordsApiResult war = checkForTypes(wordResults, productTypeKeywords, new ArrayList<>());
         if (war != null)
             return war;
@@ -1403,7 +1412,7 @@ public class WordClasifier {
     private static String checkIfPropertiesFromWordsApiContainKeywords(String productName, ArrayList<String> typeResults, ArrayList<String> keywords) {
         for (String typeToBeChecked : typeResults) {
             for (String typeConsidered : keywords) {
-                if (typeToBeChecked.equals(typeConsidered)) {
+                if (typeToBeChecked.contains(" "+typeConsidered)||typeToBeChecked.contains(typeConsidered+" ")) {
 //					System.out.println(productName+" -> "+typeToBeChecked+" : "+typeConsidered);
 
                     return typeToBeChecked;
