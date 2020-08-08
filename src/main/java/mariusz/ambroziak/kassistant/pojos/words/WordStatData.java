@@ -1,11 +1,28 @@
 package mariusz.ambroziak.kassistant.pojos.words;
 
+import java.util.List;
+
 public class WordStatData {
     private String text;
     private String lemma;
     private int productCount;
     private int ingredientCount;
     private String calculatedType;
+    private List<String> phrasesAssociated;
+
+
+
+    private List<WordAssociacion> wordsAssociated;
+
+
+
+    public List<WordAssociacion> getWordsAssociated() {
+        return wordsAssociated;
+    }
+
+    public void setWordsAssociated(List<WordAssociacion> wordsAssociated) {
+        this.wordsAssociated = wordsAssociated;
+    }
 
     public String getText() {
         return text;
@@ -45,6 +62,14 @@ public class WordStatData {
 
     public void setCalculatedType(String calculatedType) {
         this.calculatedType = calculatedType;
+    }
+
+    public List<String> getPhrasesAssociated() {
+        return phrasesAssociated;
+    }
+
+    public void setPhrasesAssociated(List<String> phrasesAssociated) {
+        this.phrasesAssociated = phrasesAssociated;
     }
 
     public WordStatData(String text, String lemma) {

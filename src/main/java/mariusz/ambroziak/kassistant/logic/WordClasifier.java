@@ -62,7 +62,7 @@ public class WordClasifier {
 	PhraseDependenciesComparator dependenciesComparator;
 
 	@Autowired
-	CustomPhraseFoundRepository phraseFoundRepo;
+	protected  CustomPhraseFoundRepository phraseFoundRepo;
 
 	public static ArrayList<String> productTypeKeywords;
 	public static ArrayList<String> freshTypeKeywords;
@@ -1381,7 +1381,7 @@ public class WordClasifier {
         return null;
     }
 
-    private WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults, ArrayList<String> keywordsForTypeconsidered, ArrayList<String> attributesForTypeConsidered) {
+    protected WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults, ArrayList<String> keywordsForTypeconsidered, ArrayList<String> attributesForTypeConsidered) {
         for (WordsApiResult war : wordResults) {
             if (war instanceof WordsApiResultImpostor) {
                 return war;
@@ -1412,7 +1412,7 @@ public class WordClasifier {
     private static String checkIfPropertiesFromWordsApiContainKeywords(String productName, ArrayList<String> typeResults, ArrayList<String> keywords) {
         for (String typeToBeChecked : typeResults) {
             for (String typeConsidered : keywords) {
-                if (typeToBeChecked.contains(" "+typeConsidered)||typeToBeChecked.contains(typeConsidered+" ")) {
+                if (typeToBeChecked.equalsIgnoreCase(typeConsidered)||typeToBeChecked.contains(" "+typeConsidered)||typeToBeChecked.contains(typeConsidered+" ")) {
 //					System.out.println(productName+" -> "+typeToBeChecked+" : "+typeConsidered);
 
                     return typeToBeChecked;
