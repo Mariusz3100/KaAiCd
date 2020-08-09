@@ -429,7 +429,9 @@ public class WordClasifier {
         for (int i = 0; i < descTokenized.getTokens().size(); i++) {
             Token t = descTokenized.getTokens().get(i);
 
-            Optional<QualifiedToken> found = parsingAPhrase.getFinalResults().stream().filter(token -> token.compareWithToken(t)).findFirst();
+            Optional<QualifiedToken> found = parsingAPhrase.getFinalResults().stream()
+                    .filter(token -> !Pattern.matches(punctuationRegex,t.getText()))
+                    .filter(token -> token.compareWithToken(t)).findFirst();
 
             if (found.isPresent()) {
                 found.get().setWordType(WordType.ProductElement);
