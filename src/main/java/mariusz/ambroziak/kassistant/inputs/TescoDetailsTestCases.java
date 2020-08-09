@@ -2,9 +2,9 @@ package mariusz.ambroziak.kassistant.inputs;
 
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
-import mariusz.ambroziak.kassistant.hibernate.repository.ProductLearningCaseRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.TescoProductRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.ProductLearningCaseRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.TescoProductRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;

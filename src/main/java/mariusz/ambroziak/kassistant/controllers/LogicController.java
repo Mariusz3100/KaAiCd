@@ -6,10 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpIngredientOuter;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpResponseData;
-import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpSingleIngredientInner;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
 import mariusz.ambroziak.kassistant.webclients.edamam.recipes.*;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;

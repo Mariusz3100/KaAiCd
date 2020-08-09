@@ -1,6 +1,6 @@
 package mariusz.ambroziak.kassistant.controllers;
 
-import mariusz.ambroziak.kassistant.hibernate.repository.MatchExpectedRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.MatchExpectedRepository;
 import mariusz.ambroziak.kassistant.logic.matching.ExpectedMatchesService;
 import mariusz.ambroziak.kassistant.logic.matching.IngredientProductMatchingService;
 import mariusz.ambroziak.kassistant.pojos.matching.InputCases;

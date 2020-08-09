@@ -2,9 +2,7 @@ package mariusz.ambroziak.kassistant.logic.shops;
 
 import mariusz.ambroziak.kassistant.constants.MetadataConstants;
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
-import mariusz.ambroziak.kassistant.hibernate.model.PhraseFoundProductType;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductData;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductWordsClassifier extends WordClasifier {

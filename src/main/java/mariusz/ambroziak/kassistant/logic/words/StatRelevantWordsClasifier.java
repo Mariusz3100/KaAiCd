@@ -1,9 +1,9 @@
 package mariusz.ambroziak.kassistant.logic.words;
 
-import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductParsingResult;
-import mariusz.ambroziak.kassistant.hibernate.model.Word;
-import mariusz.ambroziak.kassistant.hibernate.repository.WordRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.statistical.model.Word;
+import mariusz.ambroziak.kassistant.hibernate.statistical.repository.WordRepository;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.pojos.words.StatsWordType;
 import mariusz.ambroziak.kassistant.pojos.words.WordAssociacion;

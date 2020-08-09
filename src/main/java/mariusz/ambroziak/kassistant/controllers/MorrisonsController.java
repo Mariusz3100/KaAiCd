@@ -1,29 +1,17 @@
 package mariusz.ambroziak.kassistant.controllers;
 
-import mariusz.ambroziak.kassistant.enums.AmountTypes;
-import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.*;
-import mariusz.ambroziak.kassistant.hibernate.repository.*;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.IngredientPhraseParsingResultRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.ProductParsingResultRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.TescoProductRepository;
 import mariusz.ambroziak.kassistant.logic.IngredientPhraseTokenizerTest;
-import mariusz.ambroziak.kassistant.logic.PhraseDependenciesComparator;
 import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
 import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntityRecognitionClientService;
-import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
-import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
-import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
-import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class MorrisonsController {

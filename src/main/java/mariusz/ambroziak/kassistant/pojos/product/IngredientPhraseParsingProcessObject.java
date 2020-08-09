@@ -1,7 +1,7 @@
 package mariusz.ambroziak.kassistant.pojos.product;
 
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
 
 public class IngredientPhraseParsingProcessObject extends AbstractParsingObject {
 	private IngredientLearningCase learningCase;

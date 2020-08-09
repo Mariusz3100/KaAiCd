@@ -1,8 +1,8 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.*;
-import mariusz.ambroziak.kassistant.hibernate.repository.*;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.*;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.*;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
@@ -32,7 +32,7 @@ public class IngredientProductMatchingService extends AbstractParser {
 	ShopProductParser productParser;
 
 	@Autowired
-	ParsingBatchRepository parsingBatchRepository;
+    ParsingBatchRepository parsingBatchRepository;
 
     @Autowired
     ProductParsingResultRepository productParsingResultRepository;

@@ -1,24 +1,17 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
 import mariusz.ambroziak.kassistant.enums.AmountTypes;
-import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
-import mariusz.ambroziak.kassistant.hibernate.model.MatchExpected;
-import mariusz.ambroziak.kassistant.hibernate.repository.EdamanResponseRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.IngredientPhraseLearningCaseRepository;
-import mariusz.ambroziak.kassistant.hibernate.repository.MatchExpectedRepository;
-import mariusz.ambroziak.kassistant.pojos.quantity.PreciseQuantity;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.MatchExpected;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.IngredientPhraseLearningCaseRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.MatchExpectedRepository;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.UnknownHttpStatusCodeException;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package mariusz.ambroziak.kassistant.pojos.matching;
 
-import mariusz.ambroziak.kassistant.hibernate.model.MatchExpected;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.MatchExpected;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package mariusz.ambroziak.kassistant.pojos.shop;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductData;
-import mariusz.ambroziak.kassistant.hibernate.model.ProductLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductData;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 
 import java.util.Arrays;

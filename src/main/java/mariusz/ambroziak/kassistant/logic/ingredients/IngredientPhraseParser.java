@@ -9,8 +9,9 @@ import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.*;
-import mariusz.ambroziak.kassistant.hibernate.repository.*;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.*;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.*;
+import mariusz.ambroziak.kassistant.hibernate.statistical.repository.CustomStatsRepository;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;

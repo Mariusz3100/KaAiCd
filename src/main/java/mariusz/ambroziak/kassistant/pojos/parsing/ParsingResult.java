@@ -4,7 +4,7 @@ import java.util.List;
 
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 //class mainly for presenting in angular

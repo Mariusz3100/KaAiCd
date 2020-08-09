@@ -8,12 +8,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
-import mariusz.ambroziak.kassistant.hibernate.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.enums.ProductType;
-import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
 
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntity;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
