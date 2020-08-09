@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import mariusz.ambroziak.kassistant.hibernate.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpIngredientOuter;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpResponseData;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamamNlpSingleIngredientInner;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
 import mariusz.ambroziak.kassistant.webclients.edamam.recipes.*;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
+import mariusz.ambroziak.kassistant.webclients.webknox.RecipeSearchApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +28,9 @@ public class LogicController {
 	private EdamanIngredientParsingService edamanNlpService;
 	@Autowired
 	TescoFromFileService fileTescoService;
+
+	@Autowired
+	RecipeSearchApiClient recipeSearchApiClient;
 
 
 	@Autowired
@@ -114,6 +120,18 @@ public class LogicController {
 	}
 
 
+	@RequestMapping("/searchAndSaveWebknoxRecipesfor")
+	public String searchAndSaveWebknoxRecipesfor(@RequestParam(value="param") String param) {
 
+		if (param == null || param.isEmpty()) {
+			return "Param required";
+		} else {
+			List<IngredientLearningCase> ingredientLearningCases = this.recipeSearchApiClient.getandSaveIngredientsFor(param);
+
+			String retValue = ingredientLearningCases.stream().map(ilc -> ilc.getOriginalPhrase()).collect(Collectors.joining("<br>"));
+
+			return retValue;
+		}
+	}
 
 }
