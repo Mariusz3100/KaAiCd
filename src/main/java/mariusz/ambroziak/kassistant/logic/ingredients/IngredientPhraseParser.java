@@ -13,9 +13,11 @@ import mariusz.ambroziak.kassistant.hibernate.parsing.model.*;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.*;
 import mariusz.ambroziak.kassistant.hibernate.statistical.repository.CustomStatsRepository;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
+import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
+import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -63,7 +65,8 @@ public class IngredientPhraseParser extends AbstractParser {
 	@Autowired
 	CustomStatsRepository customStatsRepository;
 
-
+	@Autowired
+	PhrasesCalculatingService phrasesCalculatingService;
 
 	private final String csvSeparator=";";
 	private final String wordSeparator=",";
@@ -273,7 +276,12 @@ public class IngredientPhraseParser extends AbstractParser {
 		IngredientPhraseParsingResult toSave = saveIngredientPhraseParsingProcessObject(parsingAPhrase, batchObject);
 		saveFoundPhrasesInDb(parsingAPhrase,toSave);
 		saveStatisticsData(parsingAPhrase,toSave);
+		addPhrasesConsidered(parsingAPhrase,toSave);
+
 		return toSave;
+	}
+	private void addPhrasesConsidered(IngredientPhraseParsingProcessObject parsingAPhrase,  IngredientPhraseParsingResult toSave) {
+		this.phrasesCalculatingService.addIngredientPhrasesConsidered(toSave,parsingAPhrase);
 	}
 
 	private IngredientPhraseParsingResult saveIngredientPhraseParsingProcessObject(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {

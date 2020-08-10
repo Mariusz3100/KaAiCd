@@ -94,15 +94,15 @@ public class PhraseDependenciesComparator {
 
     }
 
-    private boolean checkifPunctation( Token s) {
+    private static boolean checkifPunctation( Token s) {
         return Pattern.matches(WordClasifier.punctuationRegex,s.getText());
     }
 
-    private boolean checkifHeadOrChildIsPunctationOrOfWord(ConnectionEntry e) {
+    public static boolean checkifHeadOrChildIsPunctationOrOfWord(ConnectionEntry e) {
         return checkifPunctation(e.getHead())||checkifPunctation(e.getChild())|| isOfWord(e.getHead()) || isOfWord(e.getChild());
     }
 
-    private boolean isOfWord(Token head) {
+    private static boolean isOfWord(Token head) {
         return head.getText().equals(NlpConstants.of_Word);
     }
 

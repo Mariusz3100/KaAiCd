@@ -16,6 +16,7 @@ import mariusz.ambroziak.kassistant.hibernate.parsing.repository.*;
 import mariusz.ambroziak.kassistant.hibernate.statistical.repository.CustomStatsRepository;
 import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
+import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
@@ -78,6 +79,8 @@ public class ShopProductParser  extends AbstractParser {
 
 	@Autowired
 	CustomStatsRepository customStatsRepository;
+	@Autowired
+	PhrasesCalculatingService phrasesCalculatingService;
 
 	private String spacelessRegex="(\\d+)(\\w+)";
 
@@ -468,7 +471,12 @@ public class ShopProductParser  extends AbstractParser {
 		ProductParsingResult toSave = saveProductParsingResult(parsingAPhrase, pb);
 		saveFoundPhrasesInDb(parsingAPhrase,toSave);
 		saveStatisticsData(parsingAPhrase,toSave);
+		addPhrasesConsidered(parsingAPhrase,toSave);
 		return toSave;
+	}
+
+	private void addPhrasesConsidered(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {
+		this.phrasesCalculatingService.addProductPhraseConsidered(toSave,parsingAPhrase);
 	}
 
 	private void saveStatisticsData(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {

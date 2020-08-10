@@ -34,7 +34,6 @@ public class IngredientController {
 	@Autowired
 	RecipeSearchApiClient recipeSearchApiClient;
 
-	@Autowired
 
 
 
