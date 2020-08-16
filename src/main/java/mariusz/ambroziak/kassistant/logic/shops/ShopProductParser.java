@@ -20,6 +20,7 @@ import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
+import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
@@ -343,6 +344,7 @@ public class ShopProductParser  extends AbstractParser {
 
 		inputs.forEach(input->saveResultInDb(input,batchObject));
 
+
 		return retValue;
 	}
 
@@ -353,7 +355,7 @@ public class ShopProductParser  extends AbstractParser {
 			 parseProductParsingObjectWithNamesComparison(parsingAPhrase);
 			ParsingResult singleResult=createResultObject(parsingAPhrase);
 
-
+			singleResult.setPhrasesConsidered(parsingAPhrase.getPhrasesConsidered());
 			retValue.addResult(singleResult);
 
 
@@ -471,12 +473,15 @@ public class ShopProductParser  extends AbstractParser {
 		ProductParsingResult toSave = saveProductParsingResult(parsingAPhrase, pb);
 		saveFoundPhrasesInDb(parsingAPhrase,toSave);
 		saveStatisticsData(parsingAPhrase,toSave);
-		addPhrasesConsidered(parsingAPhrase,toSave);
+		List<PhraseConsidered> phrases=addPhrasesConsidered(parsingAPhrase,toSave);
+		phrases.forEach(p->parsingAPhrase.addPhrasesConsidered(p));
+
 		return toSave;
 	}
 
-	private void addPhrasesConsidered(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {
-		this.phrasesCalculatingService.addProductPhraseConsidered(toSave,parsingAPhrase);
+	private List<PhraseConsidered> addPhrasesConsidered(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {
+		List<PhraseConsidered> phraseConsidereds = this.phrasesCalculatingService.addProductPhraseConsidered(toSave, parsingAPhrase);
+		return phraseConsidereds;
 	}
 
 	private void saveStatisticsData(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {

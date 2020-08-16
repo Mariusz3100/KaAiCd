@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
@@ -22,6 +23,7 @@ import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
 
 public abstract class AbstractParsingObject {
+	private ParsingResult parsingResult;
 	private String bracketLessPhrase;
 	private String entitylessString;
 	private NerResults nerResults;
@@ -39,6 +41,8 @@ public abstract class AbstractParsingObject {
 	List<ConnectionEntry> quantitylessConnotations;
 	List<ConnectionEntry> dependencyConotationsFound;
 	private List<List<String>> adjacentyConotationsFound;
+
+	List<PhraseConsidered> phrasesConsidered;
 
 
 	private ProductNamesComparison initialNames;
@@ -156,6 +160,21 @@ public abstract class AbstractParsingObject {
 		}
 
 	}
+
+	public List<PhraseConsidered> getPhrasesConsidered() {
+		if(phrasesConsidered==null)
+			phrasesConsidered=new ArrayList<>();
+
+		return phrasesConsidered;
+	}
+
+	public void setPhrasesConsidered(List<PhraseConsidered> phrasesConsidered) {
+		this.phrasesConsidered = phrasesConsidered;
+	}
+	public void addPhrasesConsidered(PhraseConsidered phraseConsidered) {
+		getPhrasesConsidered().add(phraseConsidered);
+	}
+
 
 	public void setFoodTypeClassified(ProductType productClassified) {
 		this.foodTypeClassified = productClassified;
@@ -373,5 +392,13 @@ public abstract class AbstractParsingObject {
 		}
 
 		return retValue;
+	}
+
+	public ParsingResult getParsingResult() {
+		return parsingResult;
+	}
+
+	public void setParsingResult(ParsingResult parsingResult) {
+		this.parsingResult = parsingResult;
 	}
 }

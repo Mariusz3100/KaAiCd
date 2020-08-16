@@ -6,50 +6,55 @@ import java.util.List;
 import java.util.Map;
 
 public class PhraseFindingResults {
-    List<String> productPhrases;
-    List<String> ingredientPhrases;
-    List<String> extraProductPhrases;
-    List<String> extraIngredientPhrases;
-    List<String> matchedPhrases;
+    List<PhraseConsidered> productPhrases;
+    List<PhraseConsidered> ingredientPhrases;
+    List<PhraseConsidered> extraProductPhrases;
+    List<PhraseConsidered> extraIngredientPhrases;
+    List<PhraseConsideredMatch> matchedPhrases;
 
 
-    public List<String> getProductPhrases() {
+
+
+
+
+    public List<PhraseConsidered> getProductPhrases() {
         return productPhrases;
     }
 
-    public void setProductPhrases(List<String> productPhrases) {
+    public void setProductPhrases(List<PhraseConsidered> productPhrases) {
         this.productPhrases = productPhrases;
     }
 
-    public List<String> getIngredientPhrases() {
+    public List<PhraseConsidered> getIngredientPhrases() {
         return ingredientPhrases;
     }
 
-    public void setIngredientPhrases(List<String> ingredientPhrases) {
+    public void setIngredientPhrases(List<PhraseConsidered> ingredientPhrases) {
         this.ingredientPhrases = ingredientPhrases;
     }
 
-    public List<String> getExtraProductPhrases() {
+    public List<PhraseConsidered> getExtraProductPhrases() {
         return extraProductPhrases;
     }
 
-    public void setExtraProductPhrases(List<String> extraProductPhrases) {
+    public void setExtraProductPhrases(List<PhraseConsidered> extraProductPhrases) {
         this.extraProductPhrases = extraProductPhrases;
     }
 
-    public List<String> getExtraIngredientPhrases() {
+    public List<PhraseConsidered> getExtraIngredientPhrases() {
         return extraIngredientPhrases;
     }
 
-    public void setExtraIngredientPhrases(List<String> extraIngredientPhrases) {
+    public void setExtraIngredientPhrases(List<PhraseConsidered> extraIngredientPhrases) {
         this.extraIngredientPhrases = extraIngredientPhrases;
     }
 
-    public List<String> getMatchedPhrases() {
+
+    public List<PhraseConsideredMatch> getMatchedPhrases() {
         return matchedPhrases;
     }
 
-    public void setMatchedPhrases(List<String> matchedPhrases) {
+    public void setMatchedPhrases(List<PhraseConsideredMatch> matchedPhrases) {
         this.matchedPhrases = matchedPhrases;
     }
 }

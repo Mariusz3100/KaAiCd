@@ -2,6 +2,7 @@ package mariusz.ambroziak.kassistant.pojos.parsing;
 
 import java.util.List;
 
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
@@ -27,6 +28,7 @@ public class ParsingResult{
 	private String brandless;
 	private String tokenString;
 	private List<QualifiedToken> tokens;
+	private List<PhraseConsidered> phrasesConsidered;
 
 	private String correctedPhrase;
 	private List<Token> correctedTokens;
@@ -253,5 +255,14 @@ public class ParsingResult{
 
 	public void setQuantitylessPhrase(String quantitylessPhrase) {
 		this.quantitylessPhrase = quantitylessPhrase;
+	}
+
+
+	public List<PhraseConsidered> getPhrasesConsidered() {
+		return phrasesConsidered;
+	}
+
+	public void setPhrasesConsidered(List<PhraseConsidered> phrasesConsidered) {
+		this.phrasesConsidered = phrasesConsidered;
 	}
 }

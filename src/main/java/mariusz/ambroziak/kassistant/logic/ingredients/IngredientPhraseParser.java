@@ -276,12 +276,13 @@ public class IngredientPhraseParser extends AbstractParser {
 		IngredientPhraseParsingResult toSave = saveIngredientPhraseParsingProcessObject(parsingAPhrase, batchObject);
 		saveFoundPhrasesInDb(parsingAPhrase,toSave);
 		saveStatisticsData(parsingAPhrase,toSave);
-		addPhrasesConsidered(parsingAPhrase,toSave);
-
+		List<PhraseConsidered> phrases=addPhrasesConsidered(parsingAPhrase,toSave);
+		parsingAPhrase.setPhrasesConsidered(phrases);
 		return toSave;
 	}
-	private void addPhrasesConsidered(IngredientPhraseParsingProcessObject parsingAPhrase,  IngredientPhraseParsingResult toSave) {
-		this.phrasesCalculatingService.addIngredientPhrasesConsidered(toSave,parsingAPhrase);
+	private List<PhraseConsidered> addPhrasesConsidered(IngredientPhraseParsingProcessObject parsingAPhrase,  IngredientPhraseParsingResult toSave) {
+		List<PhraseConsidered> phraseConsidereds = this.phrasesCalculatingService.addIngredientPhrasesConsidered(toSave, parsingAPhrase);
+		return phraseConsidereds;
 	}
 
 	private IngredientPhraseParsingResult saveIngredientPhraseParsingProcessObject(IngredientPhraseParsingProcessObject parsingAPhrase, ParsingBatch batchObject) {
@@ -341,7 +342,7 @@ public class IngredientPhraseParser extends AbstractParser {
 		object.setAdjacentyConotationsFound(parsingAPhrase.getAdjacentyConotationsFound());
 		object.setDependencyConotationsFound(parsingAPhrase.getDependencyConotationsFound());
 
-
+		object.setPhrasesConsidered(parsingAPhrase.getPhrasesConsidered());
 		object.setQuantitylessPhrase(parsingAPhrase.getQuantitylessPhrase());
 
 
