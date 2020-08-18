@@ -2,7 +2,9 @@ package mariusz.ambroziak.kassistant.logic;
 
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
+import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
+import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,5 +44,36 @@ public class AbstractParser {
         List<String> wordsMarked=finalResults.stream().filter(qualifiedToken -> qualifiedToken.getWordType()==WordType.ProductElement).map(qualifiedToken -> qualifiedToken.getText()).collect(Collectors.toList());
 
         return new CalculatedResults(expected,found,mistakenlyFound,wordsMarked);
+    }
+
+
+    protected void correctErrorsHandleBracketsAndSetBracketLess(AbstractParsingObject parsingAPhrase) {
+        String x=parsingAPhrase.getOriginalPhrase();
+        x=correctErrors(x);
+        if(x==null)
+            parsingAPhrase.setBracketLessPhrase("");
+        else {
+            x=x.replaceAll("\\(.*\\)","");
+            x=x.replaceAll("  "," ");
+            parsingAPhrase.setBracketLessPhrase(x);
+        }
+
+
+
+    }
+
+    protected String correctErrors(String phrase) {
+
+        if(phrase.startsWith("M ")) {
+            phrase=phrase.replaceFirst("M ", "Morrisons ");
+        }
+        if(phrase.startsWith("m ")) {
+            phrase=phrase.replaceFirst("m ", "Morrisons ");
+        }
+
+        if(phrase.indexOf("& ")>0) {
+            phrase=phrase.replaceAll("& ", "and ");
+        }
+        return phrase;
     }
 }

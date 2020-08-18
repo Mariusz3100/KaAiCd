@@ -265,6 +265,10 @@ public abstract class AbstractParsingObject {
 		return entitylessTokenized;
 	}
 
+	public TokenizationResults getPreprocessedPhrase() {
+		return getBracketlessTokenized();
+	}
+
 	public void setEntitylessTokenized(TokenizationResults entitylessTokenized) {
 		this.entitylessTokenized = entitylessTokenized;
 	}

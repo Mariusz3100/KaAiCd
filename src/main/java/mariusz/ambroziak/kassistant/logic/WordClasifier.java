@@ -41,7 +41,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiResultImpostor;
 public class WordClasifier {
 	private static String wikipediaCheckRegex=".*[a-zA-Z].*";
 	private static String convertApiCheckRegex=".*[a-zA-Z].*";
-	public static String punctuationRegex="[\\.,\\-\\*\\(\\)]*";
+	public static String punctuationRegex="[\\., \\-—®\\*\\(\\)]*";
 
 
 	@Autowired
@@ -173,7 +173,7 @@ public class WordClasifier {
 
 
 	public void calculateWordTypesForWholePhrase(AbstractParsingObject parsingAPhrase) {
-		handleBracketsAndSetBracketLess(parsingAPhrase);
+	//	handleBracketsAndSetBracketLess(parsingAPhrase);
 	//	handleEntities(parsingAPhrase);
 
 
@@ -697,8 +697,8 @@ public class WordClasifier {
     }
 
     protected void initialCategorization(AbstractParsingObject parsingAPhrase) {
-        for (int i = 0; i < parsingAPhrase.getEntitylessTokenized().getTokens().size(); i++) {
-            Token t = parsingAPhrase.getEntitylessTokenized().getTokens().get(i);
+        for (int i = 0; i < parsingAPhrase.getPreprocessedPhrase().getTokens().size(); i++) {
+            Token t = parsingAPhrase.getPreprocessedPhrase().getTokens().get(i);
 
             if (PythonSpacyLabels.tokenisationCardinalLabel.equals(t.getTag()) || PythonSpacyLabels.listItemMarker.equals(t.getTag())) {
                 addQuantityResult(parsingAPhrase, i, t, "[spacy tag:" + t.getTag() + "]");
@@ -725,7 +725,7 @@ public class WordClasifier {
     }
 
     public void classifySingleWord(AbstractParsingObject parsingAPhrase, int index) throws WordNotFoundException {
-        TokenizationResults tokens = parsingAPhrase.getEntitylessTokenized();
+        TokenizationResults tokens = parsingAPhrase.getPreprocessedPhrase();
         Token t = tokens.getTokens().get(index);
         String token = t.getText();
         WordType improperlyFoundType = improperlyFindType(parsingAPhrase, index, parsingAPhrase.getFutureTokens());
@@ -902,7 +902,7 @@ public class WordClasifier {
     private WordType improperlyFindType(AbstractParsingObject parsingAPhrase, int index,
                                         Map<Integer, QualifiedToken> map) {
         //TODO this should be deleted in the end
-        TokenizationResults tokens = parsingAPhrase.getEntitylessTokenized();
+        TokenizationResults tokens = parsingAPhrase.getPreprocessedPhrase();
         Token t = tokens.getTokens().get(index);
 
         if (impromperQuantityKeywords.contains(t.getText().toLowerCase()))
@@ -914,18 +914,19 @@ public class WordClasifier {
         return null;
     }
 
-    private void handleBracketsAndSetBracketLess(AbstractParsingObject parsingAPhrase) {
-        String x = parsingAPhrase.getOriginalPhrase();
-        if (x == null)
-            parsingAPhrase.setBracketLessPhrase("");
-        else {
-            x = x.replaceAll("\\(.*\\)", "");
-            parsingAPhrase.setBracketLessPhrase(x);
-        }
-
-
-
-    }
+//    private void handleBracketsAndSetBracketLess(AbstractParsingObject parsingAPhrase) {
+//        String x = parsingAPhrase.getOriginalPhrase();
+//        if (x == null)
+//            parsingAPhrase.setBracketLessPhrase("");
+//        else {
+//            x = x.replaceAll("\\(.*\\)", "");
+//            x = x.replaceAll("  ", " ");
+//            parsingAPhrase.setBracketLessPhrase(x);
+//        }
+//
+//
+//
+//    }
 
     private boolean searchForAllPossibleMeaningsInWordsApi(AbstractParsingObject parsingAPhrase,
                                                            ArrayList<WordsApiResult> wordResults, int index, Token t) throws WordNotFoundException {
@@ -1122,8 +1123,8 @@ public class WordClasifier {
                                                 ConnectionEntry connotationFromExendedPhrase) {
         boolean headFound = false, childFound = false;
         //check current token
-        if (parsingAPhrase.getFinalResults().size() < parsingAPhrase.getEntitylessTokenized().getTokens().size() && (!headFound || !childFound)) {
-            Token currentToken = parsingAPhrase.getEntitylessTokenized().getTokens().get(parsingAPhrase.getFinalResults().size());
+        if (parsingAPhrase.getFinalResults().size() < parsingAPhrase.getPreprocessedPhrase().getTokens().size() && (!headFound || !childFound)) {
+            Token currentToken = parsingAPhrase.getPreprocessedPhrase().getTokens().get(parsingAPhrase.getFinalResults().size());
             headFound = checkForHead(parsingAPhrase, connotationFromExendedPhrase, headFound, currentToken);
             childFound = checkForChild(parsingAPhrase, connotationFromExendedPhrase, childFound, currentToken);
         }
@@ -1138,9 +1139,9 @@ public class WordClasifier {
             }
         }
         //if still not both found, check future tokens as well
-        if (parsingAPhrase.getEntitylessTokenized().getTokens().size() > parsingAPhrase.getFinalResults().size() && (!headFound || !childFound)) {
+        if (parsingAPhrase.getPreprocessedPhrase().getTokens().size() > parsingAPhrase.getFinalResults().size() && (!headFound || !childFound)) {
 
-            Token currentToken = parsingAPhrase.getEntitylessTokenized().getTokens().get(parsingAPhrase.getFinalResults().size());
+            Token currentToken = parsingAPhrase.getPreprocessedPhrase().getTokens().get(parsingAPhrase.getFinalResults().size());
             headFound = checkForHeadInFuture(parsingAPhrase, connotationFromExendedPhrase, headFound, currentToken);
             childFound = checkForChildInFuture(parsingAPhrase, connotationFromExendedPhrase, childFound, currentToken);
         }
@@ -1332,7 +1333,7 @@ public class WordClasifier {
         String[] split = expandedWordFromApi.split(" ");
         for (int i = index; i < split.length + index; i++) {
 
-            parsingAPhrase.addFutureToken(i, new QualifiedToken(parsingAPhrase.getEntitylessTokenized().getTokens().get(i), WordType.ProductElement));
+            parsingAPhrase.addFutureToken(i, new QualifiedToken(parsingAPhrase.getPreprocessedPhrase().getTokens().get(i), WordType.ProductElement));
         }
     }
 

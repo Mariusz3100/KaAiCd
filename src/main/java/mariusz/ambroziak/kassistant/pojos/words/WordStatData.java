@@ -1,5 +1,7 @@
 package mariusz.ambroziak.kassistant.pojos.words;
 
+import mariusz.ambroziak.kassistant.enums.StatsWordType;
+
 import java.util.List;
 
 public class WordStatData {
@@ -7,7 +9,7 @@ public class WordStatData {
     private String lemma;
     private int productCount;
     private int ingredientCount;
-    private String calculatedType;
+    private StatsWordType calculatedType;
     private List<String> phrasesAssociated;
 
 
@@ -56,11 +58,11 @@ public class WordStatData {
         this.ingredientCount = ingredientCount;
     }
 
-    public String getCalculatedType() {
+    public StatsWordType getCalculatedType() {
         return calculatedType;
     }
 
-    public void setCalculatedType(String calculatedType) {
+    public void setCalculatedType(StatsWordType calculatedType) {
         this.calculatedType = calculatedType;
     }
 
@@ -75,6 +77,6 @@ public class WordStatData {
     public WordStatData(String text, String lemma) {
         this.text = text;
         this.lemma = lemma;
-        this.calculatedType = StatsWordType.Unknown.toString();
+        this.calculatedType = StatsWordType.Unknown;
     }
 }

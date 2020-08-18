@@ -17,7 +17,6 @@ import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.pojos.parsing.CalculatedResults;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
-import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -107,15 +106,19 @@ public class IngredientPhraseParser extends AbstractParser {
 		List<IngredientPhraseParsingProcessObject> retValue=new ArrayList<>();
 
 		for(IngredientLearningCase er:inputLines) {
-			IngredientPhraseParsingProcessObject parsingAPhrase =  processSingleCase(er);
+			try {
+				IngredientPhraseParsingProcessObject parsingAPhrase = processSingleCase(er);
 
-			retValue.add(parsingAPhrase);
+				retValue.add(parsingAPhrase);
+			}catch (Exception e){
+				e.printStackTrace();
+			}
 		}
 		return retValue;
 	}
 
 	private void saveStatisticsData(IngredientPhraseParsingProcessObject parsingAPhrase, IngredientPhraseParsingResult toSave) {
-		List<QualifiedToken> collect = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+		List<QualifiedToken> collect =parsingAPhrase.getPermissiveFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
 
 		this.customStatsRepository.saveIngredientStatsData(collect,toSave);
 
@@ -231,22 +234,24 @@ public class IngredientPhraseParser extends AbstractParser {
 	}
 
 	public IngredientPhraseParsingProcessObject processSingleCase(IngredientLearningCase er) {
-		String line=correctErrors(er.getOriginalPhrase());
+		//String line=correctErrors(er.getOriginalPhrase());
 	//	er.setOriginalPhrase(line);
-		IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
-		handleBracketsAndSetBracketLess(parsingAPhrase);
 
-		NerResults entitiesFound = this.nerRecognizer.find(line);
-		parsingAPhrase.setEntities(entitiesFound);
+		IngredientPhraseParsingProcessObject parsingAPhrase=new IngredientPhraseParsingProcessObject(er);
+		correctErrorsHandleBracketsAndSetBracketLess(parsingAPhrase);
+
+//		NerResults entitiesFound = this.nerRecognizer.find(line);
+//		parsingAPhrase.setEntities(entitiesFound);
 
 //		String entitylessString=parsingAPhrase.calculateEntitylessString(parsingAPhrase.getBracketLessPhrase());
-		parsingAPhrase.setEntitylessString(line);
-		TokenizationResults tokens = this.tokenizator.parse(line);
-		parsingAPhrase.setEntitylessTokenized(tokens);
+//		parsingAPhrase.setEntitylessString(line);
+//		TokenizationResults tokens = this.tokenizator.parse(line);
+//		parsingAPhrase.setEntitylessTokenized(tokens);
 		this.wordClasifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
 		return parsingAPhrase;
 	}
+
 
 	private void printResults(ParsingResultList retValue) {
 		for (ParsingResult result : retValue.getResults()) {
@@ -304,18 +309,7 @@ public class IngredientPhraseParser extends AbstractParser {
 	}
 
 
-	private void handleBracketsAndSetBracketLess(IngredientPhraseParsingProcessObject parsingAPhrase) {
-		String x=parsingAPhrase.getLearningTuple().getOriginalPhrase();
-		if(x==null)
-			parsingAPhrase.setBracketLessPhrase("");
-		else {
-			x=x.replaceAll("\\(.*\\)","");
-			parsingAPhrase.setBracketLessPhrase(x);
-		}
 
-
-
-	}
 
 
 	public ParsingResult createResultObject(IngredientPhraseParsingProcessObject parsingAPhrase) {
@@ -506,7 +500,7 @@ public class IngredientPhraseParser extends AbstractParser {
 
 
 
-	private String correctErrors(String phrase) {
+	protected String correctErrors(String phrase) {
 
 		phrase=phrase.replaceFirst("½", "1/2");
 		phrase=phrase.replaceFirst("¼", "1/4");

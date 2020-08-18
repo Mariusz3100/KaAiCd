@@ -1,12 +1,17 @@
 package mariusz.ambroziak.kassistant.pojos.phrasefinding;
 
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
+import mariusz.ambroziak.kassistant.pojos.words.WordAssociacion;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PhraseConsideredMatch {
     PhraseConsidered match;
-    PhraseConsidered ingredientFound;
-    PhraseConsidered productFound;
+    List<PhraseConsidered> ingredientPhraseMatched;
+    List<PhraseConsidered> productPhraseMatched;
 
+    List<WordAssociacion> wordAssociacions;
 
     public PhraseConsidered getMatch() {
         return match;
@@ -16,28 +21,67 @@ public class PhraseConsideredMatch {
         this.match = match;
     }
 
-    public PhraseConsidered getIngredientFound() {
-        return ingredientFound;
+
+
+    public List<WordAssociacion> getWordAssociacions() {
+        if(wordAssociacions==null)
+            wordAssociacions=new ArrayList<>();
+        return wordAssociacions;
     }
 
-    public void setIngredientFound(PhraseConsidered ingredientFound) {
-        this.ingredientFound = ingredientFound;
+    public void setWordAssociacions(List<WordAssociacion> wordAssociacions) {
+        this.wordAssociacions = wordAssociacions;
     }
 
-    public PhraseConsidered getProductFound() {
-        return productFound;
+    public List<PhraseConsidered> getIngredientPhraseMatched() {
+        if(ingredientPhraseMatched ==null)
+            ingredientPhraseMatched =new ArrayList<>();
+
+        return ingredientPhraseMatched;
     }
 
-    public void setProductFound(PhraseConsidered productFound) {
-        this.productFound = productFound;
+    public void setIngredientPhraseMatched(List<PhraseConsidered> ingredientPhraseMatched) {
+        this.ingredientPhraseMatched = ingredientPhraseMatched;
+    }
+    public void addIngredientPhraseMatched(PhraseConsidered ingredientFound) {
+        this.getIngredientPhraseMatched().add(ingredientFound);
     }
 
-    public PhraseConsideredMatch(PhraseConsidered match, PhraseConsidered ingredientFound, PhraseConsidered productFound) {
+    public void addIngredientPhraseMatchedIfNew(PhraseConsidered phrase) {
+        if(!this.getIngredientPhraseMatched().stream().anyMatch(phraseConsidered -> phraseConsidered.equals(phrase))){
+            this.getIngredientPhraseMatched().add(phrase);
+        }
+
+
+    }
+
+    public List<PhraseConsidered> getProductPhraseMatched() {
+        if(productPhraseMatched ==null)
+            productPhraseMatched =new ArrayList<>();
+        return productPhraseMatched;
+    }
+
+    public void setProductPhraseMatched(List<PhraseConsidered> productPhraseMatched) {
+        this.productPhraseMatched = productPhraseMatched;
+    }
+    public void addProductPhraseMatched(PhraseConsidered productFound) {
+        this.getProductPhraseMatched().add(productFound);
+    }
+
+
+    public void addProductPhraseMatchedIfNew(PhraseConsidered phrase) {
+        if(!this.getProductPhraseMatched().stream().anyMatch(phraseConsidered -> phraseConsidered.equals(phrase))){
+            this.getProductPhraseMatched().add(phrase);
+        }
+
+
+    }
+
+    public PhraseConsideredMatch(PhraseConsidered match, List<PhraseConsidered> ingredientPhraseMatched, List<PhraseConsidered> productPhraseMatched) {
         this.match = match;
-        this.ingredientFound = ingredientFound;
-        this.productFound = productFound;
+        this.ingredientPhraseMatched = ingredientPhraseMatched;
+        this.productPhraseMatched = productPhraseMatched;
     }
-
 
     public PhraseConsideredMatch() {
     }

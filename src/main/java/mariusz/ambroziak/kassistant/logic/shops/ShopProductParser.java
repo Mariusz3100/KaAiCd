@@ -18,9 +18,9 @@ import mariusz.ambroziak.kassistant.inputs.TescoDetailsTestCases;
 import mariusz.ambroziak.kassistant.logic.AbstractParser;
 import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
+import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
-import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
@@ -417,19 +417,24 @@ public class ShopProductParser  extends AbstractParser {
 		TokenizationResults tokens = this.tokenizator.parse(brandlessPhrase);
 		parsingAPhrase.setEntitylessTokenized(tokens);
 
+		handleBracketsAndSetBracketLess(parsingAPhrase,brandlessPhrase);
 
 		this.shopWordClacifier.calculateWordTypesForWholePhrase(parsingAPhrase);
 
 	}
-	private String correctErrors(String phrase) {
+	protected void handleBracketsAndSetBracketLess(AbstractParsingObject parsingAPhrase, String phrase) {
 
-		if(phrase.startsWith("M ")) {
-			phrase=phrase.replaceFirst("M ", "Morrisons ");
+
+		if(phrase==null)
+			parsingAPhrase.setBracketLessPhrase("");
+		else {
+			phrase=phrase.replaceAll("\\(.*\\)","");
+			phrase=phrase.replaceAll("  "," ");
+			parsingAPhrase.setBracketLessPhrase(phrase);
 		}
-		if(phrase.startsWith("m ")) {
-			phrase=phrase.replaceFirst("m ", "Morrisons ");
-		}
-		return phrase;
+
+
+
 	}
 	private String compareNames(ProductParsingProcessObject parsingAPhrase) {
 		ProductNamesComparison comparison=createNamesComparison(parsingAPhrase);
@@ -485,7 +490,7 @@ public class ShopProductParser  extends AbstractParser {
 	}
 
 	private void saveStatisticsData(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {
-		List<QualifiedToken> collect = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+		List<QualifiedToken> collect = parsingAPhrase.getPermissiveFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
 
 
 		this.customStatsRepository.saveProductStatsData(collect,toSave);

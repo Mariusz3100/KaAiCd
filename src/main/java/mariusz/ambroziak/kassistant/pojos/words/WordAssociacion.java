@@ -1,6 +1,6 @@
 package mariusz.ambroziak.kassistant.pojos.words;
 
-import java.util.List;
+import mariusz.ambroziak.kassistant.enums.StatsWordType;
 
 public class WordAssociacion {
     private String text;

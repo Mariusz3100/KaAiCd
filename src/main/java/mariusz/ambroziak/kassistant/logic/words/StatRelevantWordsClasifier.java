@@ -2,10 +2,11 @@ package mariusz.ambroziak.kassistant.logic.words;
 
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductParsingResult;
+import mariusz.ambroziak.kassistant.hibernate.statistical.model.ProductWordOccurence;
 import mariusz.ambroziak.kassistant.hibernate.statistical.model.Word;
 import mariusz.ambroziak.kassistant.hibernate.statistical.repository.WordRepository;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
-import mariusz.ambroziak.kassistant.pojos.words.StatsWordType;
+import mariusz.ambroziak.kassistant.enums.StatsWordType;
 import mariusz.ambroziak.kassistant.pojos.words.WordAssociacion;
 import mariusz.ambroziak.kassistant.pojos.words.WordStatData;
 import mariusz.ambroziak.kassistant.pojos.words.WordStatParsingResult;
@@ -48,9 +49,9 @@ public class StatRelevantWordsClasifier extends WordClasifier {
             ingredientParsedList.add(parsed);
             resultsMap.put(w.getText(),parsed);
 
-            StatsWordType statsWordType = calculateWordType(w);
+            StatsWordType statsWordType = getOrcalculateWordType(w);
 
-            parsed.setCalculatedType(statsWordType==null?"":statsWordType.toString());
+            parsed.setCalculatedType(statsWordType==null?StatsWordType.Unknown:statsWordType);
 
 
             typeFoundMap.put(w.getText(),statsWordType);
@@ -68,18 +69,13 @@ public class StatRelevantWordsClasifier extends WordClasifier {
                 Map<String, Integer> count = new HashMap<>();
 
                 for (ProductParsingResult ppr : collect) {
-                    String[] split = ppr.getMinimalResultsCalculated().split(" ");
 
-                    for (String s : split) {
+                    countUpWordsOccuring(count, ppr);
 
-                        Integer retr = count.get(s) == null ? 0 : count.get(s);
-
-                        count.put(s, ++retr);
-                    }
 
                 }
-                List<WordAssociacion> result = new ArrayList<>();
             WordStatData wordStatData = resultsMap.get(w.getText());
+            List<WordAssociacion> result = new ArrayList<>();
 
                 count.forEach(
                         (s, integer) ->
@@ -108,48 +104,64 @@ public class StatRelevantWordsClasifier extends WordClasifier {
 
     }
 
-    private StatsWordType calculateWordType(Word w) {
+    public static void countUpWordsOccuring(Map<String, Integer> count, ProductParsingResult ppr) {
+        for(ProductWordOccurence word:ppr.getWordsOccuring()){
+            String text = word.getWord().getText();
+            Integer retr = count.get(text) == null ? 0 : count.get(text);
 
-        ArrayList<WordsApiResult> wordResults=new ArrayList<>();
-        wordResults.addAll(wordsApiClient.searchFor(w.getText()));
-        ifEmptyUpdateForLemma(w.getLemma(), wordResults);
+            count.put(text, ++retr);
+        }
+    }
 
-  //      WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordResults);
+    public StatsWordType getOrcalculateWordType(Word w) {
+        if (w.getStatsWordType() != null||StatsWordType.Unknown.equals(w.getStatsWordType())) {
+            return w.getStatsWordType();
+        } else {
+            StatsWordType typeCalculated=StatsWordType.Unknown;
 
-        WordsApiResult war = checkForTypes(wordResults, productTypeKeywords, new ArrayList<>());
+            ArrayList<WordsApiResult> wordResults = new ArrayList<>();
+            wordResults.addAll(wordsApiClient.searchFor(w.getText()));
+            ifEmptyUpdateForLemma(w.getLemma(), wordResults);
 
+            //      WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordResults);
 
-        if(war!=null){
-            return StatsWordType.BaseProductElement;
-        }else{
-            List<String> types=new ArrayList<>();
-            types.add("Survey (FNDDS)");
-
-            UsdaResponse inApi = usdaApiClient.findInApi(w.getLemma(),10,types);
-            for (SingleResult sp : inApi.getFoods()) {
-                String desc = sp.getDescription();
-
-                TokenizationResults parsedDesc = tokenizator.parse(desc);
+            WordsApiResult war = checkForTypes(wordResults, productTypeKeywords, new ArrayList<>());
 
 
-                boolean originalPresent=parsedDesc.getTokens().stream().anyMatch(t->t.getLemma().equalsIgnoreCase(w.getLemma()));
-                boolean freshKeywordPresent=parsedDesc.getTokens().stream().anyMatch(t->freshFoodKeywords.contains(t.getLemma().toLowerCase()));
-                List<Token> collect = parsedDesc.getTokens().stream()
-                        .filter(t -> !t.getLemma().equalsIgnoreCase(w.getLemma()))
-                        .filter(t -> !Pattern.matches(punctuationRegex, t.getText()))
-                        .filter(t -> !freshFoodKeywords.contains(t.getLemma()))
-                        .collect(Collectors.toList());
+            if (war != null) {
+                typeCalculated= StatsWordType.BaseProductElement;
+            } else {
+                List<String> types = new ArrayList<>();
+                types.add("Survey (FNDDS)");
 
-                    if(freshKeywordPresent&&originalPresent&&collect.isEmpty()){
-                        return  StatsWordType.BaseProductElement;
+                UsdaResponse inApi = usdaApiClient.findInApi(w.getLemma(), 10, types);
+                for (SingleResult sp : inApi.getFoods()) {
+                    String desc = sp.getDescription();
+
+                    TokenizationResults parsedDesc = tokenizator.parse(desc);
+
+
+                    boolean originalPresent = parsedDesc.getTokens().stream().anyMatch(t -> t.getLemma().equalsIgnoreCase(w.getLemma()));
+                    boolean freshKeywordPresent = parsedDesc.getTokens().stream().anyMatch(t -> freshFoodKeywords.contains(t.getLemma().toLowerCase()));
+                    List<Token> collect = parsedDesc.getTokens().stream()
+                            .filter(t -> !t.getLemma().equalsIgnoreCase(w.getLemma()))
+                            .filter(t -> !Pattern.matches(punctuationRegex, t.getText()))
+                            .filter(t -> !freshFoodKeywords.contains(t.getLemma()))
+                            .collect(Collectors.toList());
+
+                    if (freshKeywordPresent && originalPresent && collect.isEmpty()) {
+                        typeCalculated= StatsWordType.BaseProductElement;
                     }
 
 
+                }
 
             }
 
+            w.setStatsWordType(typeCalculated);
+            wordRepository.save(w);
+            return typeCalculated;
         }
-        return StatsWordType.Unknown;
     }
 
 
