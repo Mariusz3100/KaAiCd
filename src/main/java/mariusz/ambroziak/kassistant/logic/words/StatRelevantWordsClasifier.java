@@ -113,6 +113,13 @@ public class StatRelevantWordsClasifier extends WordClasifier {
         }
     }
 
+
+    protected WordsApiResult checkForTypes(ArrayList<WordsApiResult> wordResults,String keywordForTypeconsidered, ArrayList<String> attributesForTypeConsidered) {
+        ArrayList<String> keywordsForTypeconsidered=new ArrayList<>();//Arrays.asList(new String[]{keywordForTypeconsidered});
+        keywordsForTypeconsidered.add(keywordForTypeconsidered);
+        return checkForTypes(wordResults, keywordsForTypeconsidered, attributesForTypeConsidered);
+    }
+
     public StatsWordType getOrcalculateWordType(Word w) {
         if (w.getStatsWordType() != null||StatsWordType.Unknown.equals(w.getStatsWordType())) {
             return w.getStatsWordType();
@@ -124,6 +131,18 @@ public class StatRelevantWordsClasifier extends WordClasifier {
             ifEmptyUpdateForLemma(w.getLemma(), wordResults);
 
             //      WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordResults);
+
+
+            for(StatsWordType typeConsidered:StatsWordType.values()){
+                WordsApiResult wordsApiResult = checkForTypes(wordResults, typeConsidered.toString().toLowerCase(), new ArrayList<>());
+                if(wordsApiResult!=null){
+                    w.setStatsWordType(typeConsidered);
+                    wordRepository.save(w);
+                    return typeConsidered;
+
+                }
+
+            }
 
             WordsApiResult war = checkForTypes(wordResults, productTypeKeywords, new ArrayList<>());
 
