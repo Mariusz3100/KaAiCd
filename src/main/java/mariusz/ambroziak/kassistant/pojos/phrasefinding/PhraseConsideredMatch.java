@@ -13,6 +13,17 @@ public class PhraseConsideredMatch {
 
     List<WordAssociacion> wordAssociacions;
 
+    List<String> relatedUsdaPhrases;
+
+
+    public List<String> getRelatedUsdaPhrases() {
+        return relatedUsdaPhrases;
+    }
+
+    public void setRelatedUsdaPhrases(List<String> relatedUsdaPhrases) {
+        this.relatedUsdaPhrases = relatedUsdaPhrases;
+    }
+
     public PhraseConsidered getMatch() {
         return match;
     }
@@ -76,6 +87,7 @@ public class PhraseConsideredMatch {
 
 
     }
+
 
     public PhraseConsideredMatch(PhraseConsidered match, List<PhraseConsidered> ingredientPhraseMatched, List<PhraseConsidered> productPhraseMatched) {
         this.match = match;

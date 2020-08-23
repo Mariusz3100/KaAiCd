@@ -7,10 +7,12 @@ import mariusz.ambroziak.kassistant.hibernate.parsing.model.*;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.CustomPhraseConsideredRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.IngredientPhraseLearningCaseRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.MorrisonProductRepository;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.PhraseFoundRepository;
 import mariusz.ambroziak.kassistant.hibernate.statistical.model.IngredientWordOccurence;
 import mariusz.ambroziak.kassistant.hibernate.statistical.model.ProductWordOccurence;
 import mariusz.ambroziak.kassistant.hibernate.statistical.model.Word;
 import mariusz.ambroziak.kassistant.hibernate.statistical.repository.WordRepository;
+import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.phrasefinding.PhraseConsideredMatch;
@@ -22,6 +24,8 @@ import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntr
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
+import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
+import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +55,15 @@ public class PhrasesCalculatingService {
 
     @Autowired
     WordRepository wordRepository;
+
+    @Autowired
+    PhraseFoundRepository phraseFoundRepository;
+
+    @Autowired
+    WordClasifier wordClasifier;
+
+    @Autowired
+    protected UsdaApiClient usdaApiClient;
 
     public static String doesContainPunctuationRegex = ".*[\\.,—\\-\\*\\(\\)]+.*";
 
@@ -221,10 +234,8 @@ public class PhrasesCalculatingService {
         }
 
         fillWordAssociationsFromMap(wordOccurencesMap);
-//        List<PhraseConsideredMatch> matchesCutDown = new ArrayList<>();
-//
-//        Map<PhraseConsidered, PhraseConsideredMatch> mat = matches.stream().collect(Collectors.toMap(phraseConsideredMatch -> phraseConsideredMatch.getMatch(), phraseConsideredMatch -> phraseConsideredMatch));
-//        matchesCutDown.addAll(mat.values());
+
+        List<String> phrasesFromUsdaNotMatched=checkUsdaPhrases(matches);
 
         PhraseFindingResults retValue = new PhraseFindingResults();
         retValue.setIngredientPhrases(collectedIngredient);
@@ -232,11 +243,111 @@ public class PhrasesCalculatingService {
         retValue.setMatchedPhrases(matches);
         retValue.setExtraIngredientPhrases(ingredientSurplus);
         retValue.setExtraProductPhrases(productSurplus);
-
+        retValue.setPhrasesFromUsdaNotMatched(phrasesFromUsdaNotMatched);
 
         return retValue;
     }
 
+    private List<String> checkUsdaPhrases(List<PhraseConsideredMatch> matches) {
+        List<PhraseFound> dbPhrases = phraseFoundRepository.findAll().stream()
+                .filter(phraseFound -> phraseFound.getPhrase().indexOf(" ") > 0)
+                .collect(Collectors.toList());
+
+        matches.stream().forEach(phraseConsideredMatch -> {
+            List<PhraseConsidered> phrasesConsidered = phraseConsideredMatch.getIngredientPhraseMatched();
+            phrasesConsidered.add(phraseConsideredMatch.getMatch());
+            phrasesConsidered.addAll(phraseConsideredMatch.getProductPhraseMatched());
+
+            List<PhraseFound> theOnesFound = new ArrayList<>();
+            List<PhraseFound> theOnesNotFound = new ArrayList<>();
+            dbPhrases.stream().filter(dbPhrase -> {
+
+                if (phrasesConsidered.stream().anyMatch(pc -> arePhrasesInAnyWayConsideredEqual(dbPhrase, pc))) {
+                    theOnesFound.add(dbPhrase);
+                    return false;
+                }else {
+                    return true;
+                }
+            });
+
+            if(theOnesFound.isEmpty()){
+                SingleResult singleResult = checkWithUsdaApi(phraseConsideredMatch.getMatch());
+                if(singleResult!=null){
+                    phraseConsideredMatch.setRelatedUsdaPhrases(Arrays.asList(singleResult.getDescription()));
+                }
+            }else {
+                phraseConsideredMatch.setRelatedUsdaPhrases(theOnesFound.stream().map(phraseFound -> phraseFound.getPhrase()).collect(Collectors.toList()));
+            }
+
+        });
+
+        return dbPhrases.stream().map(phraseFound -> phraseFound.getPhrase()).collect(Collectors.toList());
+    }
+
+    private SingleResult checkWithUsdaApi(PhraseConsidered phraseConsidered) {
+        String quantitylessTokens="";
+        String quantitylessTokensWithPluses="";
+        if(phraseConsidered instanceof AdjacencyPhraseConsidered){
+            SingleResult singleResult = wordClasifier.checkUsdaApiForStrings(((AdjacencyPhraseConsidered) phraseConsidered).getPhrase());
+
+            if(singleResult!=null){
+                return singleResult;
+            }
+
+        }else if(phraseConsidered instanceof DependencyPhraseConsidered){
+            DependencyPhraseConsidered dependencyPhraseConsidered = (DependencyPhraseConsidered) phraseConsidered;
+            List<String> strings = Arrays.asList(((DependencyPhraseConsidered) phraseConsidered).getHead().getText(), ((DependencyPhraseConsidered) phraseConsidered).getChild().getText());
+            SingleResult singleResult = wordClasifier.checkUsdaApiForStrings(strings);
+
+            if(singleResult!=null){
+                return singleResult;
+            }
+
+        }
+        return null;
+
+    }
+
+
+//    private boolean checkUsdaApiForSingleDependency( PhraseConsidered phraseConsidered) {
+//        String quantitylessTokens="";
+//        String quantitylessTokensWithPluses="";
+//
+//
+//        if(phraseConsidered instanceof AdjacencyPhraseConsidered){
+//            quantitylessTokens=((AdjacencyPhraseConsidered)phraseConsidered).getPhrase();
+//            quantitylessTokensWithPluses=Arrays.asList(quantitylessTokens.split(" ")).stream().map(s -> "+").collect(Collectors.joining(" "));
+//            UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 10);
+//            for(SingleResult sr:inApi.getFoods()){
+//                if(sr.getDescription().contains())
+//            }
+//
+//        }else if(phraseConsidered instanceof DependencyPhraseConsidered){
+//            DependencyPhraseConsidered dependencyPhraseConsidered = (DependencyPhraseConsidered) phraseConsidered;
+//            quantitylessTokensWithPluses=dependencyPhraseConsidered.getHead().ge+"+ "+dependencyPhraseConsidered.getChild().getText();
+//            UsdaResponse inApi = this.usdaApiClient.findInApi(quantitylessTokensWithPluses, 10);
+//            quantitylessTokens-dependencyPhraseConsidered
+//            for(SingleResult sr:inApi.getFoods()){
+//                if(sr.getDescription().contains())
+//            }
+//
+//
+//        }
+//
+//        String quantitylessTokens = phraseConsidered.getHead().getText() + " " + quantitylessDependenciesConnotation.getChild().getText();
+//        String quantitylessTokensWithPluses = "+" + quantitylessDependenciesConnotation.getHead().getText() + " +" + quantitylessDependenciesConnotation.getChild().getText();
+//        UsdaResponse inApi = findInUsdaApi(quantitylessTokensWithPluses, 20);
+//        for (SingleResult sp : inApi.getFoods()) {
+//            String desc = sp.getDescription();
+//            boolean isSame = this.dependenciesComparator.comparePhrases(quantitylessTokens, desc);
+//
+//            if (isSame) {
+//                return markFoundDependencyResults(parsingAPhrase, sp);
+//            }
+//        }
+//
+//        return false;
+//    }
     private PhraseConsideredMatch createNewPhraseConsideredMatch(Map<PhraseConsideredMatch, Map<Word, Integer>> wordOccurencesMap, PhraseConsidered consideredNow, List<PhraseConsidered> collect) {
         PhraseConsideredMatch pcm;
         pcm = new PhraseConsideredMatch();
@@ -342,6 +453,21 @@ public class PhrasesCalculatingService {
         return arePhrasesConsideredEffectivelyEqual(consideredNow, phraseConsidered).getPriority() > 0;
     }
 
+    private boolean     arePhrasesInAnyWayConsideredEqual(PhraseFound phraseFound, PhraseConsidered phraseConsidered) {
+        if(phraseConsidered instanceof DependencyPhraseConsidered) {
+            return false;
+        }else {
+            String adjacencyPhraseConsideredText=((AdjacencyPhraseConsidered)phraseConsidered).getPhrase();
+            if(adjacencyPhraseConsideredText.equals(phraseFound)){
+                return true;
+            }
+
+        }
+
+
+
+        return false;
+    }
 
     private PhraseEqualityTypes arePhrasesConsideredEffectivelyEqual(PhraseConsidered consideredNow, PhraseConsidered phraseConsidered) {
         if (phraseConsidered.equals(consideredNow)) {

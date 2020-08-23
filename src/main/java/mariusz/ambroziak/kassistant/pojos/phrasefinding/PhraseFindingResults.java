@@ -12,10 +12,16 @@ public class PhraseFindingResults {
     List<PhraseConsidered> extraIngredientPhrases;
     List<PhraseConsideredMatch> matchedPhrases;
 
+    List<String> phrasesFromUsdaNotMatched;
 
 
+    public List<String> getPhrasesFromUsdaNotMatched() {
+        return phrasesFromUsdaNotMatched;
+    }
 
-
+    public void setPhrasesFromUsdaNotMatched(List<String> phrasesFromUsdaNotMatched) {
+        this.phrasesFromUsdaNotMatched = phrasesFromUsdaNotMatched;
+    }
 
     public List<PhraseConsidered> getProductPhrases() {
         return productPhrases;

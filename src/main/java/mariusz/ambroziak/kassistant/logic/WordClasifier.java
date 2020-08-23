@@ -395,6 +395,31 @@ public class WordClasifier {
 
         return false;
     }
+    public SingleResult checkUsdaApiForStrings(List<String> words) {
+        //TODO right now we do not consider shorter search phrases, to be thought about
+        String quantitylessTokens =words.stream().collect(Collectors.joining(" "));
+        String quantitylessTokensWithPluses =words.stream().map(s -> s+"+").collect(Collectors.joining(" "));
+        //quantitylessDependenciesConnotation.getHead().getText() + " " + quantitylessDependenciesConnotation.getChild().getText();
+        //String quantitylessTokensWithPluses = "+" + quantitylessDependenciesConnotation.getHead().getText() + " +" + quantitylessDependenciesConnotation.getChild().getText();
+        UsdaResponse inApi = findInUsdaApi(quantitylessTokensWithPluses, 20);
+        for (SingleResult sp : inApi.getFoods()) {
+            String desc = sp.getDescription();
+            boolean isSame = this.dependenciesComparator.comparePhrases(quantitylessTokens, desc);
+
+            if(isSame)
+                return sp;
+        }
+
+        return null;
+    }
+    public SingleResult checkUsdaApiForStrings(String phrase) {
+        if(phrase!=null&&!phrase.isEmpty()){
+            return null;
+        }else {
+            return checkUsdaApiForStrings(Arrays.asList(phrase.split(" ")));
+        }
+
+    }
 
     private UsdaResponse findInUsdaApi(String quantitylessTokensWithPluses, int i) {
         return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i);
