@@ -173,7 +173,8 @@ public class PhrasesCalculatingService {
 
         List<PhraseConsidered> collectedProduct = productsTotal.stream().collect(Collectors.toList());//.filter(phraseConsidered -> ((DependencyPhraseConsidered) phraseConsidered).getHead().getText().equals("tomatoes") && ((DependencyPhraseConsidered) phraseConsidered).getChild().getText().equals("italian")).collect(Collectors.toList());
         List<PhraseConsidered> collectedIngredient = ingredientTotal.stream().collect(Collectors.toList());//.filter(phraseConsidered -> ((DependencyPhraseConsidered)phraseConsidered).getChild().getText().toLowerCase().equals("italian")).collect(Collectors.toList());
-
+        ingredientTotal.sort(Comparator.comparingInt(PhraseConsidered::getPc_id));
+        productsTotal.sort(Comparator.comparingInt(PhraseConsidered::getPc_id));
 
         List<PhraseConsideredMatch> matches = new ArrayList<>();
         List<PhraseConsidered> ingredientSurplus = new ArrayList<>();
@@ -218,6 +219,8 @@ public class PhrasesCalculatingService {
                 } else if (matchAlreadyFound.size() == 0) {
                     pcm = createNewPhraseConsideredMatch(wordOccurencesMap, consideredNow, collect);
                     matches.add(pcm);
+                    System.out.println(consideredNow);
+                    System.out.print(" ");
                 } else {
                     pcm = addPhraseToExistingMatch(consideredNow, matchAlreadyFound);
 
@@ -247,6 +250,17 @@ public class PhrasesCalculatingService {
 
         return retValue;
     }
+
+//    private int sortViaTypes(PhraseConsidered o1, PhraseConsidered o2) {
+//        if(o1.getClass().equals(o2.getClass())){
+//            return 0;
+//        }else {
+//            if(o1 instanceof AdjacencyPhraseConsidered)
+//                return 1;
+//            else
+//                return -1;
+//        }
+//    }
 
     private List<String> checkUsdaPhrases(List<PhraseConsideredMatch> matches) {
         List<PhraseFound> dbPhrases = phraseFoundRepository.findAll().stream()
@@ -351,7 +365,17 @@ public class PhrasesCalculatingService {
     private PhraseConsideredMatch createNewPhraseConsideredMatch(Map<PhraseConsideredMatch, Map<Word, Integer>> wordOccurencesMap, PhraseConsidered consideredNow, List<PhraseConsidered> collect) {
         PhraseConsideredMatch pcm;
         pcm = new PhraseConsideredMatch();
-        pcm.setMatch(consideredNow);
+        String mergedPhrase=null;
+
+        if(consideredNow instanceof DependencyPhraseConsidered){
+            mergedPhrase=((DependencyPhraseConsidered)consideredNow).getHead().getText()+" "+((DependencyPhraseConsidered)consideredNow).getChild().getLemma();
+        }else{
+            mergedPhrase=((AdjacencyPhraseConsidered)consideredNow).getPhrase();
+        }
+        AdjacencyPhraseConsidered mergedPhraseConsidered=new AdjacencyPhraseConsidered();
+        mergedPhraseConsidered.setPhrase(mergedPhrase);
+
+        pcm.setMatch(mergedPhraseConsidered);
         pcm.addIngredientPhraseMatched(consideredNow);
         pcm.addProductPhraseMatched(collect.get(0));
         wordOccurencesMap.put(pcm, new HashMap<>());
@@ -469,7 +493,7 @@ public class PhrasesCalculatingService {
         return false;
     }
 
-    private PhraseEqualityTypes arePhrasesConsideredEffectivelyEqual(PhraseConsidered consideredNow, PhraseConsidered phraseConsidered) {
+    public PhraseEqualityTypes arePhrasesConsideredEffectivelyEqual(PhraseConsidered consideredNow, PhraseConsidered phraseConsidered) {
         if (phraseConsidered.equals(consideredNow)) {
             return PhraseEqualityTypes.equal;
         } else {
@@ -482,18 +506,62 @@ public class PhrasesCalculatingService {
                 if (dependencyConsideredNow.equalsWithHeadAndChildReversedOrBetter(dependencyPhraseConsidered)) {
                     return PhraseEqualityTypes.orderReversed;
                 }
-            } else {
-                if (checkForCompatibilityIfDifferentTypes(consideredNow, phraseConsidered)) {
-                    return PhraseEqualityTypes.differentTypes;
+            } else if(consideredNow instanceof AdjacencyPhraseConsidered && phraseConsidered instanceof AdjacencyPhraseConsidered) {
+                if(checkForCompatibilityOfAdjacencyPhrases((AdjacencyPhraseConsidered)consideredNow,(AdjacencyPhraseConsidered)phraseConsidered)){
+                    return PhraseEqualityTypes.lemmasEqual;
+                }else{
+                    if(checkForCrossCompatibilityOfAdjacencyPhrases((AdjacencyPhraseConsidered)consideredNow,(AdjacencyPhraseConsidered)phraseConsidered)){
+                        return PhraseEqualityTypes.orderReversed;
+                    }
+                }
+            }else{
+                    if (checkForCompatibilityIfDifferentTypes(consideredNow, phraseConsidered).getPriority()>=PhraseEqualityTypes.differentTypes.getPriority()) {
+                        return PhraseEqualityTypes.differentTypes;
+                    }
                 }
             }
-        }
+
         return PhraseEqualityTypes.notEqual;
     }
 
-    private boolean checkForCompatibilityIfDifferentTypes(PhraseConsidered consideredNow, PhraseConsidered phraseConsidered) {
-        if (consideredNow.getClass().equals(phraseConsidered.getClass())) {
+    private boolean checkForCompatibilityOfAdjacencyPhrases(AdjacencyPhraseConsidered consideredNow, AdjacencyPhraseConsidered phraseConsidered) {
+        List<Token> consideredNowTokenizationResults = getOrCalculateTokenizationResults(consideredNow).getTokens();
+        List<Token> phraseConsideredTokenizationResults = getOrCalculateTokenizationResults(phraseConsidered).getTokens();
+
+        if(consideredNowTokenizationResults.size()!=phraseConsideredTokenizationResults.size()){
             return false;
+        }else {
+            for(int i=0;i<consideredNowTokenizationResults.size();i++){
+                if(!consideredNowTokenizationResults.get(i).lemmaEquals(phraseConsideredTokenizationResults.get(i))){
+                    return false;
+                }
+            }
+            return true;
+
+        }
+
+    }
+
+    private boolean checkForCrossCompatibilityOfAdjacencyPhrases(AdjacencyPhraseConsidered consideredNow, AdjacencyPhraseConsidered phraseConsidered) {
+        TokenizationResults consideredNowTokenizationResults = getOrCalculateTokenizationResults(consideredNow);
+        TokenizationResults phraseConsideredTokenizationResults = getOrCalculateTokenizationResults(phraseConsidered);
+        List<ConnectionEntry> cnDependencies = consideredNowTokenizationResults.getAllTwoWordDependencies();
+        List<ConnectionEntry> pcDependencies = phraseConsideredTokenizationResults.getAllTwoWordDependencies();
+
+        if(cnDependencies.size()==1&&pcDependencies.size()==1){
+            return cnDependencies.get(0).getHead().getLemma().equals(pcDependencies.get(0).getChild().getLemma())
+                    &&cnDependencies.get(0).getChild().getLemma().equals(pcDependencies.get(0).getHead().getLemma());
+        }else {
+
+            return false;
+
+        }
+
+    }
+
+    private PhraseEqualityTypes checkForCompatibilityIfDifferentTypes(PhraseConsidered consideredNow, PhraseConsidered phraseConsidered) {
+        if (consideredNow.getClass().equals(phraseConsidered.getClass())) {
+            return PhraseEqualityTypes.notEqual;
         } else {
             if (consideredNow instanceof AdjacencyPhraseConsidered) {
                 return castAdjacencyToDependency((AdjacencyPhraseConsidered) consideredNow, (DependencyPhraseConsidered) phraseConsidered);
@@ -506,7 +574,25 @@ public class PhrasesCalculatingService {
 
     }
 
-    private boolean castAdjacencyToDependency(AdjacencyPhraseConsidered adjacencyPhrase, DependencyPhraseConsidered dependencyPhrase) {
+    private PhraseEqualityTypes castAdjacencyToDependency(AdjacencyPhraseConsidered adjacencyPhrase, DependencyPhraseConsidered dependencyPhrase) {
+        TokenizationResults tokenizationResults = getOrCalculateTokenizationResults(adjacencyPhrase);
+
+
+        List<ConnectionEntry> allTwoWordDependencies = tokenizationResults.getAllTwoWordDependencies();
+
+
+        if (allTwoWordDependencies.size() == 1
+                && areHeadsAndChildsCompatible(dependencyPhrase, allTwoWordDependencies)) {
+            return PhraseEqualityTypes.lemmasEqual;
+        } if (allTwoWordDependencies.size() == 1
+                && areHeadsAndChildsCrossCompatible(dependencyPhrase, allTwoWordDependencies)) {
+            return PhraseEqualityTypes.orderReversed;
+        } else {
+            return PhraseEqualityTypes.notEqual;
+        }
+    }
+
+    private TokenizationResults getOrCalculateTokenizationResults(AdjacencyPhraseConsidered adjacencyPhrase) {
         TokenizationResults tokenizationResults = tokenizedMap.get(adjacencyPhrase.getPhrase());
         if (tokenizationResults == null) {
             tokenizationResults = this.tokenizationClientService.parse(adjacencyPhrase.getPhrase());
@@ -514,20 +600,10 @@ public class PhrasesCalculatingService {
             tokenizedMap.put(adjacencyPhrase.getPhrase(), tokenizationResults);
 
         }
-
-
-        List<ConnectionEntry> allTwoWordDependencies = tokenizationResults.getAllTwoWordDependencies();
-
-
-        if (allTwoWordDependencies.size() == 1
-                && areHeadsAndChildsCompatibleOrCrossCompatible(dependencyPhrase, allTwoWordDependencies)) {
-            return true;
-        } else {
-            return false;
-        }
+        return tokenizationResults;
     }
 
-    private boolean areHeadsAndChildsCompatibleOrCrossCompatible(DependencyPhraseConsidered dependencyPhrase, List<ConnectionEntry> allTwoWordDependencies) {
+    private boolean areHeadsAndChildsCompatible(DependencyPhraseConsidered dependencyPhrase, List<ConnectionEntry> allTwoWordDependencies) {
         SavedToken dependencyPhraseHead = dependencyPhrase.getHead();
         SavedToken dependencyPhraseChild = dependencyPhrase.getChild();
         Token fromTreeHead = allTwoWordDependencies.get(0).getHead();
@@ -536,8 +612,18 @@ public class PhrasesCalculatingService {
 
         return (dependencyPhraseHead.equalsToken(fromTreeHead)
                 && dependencyPhraseChild.equalsToken(fromTreeChild))
-                ||(dependencyPhraseHead.equalsToken(fromTreeChild)
-                        && dependencyPhraseChild.equalsToken(fromTreeHead));
+                ||(dependencyPhraseHead.lemmasEqual(fromTreeHead)
+                && dependencyPhraseChild.lemmasEqual(fromTreeChild));
+    }
+    private boolean areHeadsAndChildsCrossCompatible(DependencyPhraseConsidered dependencyPhrase, List<ConnectionEntry> allTwoWordDependencies) {
+        SavedToken dependencyPhraseHead = dependencyPhrase.getHead();
+        SavedToken dependencyPhraseChild = dependencyPhrase.getChild();
+        Token fromTreeHead = allTwoWordDependencies.get(0).getHead();
+        Token fromTreeChild = allTwoWordDependencies.get(0).getChild();
+
+
+        return dependencyPhraseHead.equalsToken(fromTreeChild)
+                && dependencyPhraseChild.equalsToken(fromTreeHead);
     }
 
 

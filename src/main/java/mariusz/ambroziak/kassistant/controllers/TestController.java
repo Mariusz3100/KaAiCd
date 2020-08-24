@@ -6,6 +6,7 @@ import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.*;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.*;
 import mariusz.ambroziak.kassistant.logic.PhraseDependenciesComparator;
+import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
@@ -57,7 +58,8 @@ public class TestController {
 	@Autowired
 	PhraseFoundProductTypeRepository phraseFoundProductTypeRepository;
 
-
+	@Autowired
+	PhrasesCalculatingService phrasesCalculatingService;
 
 	public TestController(TokenizationClientService tokenizationService, NamedEntityRecognitionClientService nerService,
 						  ProductParsingResultRepository productParsingRepo, IngredientPhraseParsingResultRepository ingredientParsingRepo,
@@ -205,6 +207,29 @@ public class TestController {
 
 	}
 
+	@CrossOrigin
+	@RequestMapping("/testPhrasesConsideredsComparator")
+	@ResponseBody
+	public String testPhrasesConsideredsComparator() throws IOException{
+		String first1="cucumber slice";
+		String second1="slices cucumber";
 
+		AdjacencyPhraseConsidered apc1=new AdjacencyPhraseConsidered();
+		AdjacencyPhraseConsidered apc2=new AdjacencyPhraseConsidered();
+
+		apc1.setPhrase(first1);
+		apc2.setPhrase(second1);
+
+		String result= first1+" vs "+second1+"="+this.phrasesCalculatingService.arePhrasesConsideredEffectivelyEqual(apc1,apc2)+"<BR>";
+
+		String first2="more for";
+		String second2="for water";
+		apc1.setPhrase(first2);
+		apc2.setPhrase(second2);
+		result+= first2+" vs "+second2+"="+this.phrasesCalculatingService.arePhrasesConsideredEffectivelyEqual(apc1,apc2);
+
+
+		return result;
+	}
 
 }
