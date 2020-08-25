@@ -110,7 +110,11 @@ public class PhrasesCalculatingService {
         for (int i = 0; i < processObject.getFinalResults().size() - 1; i++) {
             QualifiedToken qt1 = processObject.getFinalResults().get(i);
             QualifiedToken qt2 = processObject.getFinalResults().get(i + 1);
-            if (qt1.getWordType() != WordType.QuantityElement && qt2.getWordType() != WordType.QuantityElement) {
+            if (qt1.getWordType() != WordType.QuantityElement
+                    && qt2.getWordType() != WordType.QuantityElement
+                    && !Pattern.matches(WordClasifier.punctuationRegex, qt1.getText())
+                    && !Pattern.matches(WordClasifier.punctuationRegex, qt2.getText())
+           ) {
                 AdjacencyPhraseConsidered adjacencyPc = new AdjacencyPhraseConsidered();
 
                 adjacencyPc.setPhrase(qt1.getText() + " " + qt2.getText());
@@ -132,7 +136,11 @@ public class PhrasesCalculatingService {
                         .filter(t -> t.getText().equals(qt1.getHead()))
                         .reduce((qualifiedToken, qualifiedToken2) -> pickOneWithTypeNotFilled(qt1, qt2)).orElse(null);
 
-                if (qtFather != null && !qtChild.getRelationToParentType().equals(NlpConstants.ROOT_RELATION_TO_PARENT)) {
+                if (qtFather != null && !qtChild.getRelationToParentType().equals(NlpConstants.ROOT_RELATION_TO_PARENT)
+                    &&!Pattern.matches(WordClasifier.punctuationRegex, qtChild.getText())
+                    &&!Pattern.matches(WordClasifier.punctuationRegex, qtFather.getText())
+                        &&!qtFather.equals(qt2)
+                ) {
                     DependencyPhraseConsidered dependencyPc = new DependencyPhraseConsidered();
                     dependencyPc.setHead(new SavedToken(qtFather));
                     dependencyPc.setChild(new SavedToken(qtChild));
@@ -251,6 +259,22 @@ public class PhrasesCalculatingService {
         return retValue;
     }
 
+    private void saveMatches(List<PhraseConsideredMatch> matches) {
+        for (PhraseConsideredMatch pcm:matches){
+
+            List<PhraseConsidered> sumOfPhrases=new ArrayList<>();
+            sumOfPhrases.addAll(pcm.getProductPhraseMatched());
+            sumOfPhrases.addAll(pcm.getIngredientPhraseMatched());
+            sumOfPhrases.add(pcm.getMatch());
+
+            sumOfPhrases.stream().forEach(phraseConsidered -> phraseConsidered.setAccepted(true));
+            this.phraseConsideredRepository.saveAllPhrases(sumOfPhrases);
+
+        }
+
+
+    }
+
 //    private int sortViaTypes(PhraseConsidered o1, PhraseConsidered o2) {
 //        if(o1.getClass().equals(o2.getClass())){
 //            return 0;
@@ -274,15 +298,23 @@ public class PhrasesCalculatingService {
 
             List<PhraseFound> theOnesFound = new ArrayList<>();
             List<PhraseFound> theOnesNotFound = new ArrayList<>();
-            dbPhrases.stream().filter(dbPhrase -> {
+
+            Iterator<PhraseFound> iterator = dbPhrases.iterator();
+
+            while (iterator.hasNext()){
+                PhraseFound dbPhrase = iterator.next();
 
                 if (phrasesConsidered.stream().anyMatch(pc -> arePhrasesInAnyWayConsideredEqual(dbPhrase, pc))) {
                     theOnesFound.add(dbPhrase);
-                    return false;
-                }else {
-                    return true;
+                    iterator.remove();
                 }
-            });
+
+
+            }
+
+
+
+
 
             if(theOnesFound.isEmpty()){
                 SingleResult singleResult = checkWithUsdaApi(phraseConsideredMatch.getMatch());
@@ -482,7 +514,7 @@ public class PhrasesCalculatingService {
             return false;
         }else {
             String adjacencyPhraseConsideredText=((AdjacencyPhraseConsidered)phraseConsidered).getPhrase();
-            if(adjacencyPhraseConsideredText.equals(phraseFound)){
+            if(adjacencyPhraseConsideredText.equals(phraseFound.getPhrase())){
                 return true;
             }
 
@@ -510,7 +542,10 @@ public class PhrasesCalculatingService {
                 if(checkForCompatibilityOfAdjacencyPhrases((AdjacencyPhraseConsidered)consideredNow,(AdjacencyPhraseConsidered)phraseConsidered)){
                     return PhraseEqualityTypes.lemmasEqual;
                 }else{
-                    if(checkForCrossCompatibilityOfAdjacencyPhrases((AdjacencyPhraseConsidered)consideredNow,(AdjacencyPhraseConsidered)phraseConsidered)){
+                    if(checkForDependencyCompatibilityOfAdjacencyPhrases((AdjacencyPhraseConsidered)consideredNow,(AdjacencyPhraseConsidered)phraseConsidered)){
+                        return PhraseEqualityTypes.dependencyEquals;
+                    }
+                    if(checkForDependencyCrossCompatibilityOfAdjacencyPhrases((AdjacencyPhraseConsidered)consideredNow,(AdjacencyPhraseConsidered)phraseConsidered)){
                         return PhraseEqualityTypes.orderReversed;
                     }
                 }
@@ -542,7 +577,7 @@ public class PhrasesCalculatingService {
 
     }
 
-    private boolean checkForCrossCompatibilityOfAdjacencyPhrases(AdjacencyPhraseConsidered consideredNow, AdjacencyPhraseConsidered phraseConsidered) {
+    private boolean checkForDependencyCrossCompatibilityOfAdjacencyPhrases(AdjacencyPhraseConsidered consideredNow, AdjacencyPhraseConsidered phraseConsidered) {
         TokenizationResults consideredNowTokenizationResults = getOrCalculateTokenizationResults(consideredNow);
         TokenizationResults phraseConsideredTokenizationResults = getOrCalculateTokenizationResults(phraseConsidered);
         List<ConnectionEntry> cnDependencies = consideredNowTokenizationResults.getAllTwoWordDependencies();
@@ -551,6 +586,23 @@ public class PhrasesCalculatingService {
         if(cnDependencies.size()==1&&pcDependencies.size()==1){
             return cnDependencies.get(0).getHead().getLemma().equals(pcDependencies.get(0).getChild().getLemma())
                     &&cnDependencies.get(0).getChild().getLemma().equals(pcDependencies.get(0).getHead().getLemma());
+        }else {
+
+            return false;
+
+        }
+
+    }
+
+    private boolean checkForDependencyCompatibilityOfAdjacencyPhrases(AdjacencyPhraseConsidered consideredNow, AdjacencyPhraseConsidered phraseConsidered) {
+        TokenizationResults consideredNowTokenizationResults = getOrCalculateTokenizationResults(consideredNow);
+        TokenizationResults phraseConsideredTokenizationResults = getOrCalculateTokenizationResults(phraseConsidered);
+        List<ConnectionEntry> cnDependencies = consideredNowTokenizationResults.getAllTwoWordDependencies();
+        List<ConnectionEntry> pcDependencies = phraseConsideredTokenizationResults.getAllTwoWordDependencies();
+
+        if(cnDependencies.size()==1&&pcDependencies.size()==1){
+            return cnDependencies.get(0).getChild().getLemma().equals(pcDependencies.get(0).getChild().getLemma())
+                    &&cnDependencies.get(0).getHead().getLemma().equals(pcDependencies.get(0).getHead().getLemma());
         }else {
 
             return false;
@@ -622,8 +674,11 @@ public class PhrasesCalculatingService {
         Token fromTreeChild = allTwoWordDependencies.get(0).getChild();
 
 
-        return dependencyPhraseHead.equalsToken(fromTreeChild)
-                && dependencyPhraseChild.equalsToken(fromTreeHead);
+        return (dependencyPhraseHead.equalsToken(fromTreeChild)
+                && dependencyPhraseChild.equalsToken(fromTreeHead))
+                ||
+                ( dependencyPhraseHead.lemmasEqual(fromTreeChild)
+                        && dependencyPhraseChild.lemmasEqual(fromTreeHead));
     }
 
 

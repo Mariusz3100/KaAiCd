@@ -226,8 +226,13 @@ public class TestController {
 		String second2="for water";
 		apc1.setPhrase(first2);
 		apc2.setPhrase(second2);
-		result+= first2+" vs "+second2+"="+this.phrasesCalculatingService.arePhrasesConsideredEffectivelyEqual(apc1,apc2);
+		result+= first2+" vs "+second2+"="+this.phrasesCalculatingService.arePhrasesConsideredEffectivelyEqual(apc1,apc2)+"<BR>";
+		String first3="chopped tomato";
+		String second3="tomatoes chopped";
+		apc1.setPhrase(first3);
+		apc2.setPhrase(second3);
 
+		result+= first3+" vs "+second3+"="+this.phrasesCalculatingService.arePhrasesConsideredEffectivelyEqual(apc1,apc2)+"<BR>";
 
 		return result;
 	}
