@@ -14,6 +14,7 @@ import mariusz.ambroziak.kassistant.webclients.edamam.recipes.*;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import mariusz.ambroziak.kassistant.webclients.webknox.RecipeSearchApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
@@ -21,7 +22,8 @@ import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
 @RestController
 public class LogicController {
 
-	private IngredientPhraseParser ingredientParser;
+	@Qualifier()
+	private IngredientPhraseParser ingredientPhraseParser;
 	private EdamanRecipeSearchService searchSevice;
 	private EdamanIngredientParsingService edamanNlpService;
 	@Autowired
@@ -37,9 +39,9 @@ public class LogicController {
 	PhrasesCalculatingService phrasesCalculatingService;
 
 	@Autowired
-	public LogicController(IngredientPhraseParser ingredientParser,EdamanRecipeSearchService searchSevice, EdamanIngredientParsingService edamanNlpService) {
+	public LogicController(IngredientPhraseParser ingredientPhraseParser,EdamanRecipeSearchService searchSevice, EdamanIngredientParsingService edamanNlpService) {
 		super();
-		this.ingredientParser = ingredientParser;
+		this.ingredientPhraseParser = ingredientPhraseParser;
 		this.searchSevice=searchSevice;
 		this.edamanNlpService=edamanNlpService;
 

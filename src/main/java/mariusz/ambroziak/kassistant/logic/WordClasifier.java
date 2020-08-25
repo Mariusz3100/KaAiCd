@@ -25,6 +25,7 @@ import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 
@@ -38,6 +39,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiResult;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiResultImpostor;
 
 @Service
+@Primary
 public class WordClasifier {
 	private static String wikipediaCheckRegex=".*[a-zA-Z].*";
 	private static String convertApiCheckRegex=".*[a-zA-Z].*";
@@ -421,7 +423,7 @@ public class WordClasifier {
 
     }
 
-    private UsdaResponse findInUsdaApi(String quantitylessTokensWithPluses, int i) {
+    protected UsdaResponse findInUsdaApi(String quantitylessTokensWithPluses, int i) {
         return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i);
     }
 

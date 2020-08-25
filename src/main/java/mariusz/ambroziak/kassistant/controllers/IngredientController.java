@@ -3,6 +3,7 @@ package mariusz.ambroziak.kassistant.controllers;
 import mariusz.ambroziak.kassistant.hibernate.cache.repositories.WebknoxResponseRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
 import mariusz.ambroziak.kassistant.logic.ingredients.IngredientPhraseParser;
+import mariusz.ambroziak.kassistant.logic.ingredients.RefinedIngredientParser;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
 import mariusz.ambroziak.kassistant.webclients.edamam.recipes.EdamanRecipeSearchService;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @RestController
 public class IngredientController {
 	@Autowired
-	private IngredientPhraseParser ingredientParser;
+	private IngredientPhraseParser ingredientPhraseParser;
 	@Autowired
 	private EdamanRecipeSearchService searchSevice;
 	@Autowired
@@ -35,7 +36,8 @@ public class IngredientController {
 	RecipeSearchApiClient recipeSearchApiClient;
 
 
-
+	@Autowired
+	private RefinedIngredientParser refinedIngredientParser;
 
 
 	@CrossOrigin
@@ -44,7 +46,20 @@ public class IngredientController {
 	public ParsingResultList phrasesParsing() throws IOException{
 //		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
 
-		ParsingResultList parseFromFile = this.ingredientParser.parseFromDbAndSaveAllToDb();
+		ParsingResultList parseFromFile = this.ingredientPhraseParser.parseFromDbAndSaveAllToDb();
+
+
+		return parseFromFile;
+
+	}
+
+	@CrossOrigin
+	@RequestMapping("/phrasesRefinedParsing")
+	@ResponseBody
+	public ParsingResultList phrasesRefinedParsing() throws IOException{
+//		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();
+
+		ParsingResultList parseFromFile = this.refinedIngredientParser.parseFromDbAndSaveAllToDb();
 
 
 		return parseFromFile;
@@ -68,30 +83,14 @@ public class IngredientController {
 				Ingredient ingredient = recipe.getIngredients().get(j);
 				if( ingredient.getText().toLowerCase().contains(param)){
 					count++;
-//					EdamamNlpResponseData edamamNlpResponseData = edamanNlpService.find(ingredient.getText());
-//					edamamNlpResponseData.getIngredients();
-//					if(edamamNlpResponseData.getIngredients().isEmpty()||!ingredient.getFood().equals(edamamNlpResponseData.getIngredients().get(0).getParsed().get(0).getFoodMatch())){
-//						System.out.println("not always match");
-//					}
-//
-//					for(int k = 0; k< edamamNlpResponseData.getIngredients().size();k++){
-//						EdamamNlpIngredientOuter outer = edamamNlpResponseData.getIngredients().get(k);
-//						String original=outer.getText();
-//
-//						for(EdamamNlpSingleIngredientInner inner:outer.getParsed()) {
-//							String lineOut=original+EdamanIngredientParsingService.csvSeparator+inner.getFoodMatch()+EdamanIngredientParsingService.csvSeparator
-//									+inner.getQuantity()+EdamanIngredientParsingService.csvSeparator+inner.getMeasure();
-//							System.out.println(lineOut);
-//						}
-//					}
+
 							ings.add(ingredient.getText());
 
 
 				}
 			}
 		}
-	//	System.out.println("All amount: "+allCount);
-	//	System.out.println("Counted amount: "+count);
+
 		ings.stream().sorted(Comparator.comparingInt(String::length)).forEach(t->System.out.println(t));
 		return searchRecipeResponse.toJsonString();
 

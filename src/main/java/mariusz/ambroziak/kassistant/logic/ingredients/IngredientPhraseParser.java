@@ -43,11 +43,12 @@ public class IngredientPhraseParser extends AbstractParser {
 	protected TokenizationClientService tokenizator;
 	@Autowired
 	private NamedEntityRecognitionClientService nerRecognizer;
-	private ResourceLoader resourceLoader;
-
-	private EdamanIngredientParsingService edamanNlpParsingService;
 	@Autowired
-	private IngredientWordsClasifier wordClasifier;
+	private ResourceLoader resourceLoader;
+	@Autowired
+	private EdamanIngredientParsingService edamanNlpParsingService;
+
+	protected IngredientWordsClasifier wordClasifier;
 
 	@Autowired
 	private IngredientPhraseLearningCaseRepository ingredientPhraseLearningCaseRepository;
@@ -72,22 +73,11 @@ public class IngredientPhraseParser extends AbstractParser {
 
 
 
-	private String spacelessRegex="(\\d+)([a-zA-Z]+)";
+	private String spacelessRegex="(\\d+)-?([a-zA-Z]+)";
 
-
-
-
-
-	public IngredientPhraseParser(TokenizationClientService tokenizator,
-			NamedEntityRecognitionClientService nerRecognizer, ResourceLoader resourceLoader,
-			EdamanIngredientParsingService edamanNlpParsingService,
-			IngredientWordsClasifier wordClasifier) {
-		super();
-		this.tokenizator = tokenizator;
-		this.nerRecognizer = nerRecognizer;
-		this.resourceLoader = resourceLoader;
-		this.edamanNlpParsingService = edamanNlpParsingService;
-		this.wordClasifier = wordClasifier;
+	@Autowired
+	public IngredientPhraseParser(IngredientWordsClasifier ingredientWordsClasifier) {
+		this.wordClasifier = ingredientWordsClasifier;
 	}
 
 //TODO how to treat empty expectations.
@@ -515,7 +505,7 @@ public class IngredientPhraseParser extends AbstractParser {
 			phrase=phrase.replaceFirst(" c ", " cup ");
 		}
 
-		if(phrase.substring(0, phrase.length()<10?phrase.length():10).indexOf(" & ")>0) {
+		if(phrase.indexOf(" & ")>0) {
 			phrase=phrase.replaceFirst(" & ", " and ");
 		}
 

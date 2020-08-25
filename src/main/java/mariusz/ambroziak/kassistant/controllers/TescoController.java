@@ -23,7 +23,7 @@ public class TescoController {
 	@Autowired
 	TescoApiClientService tescoService;
 	@Autowired
-	ShopProductParser productParserService;
+	ShopProductParser shopProductParser;
 	
 	@Autowired
 	TescoDetailsTestCases testCasesManager;
@@ -46,9 +46,9 @@ public class TescoController {
     public ParsingResultList tescoSearchAndParse(@RequestParam(value="param", required = false) String param) throws IOException{
 		ParsingResultList retValue=null;
 		if(param==null||param.isEmpty()){
-			retValue=this.productParserService.parseAllTestCasesAndSaveResults();
+			retValue=this.shopProductParser.parseAllTestCasesAndSaveResults();
 		}else{
-			retValue=this.productParserService.tescoSearchForAndSaveResults(param);
+			retValue=this.shopProductParser.tescoSearchForAndSaveResults(param);
 		}
     	return retValue;
 
@@ -59,7 +59,7 @@ public class TescoController {
 	@ResponseBody
 	@RequestMapping("/tescoParseFromFile")
     public ParsingResultList tescoParseFromFile() throws IOException{
-    	ParsingResultList retValue=this.productParserService.parseAllTestCases();
+    	ParsingResultList retValue=this.shopProductParser.parseAllTestCases();
     	return retValue;
     	
 	}
@@ -68,7 +68,7 @@ public class TescoController {
 	@RequestMapping("/tescoGetResults")
     public String tescoGetResults(@RequestParam(value="param", defaultValue="empty") String param) throws IOException{
     	
-		this.productParserService.tescoGetResults(param);
+		this.shopProductParser.tescoGetResults(param);
 		return "done";
     	
     }

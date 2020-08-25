@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 public class IngredientProductMatchingService extends AbstractParser {
 
 	@Autowired
-	IngredientPhraseParser ingredientParser;
+	IngredientPhraseParser ingredientPhraseParser;
 	@Autowired
-	ShopProductParser productParser;
+	ShopProductParser shopProductParser;
 
 	@Autowired
     ParsingBatchRepository parsingBatchRepository;
@@ -128,7 +128,7 @@ public class IngredientProductMatchingService extends AbstractParser {
     }
 
     public List<MatchingProcessResult> parseMatchAndGetResultsFromDbAllCases(boolean saveInDb) {
-        List<IngredientLearningCase> ingredientLearningCasesFromDb = this.ingredientParser.getIngredientLearningCasesFromDb();
+        List<IngredientLearningCase> ingredientLearningCasesFromDb = this.ingredientPhraseParser.getIngredientLearningCasesFromDb();
         List<MatchingProcessResult> parseMatchAndGetResultsFromDb = parseMatchList(ingredientLearningCasesFromDb,saveInDb);
 
         return parseMatchAndGetResultsFromDb;
@@ -152,8 +152,8 @@ public class IngredientProductMatchingService extends AbstractParser {
         ParsingBatch batchObject = null;
         for (IngredientLearningCase er : ingredientLearningCasesFromDb) {
             try {
-                IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientParser.processSingleCase(er);
-                ParsingResult ingredientResult = this.ingredientParser.createResultObject(parsingAPhrase);
+                IngredientPhraseParsingProcessObject parsingAPhrase = this.ingredientPhraseParser.processSingleCase(er);
+                ParsingResult ingredientResult = this.ingredientPhraseParser.createResultObject(parsingAPhrase);
                 IngredientPhraseParsingResult ingredientPhraseParsingResult=null;
 
                 MatchingProcessResult match = new MatchingProcessResult();
@@ -164,8 +164,8 @@ public class IngredientProductMatchingService extends AbstractParser {
                     ProductData product = getProductFromDb(pr);
                     if (product != null) {
                         ProductParsingProcessObject pppo = new ProductParsingProcessObject(product, new ProductLearningCase());
-                        this.productParser.parseProductParsingObjectWithNamesComparison(pppo);
-                        ParsingResult ppr = this.productParser.createResultObject(pppo);
+                        this.shopProductParser.parseProductParsingObjectWithNamesComparison(pppo);
+                        ParsingResult ppr = this.shopProductParser.createResultObject(pppo);
                         ProductMatchingResult pmr = calculateMatchingResult(parsingAPhrase, pppo, ppr);
                         match.addProductsConsideredParsingResults(pmr);
 
@@ -175,7 +175,7 @@ public class IngredientProductMatchingService extends AbstractParser {
                                 parsingBatchRepository.save(batchObject);
                             }
                             if (ingredientPhraseParsingResult == null)
-                                ingredientPhraseParsingResult = this.ingredientParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
+                                ingredientPhraseParsingResult = this.ingredientPhraseParser.saveResultAndPhrasesInDb(parsingAPhrase, batchObject);
                             saveProductAndMatchInDb(batchObject, ingredientPhraseParsingResult, pppo, pmr);
                         }
                     }
@@ -194,7 +194,7 @@ public class IngredientProductMatchingService extends AbstractParser {
     }
 
     private void saveProductAndMatchInDb(ParsingBatch batchObject, IngredientPhraseParsingResult ingredientPhraseParsingResult, ProductParsingProcessObject pppo, ProductMatchingResult pmr) {
-        ProductParsingResult productParsingResult = this.productParser.saveResultInDb(pppo, batchObject);
+        ProductParsingResult productParsingResult = this.shopProductParser.saveResultInDb(pppo, batchObject);
         MatchFound mf=new MatchFound();
         mf.setProduct(productParsingResult);
         mf.setBatch(batchObject);
