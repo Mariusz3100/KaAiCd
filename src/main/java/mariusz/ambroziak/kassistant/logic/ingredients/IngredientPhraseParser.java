@@ -491,10 +491,7 @@ public class IngredientPhraseParser extends AbstractParser {
 
 
 	protected String correctErrors(String phrase) {
-
-		phrase=phrase.replaceFirst("½", "1/2");
-		phrase=phrase.replaceFirst("¼", "1/4");
-		phrase=phrase.replaceAll("é", "e");
+		phrase=super.correctErrors(phrase);
 
 		String replacedString=phrase.replaceAll(spacelessRegex, "$1 $2");
 		if(!phrase.equals(replacedString)) {

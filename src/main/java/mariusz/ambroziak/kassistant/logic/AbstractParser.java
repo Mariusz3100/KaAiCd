@@ -22,7 +22,7 @@ public class AbstractParser {
     protected CalculatedResults calculateWordsFound(List<String> expected, List<QualifiedToken> finalResults) {
         List<String> found=new ArrayList<String>();
         List<String> mistakenlyFound=new ArrayList<String>();
-
+        expected=expected.stream().map(s->removeTrailingComma(s)).collect(Collectors.toList());
         for(QualifiedToken qt:finalResults) {
             String qtText = qt.getText().toLowerCase();
             String qtLemma=qt.getLemma();
@@ -47,6 +47,13 @@ public class AbstractParser {
     }
 
 
+    private String removeTrailingComma(String x){
+        if(x.endsWith(",")){
+            x=x.substring(0,x.length()-1);
+        }
+        return x;
+    }
+
     protected void correctErrorsHandleBracketsAndSetBracketLess(AbstractParsingObject parsingAPhrase) {
         String x=parsingAPhrase.getOriginalPhrase();
         x=correctErrors(x);
@@ -63,6 +70,9 @@ public class AbstractParser {
     }
 
     protected String correctErrors(String phrase) {
+        phrase=phrase.replaceAll("½", "1/2");
+        phrase=phrase.replaceAll("¼", "1/4");
+        phrase=phrase.replaceAll("é", "e");
 
         if(phrase.startsWith("M ")) {
             phrase=phrase.replaceFirst("M ", "Morrisons ");
@@ -74,6 +84,12 @@ public class AbstractParser {
         if(phrase.indexOf("& ")>0) {
             phrase=phrase.replaceAll("& ", "and ");
         }
+
+        if(phrase.indexOf("w/ ")>0) {
+            phrase=phrase.replaceAll("w/ ", "with ");
+        }
+
+
         return phrase;
     }
 }

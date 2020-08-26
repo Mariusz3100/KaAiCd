@@ -874,7 +874,7 @@ public class WordClasifier {
     }
 
     private boolean checkWithResultsFromUsdaApi(AbstractParsingObject parsingAPhrase, int index, Token t) {
-        UsdaResponse inApi = findInUsdaApi(t.getText(), 10);
+        UsdaResponse inApi = checkSingleWordInUsdaApi(t.getText());
 
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
@@ -886,6 +886,10 @@ public class WordClasifier {
             }
         }
         return false;
+    }
+
+    protected UsdaResponse checkSingleWordInUsdaApi(String text) {
+        return findInUsdaApi(text,10);
     }
 
     private boolean checkWithResultsFromWordsApi(AbstractParsingObject parsingAPhrase, int index, Token t)
