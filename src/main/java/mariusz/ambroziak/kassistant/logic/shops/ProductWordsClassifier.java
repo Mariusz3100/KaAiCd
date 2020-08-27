@@ -7,6 +7,7 @@ import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
+import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,15 @@ public class ProductWordsClassifier extends WordClasifier {
             calculateReasoningsBaseOnPackagingAndPrepInstructions(parsingAPhrase);
             calculateTypeFromReasonings(parsingAPhrase);
         }
+
+        if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
+            if(!(parsingAPhrase instanceof ProductParsingProcessObject)) {
+                System.err.println("Wrong parsing object supplied to ProductWordsClassifier");
+            }else{
+                checkDepartmentForKeywords((ProductParsingProcessObject) parsingAPhrase);
+                calculateTypeFromReasonings(parsingAPhrase);
+            }
+        }
         if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
 
             calculateReasoningsBaseOnClassifiedPhrases(parsingAPhrase);
@@ -79,6 +89,10 @@ public class ProductWordsClassifier extends WordClasifier {
                 parsingAPhrase.getProductTypeReasoning().put("packaged in a jar",ProductType.processed);
             //    parsingAPhrase.setFoodTypeClassified(ProductType.processed);
             }
+            if(packageTypeSlip.stream().anyMatch(s->s.equalsIgnoreCase("dispenser"))){
+                parsingAPhrase.getProductTypeReasoning().put("packaged in a jar",ProductType.flavoured);
+                //    parsingAPhrase.setFoodTypeClassified(ProductType.processed);
+            }
 
             if(packageTypeSlip.stream().anyMatch(s->s.equalsIgnoreCase("Tray &amp; Heat Sealed"))){
                 parsingAPhrase.getProductTypeReasoning().put("packaged in a heat sealed tray",ProductType.fresh);
@@ -105,5 +119,27 @@ public class ProductWordsClassifier extends WordClasifier {
 //
 //    }
 
+
+
+    public void checkDepartmentForKeywords(ProductParsingProcessObject parsingAPhrase) {
+        ProductData product = parsingAPhrase.getProduct();
+        String departmentList = product.getDepartmentList();
+        for (String keyword : freshFoodKeywords) {
+            if (departmentList != null && departmentList.toLowerCase().contains(keyword)) {
+                parsingAPhrase.getProductTypeReasoning().put("department keyword: " + keyword, ProductType.fresh);
+
+                //  return ProductType.fresh;
+            }
+        }
+
+        for (String keyword : readyDishKeywords) {
+            if (departmentList != null && departmentList.toLowerCase().contains(keyword)) {
+                parsingAPhrase.getProductTypeReasoning().put("department keyword: " + keyword, ProductType.meal);
+
+                //  return ProductType.fresh;
+            }
+        }
+
+    }
 
 }

@@ -20,7 +20,6 @@ import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductData;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NamedEntityRecognitionClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.ner.NerResults;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.*;
-import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaApiClient;
 import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
@@ -76,6 +75,7 @@ public class WordClasifier {
 
 	public static ArrayList<String> freshFoodKeywords;
     public static ArrayList<String> foodFlavouredKeywords;
+    public static ArrayList<String> readyDishKeywords;
 
 	public static ArrayList<String> pureeFoodKeywords;
 	public static ArrayList<String> juiceKeywords;
@@ -168,7 +168,8 @@ public class WordClasifier {
         foodFlavouredKeywords.add("scented");
         foodFlavouredKeywords.add("infused");
 
-
+        readyDishKeywords =new ArrayList<>();
+        readyDishKeywords.add("snack");
 
 
     }
