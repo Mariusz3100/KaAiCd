@@ -43,7 +43,7 @@ import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiResultImpostor;
 public class WordClasifier {
 	private static String wikipediaCheckRegex=".*[a-zA-Z].*";
 	private static String convertApiCheckRegex=".*[a-zA-Z].*";
-	public static String punctuationRegex="[\\., \\-—:\\$®\\*\\(\\)]*";
+	public static String punctuationRegex="[\\., \\-—:'\\$®\\*\\(\\)]*";
 
 
 	@Autowired
@@ -1458,29 +1458,29 @@ public class WordClasifier {
 
 
 
-    public void checkDepartmentForKeywords(ProductParsingProcessObject parsingAPhrase) {
-        ProductData product = parsingAPhrase.getProduct();
-        String department = product.getDepartment();
-        for (String keyword : freshFoodKeywords) {
-            if (department != null && department.toLowerCase().contains(keyword)) {
-                parsingAPhrase.getProductTypeReasoning().put("department keyword: " + keyword, ProductType.fresh);
-
-              //  return ProductType.fresh;
-            }
-
-            if (product instanceof Tesco_Product) {
-                String superdepartment = ((Tesco_Product) product).getSuperdepartment();
-                if (superdepartment != null && superdepartment.toLowerCase().contains(keyword)) {
-                    parsingAPhrase.getProductTypeReasoning().put("department keyword: " + keyword, ProductType.fresh);
-
-                //    return ProductType.fresh;
-                }
-
-            }
-
-        }
-
-    }
+//    public void checkDepartmentForKeywords(ProductParsingProcessObject parsingAPhrase) {
+//        ProductData product = parsingAPhrase.getProduct();
+//        String department = product.getDepartment();
+//        for (String keyword : freshFoodKeywords) {
+//            if (department != null && department.toLowerCase().contains(keyword)) {
+//                parsingAPhrase.getProductTypeReasoning().put("department keyword: " + keyword, ProductType.fresh);
+//
+//              //  return ProductType.fresh;
+//            }
+//
+//            if (product instanceof Tesco_Product) {
+//                String superdepartment = ((Tesco_Product) product).getSuperdepartment();
+//                if (superdepartment != null && superdepartment.toLowerCase().contains(keyword)) {
+//                    parsingAPhrase.getProductTypeReasoning().put("department keyword: " + keyword, ProductType.fresh);
+//
+//                //    return ProductType.fresh;
+//                }
+//
+//            }
+//
+//        }
+//
+//    }
 
     public void checkQuantities(ProductParsingProcessObject parsingAPhrase) {
         ProductData product = parsingAPhrase.getProduct();

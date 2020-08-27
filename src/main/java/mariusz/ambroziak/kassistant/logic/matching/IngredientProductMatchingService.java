@@ -16,6 +16,7 @@ import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.morrisons.MorrisonsClientService;
 import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
+import mariusz.ambroziak.kassistant.webclients.webknox.RecipeSearchApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,13 +60,25 @@ public class IngredientProductMatchingService extends AbstractParser {
     @Autowired
     MatchExpectedRepository matchExpectedRepository;
 
-
+    @Autowired
+    RecipeSearchApiClient recipeSearchApiClient;
 
 //    public List<MatchingProcessResult> parseMatchListAndJudgeResults(List<IngredientLearningCase> ingredientLearningCasesFromDb,boolean saveInDb) {
 //
 //
 //
 //    }
+    public List<MatchingProcessResult> parseMatchAndJudgeResultsFromDbMatches(String recipeId) {
+        List<IngredientLearningCase> andSaveIngredientsForRecipe = this.recipeSearchApiClient.getAndSaveIngredientsForRecipe(recipeId);
+
+        if(andSaveIngredientsForRecipe==null||andSaveIngredientsForRecipe.isEmpty()){
+            return new ArrayList<>();
+        }else{
+            List<MatchingProcessResult> matchingProcessResults = parseMatchList(andSaveIngredientsForRecipe, true);
+            return matchingProcessResults;
+        }
+
+    }
 
 
     public List<MatchingProcessResult> parseMatchAndJudgeResultsFromDbMatches(boolean saveInDb) {
@@ -109,18 +122,24 @@ public class IngredientProductMatchingService extends AbstractParser {
                         if (collect.size() > 0) {
                             if (collect.get(0).isExpectedVerdict()) {
                                 pmr.setExpectedVerdict(true);
+                                expectedForIngredient = expectedForIngredient.stream().filter(me -> !me.getProduct().equals(productName)).collect(Collectors.toList());
+
                             }
                         } else {
                             pmr.setExpectedVerdict(false);
-                            expectedForIngredient = expectedForIngredient.stream().filter(me -> !me.getProduct().equals(productName)).collect(Collectors.toList());
                         }
                     }
                 }
 
-                List<String> missing = expectedForIngredient.stream().map(me -> me.getProduct()).filter(s -> !s.equals("")).collect(Collectors.toList());
           //      mpr.setProductsNotFound(missing);
 
             }
+            List<String> missing = expectedForIngredient.stream().map(me -> me.getProduct()).filter(s -> !s.equals("")).collect(Collectors.toList());
+
+            if(missing.isEmpty())
+                missing.add("test");
+
+            mpr.setProductNamesNotFound(missing);
             mpr.setIncorrectProductsConsideredParsingResults(mpr.getProductsConsideredParsingResults().stream().filter(result->result.isCalculatedVerdict()!=result.isExpectedVerdict()).collect(Collectors.toList()));
         }
 
@@ -194,14 +213,18 @@ public class IngredientProductMatchingService extends AbstractParser {
     }
 
     private void saveProductAndMatchInDb(ParsingBatch batchObject, IngredientPhraseParsingResult ingredientPhraseParsingResult, ProductParsingProcessObject pppo, ProductMatchingResult pmr) {
-        ProductParsingResult productParsingResult = this.shopProductParser.saveResultInDb(pppo, batchObject);
-        MatchFound mf=new MatchFound();
-        mf.setProduct(productParsingResult);
-        mf.setBatch(batchObject);
-        mf.setIngredient(ingredientPhraseParsingResult);
-        mf.setVerdict(pmr.isCalculatedVerdict());
+        try {
+            ProductParsingResult productParsingResult = this.shopProductParser.saveResultInDb(pppo, batchObject);
+            MatchFound mf = new MatchFound();
+            mf.setProduct(productParsingResult);
+            mf.setBatch(batchObject);
+            mf.setIngredient(ingredientPhraseParsingResult);
+            mf.setVerdict(pmr.isCalculatedVerdict());
 
-        this.matchFoundRepository.save(mf);
+            this.matchFoundRepository.save(mf);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private List<ProductParsingResult> retrieveProductCandidates(IngredientPhraseParsingProcessObject parsingAPhrase) {

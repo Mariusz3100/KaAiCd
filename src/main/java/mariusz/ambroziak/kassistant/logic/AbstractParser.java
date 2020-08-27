@@ -81,8 +81,9 @@ public class AbstractParser {
             phrase=phrase.replaceFirst("m ", "Morrisons ");
         }
 
-        if(phrase.indexOf("& ")>0) {
-            phrase=phrase.replaceAll("& ", "and ");
+
+        if(phrase.indexOf("&")>0) {
+            phrase=phrase.replaceAll("&", " and ").replaceAll("  "," ");
         }
 
         if(phrase.indexOf("w/ ")>0) {

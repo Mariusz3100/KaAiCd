@@ -12,6 +12,8 @@ public class MatchingProcessResult {
     List<ProductMatchingResult> productsConsideredParsingResults;
     List<ProductMatchingResult> incorrectProductsConsideredParsingResults;
 
+    private List<String> productNamesNotFound;
+
 
     public ParsingResult getIngredientParsingDetails() {
         return ingredientParsingDetails;
@@ -43,5 +45,13 @@ public class MatchingProcessResult {
 
     public void setIncorrectProductsConsideredParsingResults(List<ProductMatchingResult> incorrectProductsConsideredParsingResults) {
         this.incorrectProductsConsideredParsingResults = incorrectProductsConsideredParsingResults;
+    }
+
+    public List<String> getProductNamesNotFound() {
+        return productNamesNotFound;
+    }
+
+    public void setProductNamesNotFound(List<String> productNamesNotFound) {
+        this.productNamesNotFound = productNamesNotFound;
     }
 }
