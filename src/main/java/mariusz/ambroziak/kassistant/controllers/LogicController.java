@@ -6,7 +6,10 @@ import java.util.Map;
 
 import mariusz.ambroziak.kassistant.hibernate.cache.repositories.WebknoxResponseRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
+import mariusz.ambroziak.kassistant.logic.matching.IngredientProductMatchingService;
 import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
+import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
+import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResultList;
 import mariusz.ambroziak.kassistant.pojos.phrasefinding.PhraseFindingResults;
 import mariusz.ambroziak.kassistant.pojos.phrasefinding.PhraseFindingResultsOuter;
 import mariusz.ambroziak.kassistant.webclients.edamam.nlp.EdamanIngredientParsingService;
@@ -28,7 +31,8 @@ public class LogicController {
 	private EdamanIngredientParsingService edamanNlpService;
 	@Autowired
 	TescoFromFileService fileTescoService;
-
+	@Autowired
+	IngredientProductMatchingService ingredientProductMatchingService;
 	@Autowired
 	RecipeSearchApiClient recipeSearchApiClient;
 
@@ -47,6 +51,21 @@ public class LogicController {
 
 	}
 
+	@CrossOrigin
+	@RequestMapping("/parseRecipe")
+	@ResponseBody
+	public MatchingProcessResultList parseRecipe(@RequestParam(value="param", defaultValue="") String param) throws IOException{
+
+		List<MatchingProcessResult> results = ingredientProductMatchingService.parseMatchAndJudgeResultsFromDbMatches(param);
+		MatchingProcessResultList calculated=new MatchingProcessResultList(results);
+
+
+		return calculated;
+//		MatchingProcessResultList retValue=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases(true));
+//
+//		return retValue;
+
+	}
 
 
 	@CrossOrigin

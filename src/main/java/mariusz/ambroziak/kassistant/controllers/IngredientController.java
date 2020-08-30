@@ -54,7 +54,7 @@ public class IngredientController {
 	}
 
 	@CrossOrigin
-	@RequestMapping("/phrasesRefinedParsing")
+	@RequestMapping("/ingredientRefinedParsing")
 	@ResponseBody
 	public ParsingResultList phrasesRefinedParsing() throws IOException{
 //		ParsingResultList parseFromFile = this.ingredientParser.parseFromFile();

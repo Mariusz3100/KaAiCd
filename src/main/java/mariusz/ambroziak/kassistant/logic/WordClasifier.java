@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFoundProductType;
+import mariusz.ambroziak.kassistant.hibernate.parsing.repository.CustomPhraseConsideredRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.CustomPhraseFoundRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
@@ -64,6 +65,8 @@ public class WordClasifier {
 
 	@Autowired
 	protected  CustomPhraseFoundRepository phraseFoundRepo;
+
+
 
 	public static ArrayList<String> productTypeKeywords;
 	public static ArrayList<String> freshTypeKeywords;
@@ -206,7 +209,7 @@ public class WordClasifier {
 
     }
 
-    private void categorizeSingleTokens(AbstractParsingObject parsingAPhrase) {
+    protected void categorizeSingleTokens(AbstractParsingObject parsingAPhrase) {
 
         for (int i = 0; i < parsingAPhrase.getFinalResults().size(); i++) {
 
@@ -221,7 +224,7 @@ public class WordClasifier {
 
         }
     }
-    private void emptyProductTokensAndPhrases(AbstractParsingObject parsingAPhrase) {
+    protected void emptyProductTokensAndPhrases(AbstractParsingObject parsingAPhrase) {
         parsingAPhrase.getFinalResults().stream().filter(qt -> qt.getWordType() == WordType.ProductElement).forEach(qt -> qt.setWordType(null));
         parsingAPhrase.setPhrasesFound(new ArrayList<>());
     }
@@ -236,7 +239,7 @@ public class WordClasifier {
         parsingAPhrase.setEntitylessTokenized(tokens);
     }
 
-    private void initializeProductPhraseTokensAndConnotations(AbstractParsingObject parsingAPhrase) {
+    protected void initializeProductPhraseTokensAndConnotations(AbstractParsingObject parsingAPhrase) {
 
         TokenizationResults tokenized = this.tokenizator.parse(parsingAPhrase.getQuantitylessPhrase());
         parsingAPhrase.setQuantitylessTokenized(tokenized);
@@ -332,7 +335,7 @@ public class WordClasifier {
         }
 
     }
-    private void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {
+    protected void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {
         checkAllTokensForAdjacencyPhrases(parsingAPhrase);
         if(checkifAreUnclassifiedTokesLeft(parsingAPhrase)) {
             checkAllTokensInUsdaApiWithRespectForDependencies(parsingAPhrase);
@@ -378,11 +381,11 @@ public class WordClasifier {
         }
     }
 
-    private boolean checkifAreUnclassifiedTokesLeft(AbstractParsingObject parsingAPhrase) {
+    protected boolean checkifAreUnclassifiedTokesLeft(AbstractParsingObject parsingAPhrase) {
         return parsingAPhrase.getFinalResults().stream().filter(qt->qt.getWordType()==null).count()>0;
     }
 
-    private boolean checkUsdaApiForSingleDependency(AbstractParsingObject parsingAPhrase, ConnectionEntry quantitylessDependenciesConnotation) {
+    protected boolean checkUsdaApiForSingleDependency(AbstractParsingObject parsingAPhrase, ConnectionEntry quantitylessDependenciesConnotation) {
         //TODO right now we do not consider shorter search phrases, to be thought about
         String quantitylessTokens = quantitylessDependenciesConnotation.getHead().getText() + " " + quantitylessDependenciesConnotation.getChild().getText();
         String quantitylessTokensWithPluses = "+" + quantitylessDependenciesConnotation.getHead().getText() + " +" + quantitylessDependenciesConnotation.getChild().getText();
@@ -588,7 +591,7 @@ public class WordClasifier {
         addProductResult(parsingAPhrase, index + 1, parsingAPhrase.getFinalResults().get(index + 1), reasoning);
     }
 
-    private boolean checkWordsApi(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation) {
+    protected boolean checkWordsApi(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation) {
         String entry = dependencyConnotation.getHead().getText() + " " + dependencyConnotation.getChild().getText();
         ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
         WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
@@ -643,7 +646,7 @@ public class WordClasifier {
 //		}
 //	}
 
-    private Map<String, Integer> calculateAdjacencies(AbstractParsingObject parsingAPhrase) {
+    protected Map<String, Integer> calculateAdjacencies(AbstractParsingObject parsingAPhrase) {
         Map<String, Integer> retValue = new HashMap<>();
 
 
@@ -688,7 +691,7 @@ public class WordClasifier {
 
 
     }
-    private void initializePrimaryTokensAndConnotations(AbstractParsingObject parsingAPhrase) {
+    protected void initializePrimaryTokensAndConnotations(AbstractParsingObject parsingAPhrase) {
         String phrase = parsingAPhrase.getBracketLessPhrase();
 
         TokenizationResults tokenized = this.tokenizator.parse(phrase);
@@ -704,7 +707,7 @@ public class WordClasifier {
 
     }
 
-    private void fillQuanAndProdPhrases(AbstractParsingObject parsingAPhrase) {
+    protected void fillQuanAndProdPhrases(AbstractParsingObject parsingAPhrase) {
         String quantityPhrase = "", productPhrase = "";
         for (int i = 0; i < parsingAPhrase.getFinalResults().size(); i++) {
             QualifiedToken qt = parsingAPhrase.getFinalResults().get(i);
@@ -789,7 +792,7 @@ public class WordClasifier {
 
 	}
 
-	private boolean checkWithPhrasesInDb(AbstractParsingObject parsingAPhrase, int index, Token t) {
+	protected boolean checkWithPhrasesInDb(AbstractParsingObject parsingAPhrase, int index, Token t) {
         List<PhraseFound> dbResults = searchDbForTextAndLemma(t);
 
         if (dbResults != null && !dbResults.isEmpty()) {
@@ -809,7 +812,7 @@ public class WordClasifier {
 
     }
 
-    private boolean checkWithPhrasesInDb(AbstractParsingObject parsingAPhrase, int index, String twoWordEntry) {
+    protected boolean checkWithPhrasesInDb(AbstractParsingObject parsingAPhrase, int index, String twoWordEntry) {
         List<PhraseFound> dbResults = this.phraseFoundRepo.findByPhrase(twoWordEntry);
         dbResults=reduceList(dbResults);
 
@@ -874,7 +877,7 @@ public class WordClasifier {
 
     }
 
-    private boolean checkWithResultsFromUsdaApi(AbstractParsingObject parsingAPhrase, int index, Token t) {
+    protected boolean checkWithResultsFromUsdaApi(AbstractParsingObject parsingAPhrase, int index, Token t) {
         UsdaResponse inApi = checkSingleWordInUsdaApi(t.getText());
 
         for (SingleResult sp : inApi.getFoods()) {
@@ -1074,7 +1077,7 @@ public class WordClasifier {
         parsingAPhrase.addResult(index, result);
     }
 
-    private void addExistingInDbPhrase(AbstractParsingObject parsingAPhrase, PhraseFound pf) {
+    protected void addExistingInDbPhrase(AbstractParsingObject parsingAPhrase, PhraseFound pf) {
     //    PhraseFound pf = new PhraseFound(phrase, wordType, reasoning);
         parsingAPhrase.addPhraseFound(pf);
         //	this.phrasesRepo.save(pf);

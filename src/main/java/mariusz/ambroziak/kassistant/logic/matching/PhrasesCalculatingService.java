@@ -2,6 +2,7 @@ package mariusz.ambroziak.kassistant.logic.matching;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
 import mariusz.ambroziak.kassistant.enums.PhraseEqualityTypes;
+import mariusz.ambroziak.kassistant.enums.PhraseSourceType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.*;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.CustomPhraseConsideredRepository;
@@ -248,6 +249,9 @@ public class PhrasesCalculatingService {
 
         List<String> phrasesFromUsdaNotMatched=checkUsdaPhrases(matches);
 
+
+        saveMatches(matches);
+
         PhraseFindingResults retValue = new PhraseFindingResults();
         retValue.setIngredientPhrases(collectedIngredient);
         retValue.setProductPhrases(collectedProduct);
@@ -406,6 +410,7 @@ public class PhrasesCalculatingService {
         }
         AdjacencyPhraseConsidered mergedPhraseConsidered=new AdjacencyPhraseConsidered();
         mergedPhraseConsidered.setPhrase(mergedPhrase);
+        mergedPhraseConsidered.setSource(PhraseSourceType.Match);
 
         pcm.setMatch(mergedPhraseConsidered);
         pcm.addIngredientPhraseMatched(consideredNow);
@@ -674,8 +679,8 @@ public class PhrasesCalculatingService {
         Token fromTreeChild = allTwoWordDependencies.get(0).getChild();
 
 
-        return (dependencyPhraseHead.equalsToken(fromTreeChild)
-                && dependencyPhraseChild.equalsToken(fromTreeHead))
+        return (dependencyPhraseHead.getText().equals(fromTreeChild.getText())
+                && dependencyPhraseChild.getText().equals(fromTreeHead.getText()))
                 ||
                 ( dependencyPhraseHead.lemmasEqual(fromTreeChild)
                         && dependencyPhraseChild.lemmasEqual(fromTreeHead));
