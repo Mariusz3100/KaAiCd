@@ -7,7 +7,6 @@ import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
-import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -81,16 +80,19 @@ public class ProductWordsClassifier extends WordClasifier {
             List<String> packageTypeSlip = Arrays.asList(p.getPackageType().split(MetadataConstants.stringListSeparator));
             List<String> prepAndUsage = Arrays.asList(p.getPrepAndUsage().split(MetadataConstants.stringListSeparator));
 
-            if(packageTypeSlip.stream().anyMatch(s->s.equalsIgnoreCase("can"))){
-                parsingAPhrase.getProductTypeReasoning().put("packaged in a can", ProductType.processed);
-           //     parsingAPhrase.setFoodTypeClassified(ProductType.processed);
+            for(String keyword:processedPackagingKeywords) {
+                if (packageTypeSlip.stream().anyMatch(s -> s.equalsIgnoreCase(keyword))) {
+                    parsingAPhrase.getProductTypeReasoning().put("packaged in a "+keyword, ProductType.processed);
+                    //     parsingAPhrase.setFoodTypeClassified(ProductType.processed);
+                }
             }
-            if(packageTypeSlip.stream().anyMatch(s->s.equalsIgnoreCase("jar"))){
-                parsingAPhrase.getProductTypeReasoning().put("packaged in a jar",ProductType.processed);
-            //    parsingAPhrase.setFoodTypeClassified(ProductType.processed);
+
+            if(packageTypeSlip.stream().anyMatch(s->s.equalsIgnoreCase("aerosol"))){
+                parsingAPhrase.getProductTypeReasoning().put("packaged in an aerosol", ProductType.notFood);
+                //     parsingAPhrase.setFoodTypeClassified(ProductType.processed);
             }
             if(packageTypeSlip.stream().anyMatch(s->s.equalsIgnoreCase("dispenser"))){
-                parsingAPhrase.getProductTypeReasoning().put("packaged in a jar",ProductType.flavoured);
+                parsingAPhrase.getProductTypeReasoning().put("packaged in a dispenser",ProductType.flavoured);
                 //    parsingAPhrase.setFoodTypeClassified(ProductType.processed);
             }
 
@@ -139,7 +141,14 @@ public class ProductWordsClassifier extends WordClasifier {
                 //  return ProductType.fresh;
             }
         }
+        if(!anyFoodDepartmentPrefix.stream().anyMatch(s -> departmentList.toLowerCase().startsWith(s.toLowerCase()))){
+            parsingAPhrase.getProductTypeReasoning().put("not food department", ProductType.notFood);
+
+        }
+
 
     }
+
+
 
 }
