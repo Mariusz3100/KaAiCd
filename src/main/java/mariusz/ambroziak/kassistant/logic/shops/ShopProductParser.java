@@ -491,9 +491,16 @@ public class ShopProductParser  extends AbstractParser {
 
 	private void saveStatisticsData(ProductParsingProcessObject parsingAPhrase, ProductParsingResult toSave) {
 		List<QualifiedToken> collect = parsingAPhrase.getPermissiveFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+		List<QualifiedToken> collectEmpty =  parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == null||t.getWordType() == WordType.Unknown).collect(Collectors.toList());
 
 
 		this.customStatsRepository.saveProductStatsData(collect,toSave);
+
+		if(!collectEmpty.isEmpty()){
+			this.customStatsRepository.saveProductIgnoredWordsData(collectEmpty,toSave);
+
+		}
+
 
 	}
 

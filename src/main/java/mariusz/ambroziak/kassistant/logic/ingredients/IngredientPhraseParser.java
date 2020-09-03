@@ -109,9 +109,15 @@ public class IngredientPhraseParser extends AbstractParser {
 
 	private void saveStatisticsData(IngredientPhraseParsingProcessObject parsingAPhrase, IngredientPhraseParsingResult toSave) {
 		List<QualifiedToken> collect =parsingAPhrase.getPermissiveFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
+		List<QualifiedToken> collectEmpty = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == null||t.getWordType() == WordType.Unknown).collect(Collectors.toList());
 
 		this.customStatsRepository.saveIngredientStatsData(collect,toSave);
 
+
+		if(!collectEmpty.isEmpty()){
+			this.customStatsRepository.saveIngredientIgnoredWordsData(collectEmpty,toSave);
+
+		}
 	}
 
 
