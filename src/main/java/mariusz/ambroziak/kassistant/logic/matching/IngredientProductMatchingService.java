@@ -1,5 +1,6 @@
 package mariusz.ambroziak.kassistant.logic.matching;
 
+import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.*;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.*;
@@ -9,6 +10,7 @@ import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.matching.InputCases;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
+import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResultList;
 import mariusz.ambroziak.kassistant.pojos.matching.ProductMatchingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.*;
 import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
@@ -199,10 +201,6 @@ public class IngredientProductMatchingService extends AbstractParser {
                         }
                     }
                 }
-          //      match.setProductsConsideredParsingResults(match.getProductsConsideredParsingResults().stream().sorted((o1, o2) -> o1.isCalculatedVerdict() ? 1 : (o2.isCalculatedVerdict() ? -1 : 0)).collect(Collectors.toList()));
-
-
-
                 retValue.add(match);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -229,7 +227,8 @@ public class IngredientProductMatchingService extends AbstractParser {
 
     private List<ProductParsingResult> retrieveProductCandidates(IngredientPhraseParsingProcessObject parsingAPhrase) {
         String markedWords = parsingAPhrase.getFinalResults().stream().filter(s -> s.getWordType() == WordType.ProductElement).map(s -> s.getLemma()).collect(Collectors.joining(" "));//ingredientResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
-        List<ProductParsingResult> parsingResultList = searchForProductResults(markedWords);
+        ProductType foodTypeClassified = parsingAPhrase.getFoodTypeClassified();
+        List<ProductParsingResult> parsingResultList = searchForProductResults(markedWords,foodTypeClassified);
    //     parsingResultList = parsingResultList.subList(0, Math.min(20, parsingResultList.size()));
         return parsingResultList;
     }
@@ -266,7 +265,9 @@ public class IngredientProductMatchingService extends AbstractParser {
         CalculatedResults cr = new CalculatedResults(ingSurplusList, matchedList, productSurplus, matchedList);
         pmr.setWordsMatching(cr);
         boolean namesMatch=ingredientSurplus.isEmpty() && productSurplus.isEmpty();
-        boolean typesMatch=parsingAPhrase.getFoodTypeClassified().equals(pppo.getFoodTypeClassified());
+        boolean typesMatch=checkTypesCompatibility(parsingAPhrase.getFoodTypeClassified(),pppo.getFoodTypeClassified());
+
+
         pmr.setCalculatedVerdict(namesMatch&&typesMatch);
         return pmr;
     }
@@ -282,25 +283,34 @@ public class IngredientProductMatchingService extends AbstractParser {
     }
 
 
-    private List<ProductParsingResult> searchForProductResults(String markedWords) {
+    private List<ProductParsingResult> searchForProductResults(String markedWords, ProductType typeSearched) {
         List<ProductParsingResult> retValue = new ArrayList<>();
         //return this.productParser.tescoSearchForParsings(markedWords);
-        List<String> wordsToFind = Arrays.asList(markedWords.split(" "));
+        if(markedWords!=null&&!markedWords.isEmpty()) {
+            List<String> wordsToFind = Arrays.asList(markedWords.split(" "));
 //		Set<String> names = tescoFromFileService.nameToProducts.keySet();
 
-        Iterable<ProductParsingResult> allProdResults = productParsingResultRepository.findAll();
+            Iterable<ProductParsingResult> allProdResults = productParsingResultRepository.findAll();
 
-        for (ProductParsingResult productParsingResult : allProdResults) {
-            String nameLowercase = productParsingResult.getMinimalResultsCalculated().toLowerCase();
-            if (!(wordsToFind.stream().filter(wordToFind -> !nameLowercase.contains(wordToFind)).count() > 0)) {
+            for (ProductParsingResult productParsingResult : allProdResults) {
+                String nameLowercase = productParsingResult.getMinimalResultsCalculated().toLowerCase();
+                if (wordsToFind.stream().filter(wordToFind -> !nameLowercase.contains(wordToFind)).count() == 0
+                        && checkTypesCompatibility(typeSearched, productParsingResult.getTypeCalculated())
+                ) {
 
-                if (retValue.stream().filter(ppr -> ppr.getOriginalName().equals(productParsingResult.getOriginalName())).count() < 1)
-                    retValue.add(productParsingResult);
+                    if (retValue.stream().filter(ppr -> ppr.getOriginalName().equals(productParsingResult.getOriginalName())).count() < 1)
+                        retValue.add(productParsingResult);
+                }
             }
         }
 
-
         return retValue;
+    }
+
+    private boolean checkTypesCompatibility(ProductType typeSearched, ProductType productParsingResult) {
+        return productParsingResult.equals(typeSearched)
+                ||ProductType.unknown.equals(typeSearched)
+                ||ProductType.unknown.equals(productParsingResult);
     }
 
 
