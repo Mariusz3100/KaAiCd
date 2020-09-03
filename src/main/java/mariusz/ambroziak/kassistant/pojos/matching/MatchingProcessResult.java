@@ -40,6 +40,8 @@ public class MatchingProcessResult {
     }
 
     public List<ProductMatchingResult> getIncorrectProductsConsideredParsingResults() {
+        if(incorrectProductsConsideredParsingResults==null)
+            incorrectProductsConsideredParsingResults=new ArrayList<>();
         return incorrectProductsConsideredParsingResults;
     }
 

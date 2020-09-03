@@ -6,6 +6,7 @@ import java.util.Map;
 
 import mariusz.ambroziak.kassistant.hibernate.cache.repositories.WebknoxResponseRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
+import mariusz.ambroziak.kassistant.logic.ingredients.SimplerIngredientParser;
 import mariusz.ambroziak.kassistant.logic.matching.IngredientProductMatchingService;
 import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
@@ -59,11 +60,26 @@ public class LogicController {
 		List<MatchingProcessResult> results = ingredientProductMatchingService.parseMatchAndJudgeResultsFromDbMatches(param);
 		MatchingProcessResultList calculated=new MatchingProcessResultList(results);
 
+		int ingredientsMatched=0;
+		int productsTotal=0;
+		int productsMatched=0;
+
+		for(MatchingProcessResult mpr:calculated.getResults()){
+			long matched=mpr.getProductsConsideredParsingResults().stream().filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()).count();
+
+			if(matched>0){
+				ingredientsMatched++;
+			}
+			productsMatched+=matched;
+			productsTotal+=mpr.getProductsConsideredParsingResults().size();
+		}
+		calculated.setIngredientsCovered(ingredientsMatched);
+		calculated.setProductsFound(productsMatched);
+		calculated.setIngredientsTotal(calculated.getResults().size());
+		calculated.setProductsTotal(productsTotal);
+
 
 		return calculated;
-//		MatchingProcessResultList retValue=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases(true));
-//
-//		return retValue;
 
 	}
 
