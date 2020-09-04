@@ -37,6 +37,11 @@ public class PhraseDependenciesComparator {
         }else{
             List<ConnectionEntry> allTwoWordDependenciesOfFirst= firstTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e)).collect(Collectors.toList());
             List<ConnectionEntry> allTwoWordDependenciesOfSecond= secondTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e)).collect(Collectors.toList());
+            if(firstTokenized.getTokens().size()==1&&secondTokenized.getTokens().size()==1){
+                return firstTokenized.getTokens().get(0).getText().equals(secondTokenized.getTokens().get(0))
+                        ||firstTokenized.getTokens().get(0).getLemma().equals(secondTokenized.getTokens().get(0).getLemma());
+            }
+
 
             for(int i=0;i<allTwoWordDependenciesOfFirst.size();i++){
                 ConnectionEntry searchFor = allTwoWordDependenciesOfFirst.get(i);
@@ -61,7 +66,7 @@ public class PhraseDependenciesComparator {
 
                 if(missingWords.size()==0){
                     return true;
-                }else if(missingWords.stream().filter(t->WordClasifier.freshFoodKeywords.contains(t.getText())).count()>0){
+                }else if(missingWords.stream().filter(t->!WordClasifier.freshFoodKeywords.contains(t.getText())).count()==0){
 
                     System.out.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word is acceptable: "+missingWords.get(0));
                     return true;
