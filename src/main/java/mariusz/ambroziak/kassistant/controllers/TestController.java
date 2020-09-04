@@ -196,11 +196,18 @@ public class TestController {
 		String first3="chopped onion";
 		String second3="onion, chopped";
 
+		String first4="DICED FIRE ROASTED TOMATOES";
+		String second4="diced fire-roasted tomatoes";
+
+		String first5="DICED FIRE ROASTED TOMATOES";
+		String second5="diced fire roasted tomatoes";
 		String retValue="";
 
-	//	retValue+=first1+":"+second1+":"+phraseDependenciesComparator.comparePhrases(first1,second1)+"<br>";
-	//	retValue+=first2+":"+second2+":"+phraseDependenciesComparator.comparePhrases(first2,second2)+"<br>";
+		retValue+=first1+":"+second1+":"+phraseDependenciesComparator.comparePhrases(first1,second1)+"<br>";
+		retValue+=first2+":"+second2+":"+phraseDependenciesComparator.comparePhrases(first2,second2)+"<br>";
 		retValue+=first3+":"+second3+":"+phraseDependenciesComparator.comparePhrases(first3,second3)+"<br>";
+		retValue+=first4+":"+second4+":"+phraseDependenciesComparator.comparePhrases(first4,second4)+"<br>";
+		retValue+=first5+":"+second5+":"+phraseDependenciesComparator.comparePhrases(first5,second5)+"<br>";
 
 		return retValue;
 
