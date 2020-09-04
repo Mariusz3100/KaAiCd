@@ -77,6 +77,7 @@ public class WordClasifier {
 
 	public static ArrayList<String> freshFoodKeywords;
     public static ArrayList<String> foodFlavouredKeywords;
+    public static ArrayList<String> driedFoodtypeKeywords;
     public static ArrayList<String> readyDishKeywords;
 
 	public static ArrayList<String> pureeFoodKeywords;
@@ -113,7 +114,6 @@ public class WordClasifier {
         productTypeKeywords.add("dairy");
 //        productTypeKeywords.add("fruit");
         productTypeKeywords.add("food");
-        productTypeKeywords.add("spice");
         productTypeKeywords.add("baked goods");
 
 
@@ -137,7 +137,6 @@ public class WordClasifier {
 		quantityTypeKeywords.add("capacity unit");
 		quantityTypeKeywords.add("avoirdupois unit");
 		quantityTypeKeywords.add("package");
-
 
 		//presumably too specific ones:
 	//	productTypeKeywords.add("dressing");
@@ -175,6 +174,10 @@ public class WordClasifier {
         foodFlavouredKeywords.add("scented");
         foodFlavouredKeywords.add("infusion");
         foodFlavouredKeywords.add("infusions");
+
+        driedFoodtypeKeywords=new ArrayList<>();
+        driedFoodtypeKeywords.add("spice");
+        productTypeKeywords.addAll(driedFoodtypeKeywords);
 
         readyDishKeywords =new ArrayList<>();
         readyDishKeywords.add("snack");
@@ -623,6 +626,16 @@ public class WordClasifier {
             for (String type : typeOf) {
                 if (type.indexOf(keyword) > 0) {
                     parsingAPhrase.getProductTypeReasoning().put("api keyword for ready dish found: " + keyword, ProductType.meal);
+                    //              parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
+                }
+            }
+
+        }
+
+        for (String keyword : driedFoodtypeKeywords) {
+            for (String type : typeOf) {
+                if (type.indexOf(keyword) > 0) {
+                    parsingAPhrase.getProductTypeReasoning().put("api keyword for ready dish found: " + keyword, ProductType.dried);
                     //              parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
                 }
             }
