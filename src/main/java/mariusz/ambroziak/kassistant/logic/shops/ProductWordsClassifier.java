@@ -17,6 +17,8 @@ import java.util.List;
 public class ProductWordsClassifier extends WordClasifier {
 
 
+    public static final int processedIngredientsLength = 5;
+
     @Override
     public void classifySingleWord(AbstractParsingObject parsingAPhrase, int index) throws WordNotFoundException {
 
@@ -60,6 +62,13 @@ public class ProductWordsClassifier extends WordClasifier {
                 calculateTypeFromReasonings(parsingAPhrase);
             }
         }
+
+        if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
+
+            calculateReasoningBasedOnIngredients(parsingAPhrase);
+            calculateTypeFromReasonings(parsingAPhrase);
+        }
+
         if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
 
             calculateReasoningsBaseOnClassifiedPhrases(parsingAPhrase);
@@ -68,6 +77,22 @@ public class ProductWordsClassifier extends WordClasifier {
 
     }
 
+    private void calculateReasoningBasedOnIngredients(AbstractParsingObject parsingAPhrase) {
+        ProductData product = ((ProductParsingProcessObject) parsingAPhrase).getProduct();
+
+        if(product instanceof Morrisons_Product){
+            String ingredients = ((Morrisons_Product) product).getIngredients();
+
+            if(ingredients!=null&&!ingredients.isEmpty()){
+                String[] split = ingredients.split(",");
+                if(split.length> processedIngredientsLength){
+                    parsingAPhrase.getProductTypeReasoning().put("ingredient phrase with more than "+processedIngredientsLength+" ingredients", ProductType.processed);
+
+                }
+            }
+        }
+
+    }
 
 
     private void calculateReasoningsBaseOnPackagingAndPrepInstructions(AbstractParsingObject parsingAPhrase) {
@@ -92,7 +117,7 @@ public class ProductWordsClassifier extends WordClasifier {
                 //     parsingAPhrase.setFoodTypeClassified(ProductType.processed);
             }
             if(packageTypeSlip.stream().anyMatch(s->s.equalsIgnoreCase("dispenser"))){
-                parsingAPhrase.getProductTypeReasoning().put("packaged in a dispenser",ProductType.flavoured);
+                parsingAPhrase.getProductTypeReasoning().put("packaged in a dispenser",ProductType.dried);
                 //    parsingAPhrase.setFoodTypeClassified(ProductType.processed);
             }
 
