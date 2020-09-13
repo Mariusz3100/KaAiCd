@@ -359,8 +359,18 @@ public class WordClasifier {
 
 
         for(PhraseFound pf:phrasesFound){
-            if(pf.getPf_id()!=null&&pf.getTypesFoundForPhraseAndBase()!=null&&!pf.getTypesFoundForPhraseAndBase().equals(ProductType.unknown)){
-                parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: "+pf.getPhrase()+"]", pf.getWeightedLeadingProductType());
+            if(pf.getPf_id()!=null&&pf.getTypesFoundForPhraseAndBase()!=null){
+                Set<PhraseFoundProductType> typesFoundForPhraseAndBase = pf.getTypesFoundForPhraseAndBase();
+                typesFoundForPhraseAndBase=typesFoundForPhraseAndBase.stream()
+                        .filter(phraseFoundProductType -> !ProductType.unknown.equals(phraseFoundProductType.getProductType()))
+                        .filter(phraseFoundProductType -> !ProductType.notFood.equals(phraseFoundProductType.getProductType()))
+                        .collect(Collectors.toSet());
+
+                ProductType calculatedType = PhraseFound.getWeightedLeadingProductType(typesFoundForPhraseAndBase);
+
+                if(!ProductType.unknown.equals(calculatedType)) {
+                    parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: " + pf.getPhrase() + "]", calculatedType);
+                }
             }
         }
 
