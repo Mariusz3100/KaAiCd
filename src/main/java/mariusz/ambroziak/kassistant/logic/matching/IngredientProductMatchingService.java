@@ -10,7 +10,6 @@ import mariusz.ambroziak.kassistant.logic.shops.ShopProductParser;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.matching.InputCases;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
-import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResultList;
 import mariusz.ambroziak.kassistant.pojos.matching.ProductMatchingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.*;
 import mariusz.ambroziak.kassistant.pojos.product.IngredientPhraseParsingProcessObject;
@@ -327,26 +326,26 @@ public class IngredientProductMatchingService extends AbstractParser {
 
         List<QualifiedToken> ingredientWordsMarked = parsingAPhrase.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
         List<QualifiedToken> productWordsMarked = pppo.getFinalResults().stream().filter(t -> t.getWordType() == WordType.ProductElement).collect(Collectors.toList());
-        Set<String> matched = new HashSet<>();
+        Set<QualifiedToken> matched = new HashSet<>();
         Set<String> ingredientSurplus = new HashSet<>();
         List<String> productSurplus = new ArrayList<>();
 
 
         for (QualifiedToken ingredientQt : ingredientWordsMarked) {
             if (productWordsMarked.stream().filter(productQt -> productQt.compareWithToken(ingredientQt)).findAny().isPresent()) {
-                matched.add(ingredientQt.getLemma());
+                matched.add(ingredientQt);
             } else {
                 ingredientSurplus.add(ingredientQt.getLemma());
             }
 
         }
-        productSurplus = productWordsMarked.stream().filter(qt -> !matched.contains(qt.getLemma())).map(t -> t.getLemma()).distinct().collect(Collectors.toList());
+        productSurplus = collectMissingProducts(productWordsMarked, matched);
 
         List<String> ingSurplusList=new ArrayList<>();
         ingSurplusList.addAll(ingredientSurplus);
 
         List<String> matchedList=new ArrayList<>();
-        matchedList.addAll(matched);
+        matchedList.addAll(matched.stream().map(qualifiedToken -> qualifiedToken.getLemma()).collect(Collectors.toSet()));
 
         CalculatedResults cr = new CalculatedResults(ingSurplusList, matchedList, productSurplus, matchedList);
         pmr.setWordsMatching(cr);
@@ -356,6 +355,14 @@ public class IngredientProductMatchingService extends AbstractParser {
 
         pmr.setCalculatedVerdict(namesMatch&&typesMatch);
         return pmr;
+    }
+
+    private List<String> collectMissingProducts(List<QualifiedToken> productWordsMarked, Set<QualifiedToken> matched) {
+        List<String> collect = productWordsMarked.stream().filter(productQt ->
+                !matched.stream().anyMatch(matchQt -> productQt.getText().equals(matchQt.getText()) || productQt.getLemma().equals(matchQt.getLemma()))
+        ).distinct().map(qualifiedToken -> qualifiedToken.getLemma()).collect(Collectors.toList());
+
+        return  collect;
     }
 
     private ProductData getProductFromDb(ProductParsingResult pr) {
