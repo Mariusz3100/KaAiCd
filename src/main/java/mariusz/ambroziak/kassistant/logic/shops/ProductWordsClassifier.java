@@ -126,7 +126,7 @@ public class ProductWordsClassifier extends WordClasifier {
            //     parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
             }
 
-            if(prepAndUsage.stream().anyMatch(s->s.equalsIgnoreCase("Wash before use")||s.equalsIgnoreCase("Wash before use."))){
+            if(prepAndUsage.stream().anyMatch(s->s.startsWith("wash before use"))){
                 parsingAPhrase.getProductTypeReasoning().put("requires washing",ProductType.fresh);
           //      parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
             }
