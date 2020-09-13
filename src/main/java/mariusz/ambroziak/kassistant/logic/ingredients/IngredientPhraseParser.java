@@ -173,7 +173,7 @@ public class IngredientPhraseParser extends AbstractParser {
 				}
 				lemmatizedVersion=lemmatizedVersion.trim();
 				if(!lemmatizedVersion.equals(phrase)) {
-					PhraseFound phraseLemmatized = new PhraseFound(lemmatizedVersion, phraseFound.getWordType(), "{ lemmatized: \""+phraseFound.getPhrase()+"\n " + phraseFound.getReasoning() + "}");
+					PhraseFound phraseLemmatized = new PhraseFound(lemmatizedVersion, phraseFound.getWordType(), "{ lemmatized: \""+phraseFound.getPhrase()+"\n " + phraseFound.getReasoning() + "}",phraseFound.getSource());
 					//phraseLemmatized.setProductType(phraseFound	.getProductType());
 					phraseLemmatized.setLemmatizationBase(phraseFound);
 					newOnes.add(phraseLemmatized);

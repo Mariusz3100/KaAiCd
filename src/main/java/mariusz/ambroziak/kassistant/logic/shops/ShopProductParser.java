@@ -171,7 +171,7 @@ public class ShopProductParser  extends AbstractParser {
 				}
 				lemmatizedVersion=lemmatizedVersion.trim();
 				if(!lemmatizedVersion.equals(phrase)) {
-					PhraseFound phraseLemmatized = new PhraseFound(lemmatizedVersion, phraseFound.getWordType(), "{ lemmatized: \""+phraseFound.getPhrase()+"\" " + phraseFound.getReasoning() + "}");
+					PhraseFound phraseLemmatized = new PhraseFound(lemmatizedVersion, phraseFound.getWordType(), "{ lemmatized: \""+phraseFound.getPhrase()+"\" " + phraseFound.getReasoning() + "}",phraseFound.getSource());
 
 					phraseLemmatized.setLemmatizationBase(phraseFound);
 					newOnes.add(phraseLemmatized);

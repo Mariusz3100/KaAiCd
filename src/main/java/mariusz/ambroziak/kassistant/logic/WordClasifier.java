@@ -569,7 +569,7 @@ public class WordClasifier {
 
         TokenizationResults descTokenized = this.tokenizator.parse(sp.getDescription().toLowerCase());
 
-        parsingAPhrase.addPhraseFound(new PhraseFound(sp.getDescription().toLowerCase(), WordType.ProductElement, "[usda api: " + sp.getFdcId() + "]"));
+        parsingAPhrase.addPhraseFound(new PhraseFound(sp.getDescription().toLowerCase(), WordType.ProductElement, "[usda api: " + sp.getFdcId() + "]",sp.calculateType()));
         List<Token> descTokensLeft = descTokenized.getTokens();
         for (int i = 0; i < descTokenized.getTokens().size(); i++) {
             Token t = descTokenized.getTokens().get(i);
@@ -652,7 +652,7 @@ public class WordClasifier {
 //	}
 
     protected boolean markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, int index, SingleResult sp) {
-        addFoundLongPhrase(parsingAPhrase, sp.getDescription().toLowerCase(), WordType.ProductElement, "[usda api: " + sp.getFdcId() + "]");
+        addFoundLongPhrase(parsingAPhrase, sp.getDescription().toLowerCase(), WordType.ProductElement, "[usda api: " + sp.getFdcId() + "]",sp.calculateType());
 
         QualifiedToken qualifiedToken1 = parsingAPhrase.getFinalResults().get(index);
         addProductResult(parsingAPhrase, index, qualifiedToken1, "[usda api: " + sp.getFdcId() + "]");
@@ -722,7 +722,7 @@ public class WordClasifier {
     }
 
     private void markFoundAdjacencyResults(AbstractParsingObject parsingAPhrase, WordsApiResult wordsApiResult, int index, String reasoning) {
-        addFoundLongPhrase(parsingAPhrase, wordsApiResult.getBaseWord(), WordType.ProductElement, wordsApiResult.getReasoningForFound());
+        addFoundLongPhrase(parsingAPhrase, wordsApiResult.getBaseWord(), WordType.ProductElement, wordsApiResult.getReasoningForFound(),PhraseFoundDataSource.WordsApi);
 
         addProductResult(parsingAPhrase, index, parsingAPhrase.getFinalResults().get(index), reasoning);
         addProductResult(parsingAPhrase, index + 1, parsingAPhrase.getFinalResults().get(index + 1), reasoning);
@@ -742,7 +742,7 @@ public class WordClasifier {
 
     private void markFoundDependencyConnotation(AbstractParsingObject parsingAPhrase, ConnectionEntry dependencyConnotation, String entry, WordsApiResult wordsApiResult) {
         boolean foundHead = false, foundChild = false;
-        addFoundLongPhrase(parsingAPhrase, entry, WordType.ProductElement, wordsApiResult.getReasoningForFound());
+        addFoundLongPhrase(parsingAPhrase, entry, WordType.ProductElement, wordsApiResult.getReasoningForFound(),PhraseFoundDataSource.WordsApi);
         for (int i = 0; i < parsingAPhrase.getFinalResults().size(); i++) {
             QualifiedToken qt = parsingAPhrase.getFinalResults().get(i);
 
@@ -1021,7 +1021,7 @@ public class WordClasifier {
             String desc = sp.getDescription();
             if (dependenciesComparator.comparePhrases(t.getText().toLowerCase(),desc.toLowerCase())) {
                 addProductResult(parsingAPhrase, index, t, "[usda api: " + sp.getFdcId() + "]");
-                addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index));
+                addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index),sp.calculateType());
 
                 return true;
             }
@@ -1050,7 +1050,10 @@ public class WordClasifier {
 
 
                         addProductResult(parsingAPhrase, index, t, productTypeRecognized);
-                        addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index));
+
+                        if (wordResults.size() < LearningConstants.tooMuchWordsApiResultsToSaveAsPhrase) {
+                            addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index),PhraseFoundDataSource.WordsApi);
+                        }
                         return true;
                     } else {
                         //	parsingAPhrase.addResult(index, new QualifiedToken(t,null));
@@ -1152,7 +1155,7 @@ public class WordClasifier {
                 QuantityTranslation checkForTranslation = convertClient.checkForTranslation(token);
                 if (checkForTranslation != null) {
                     addQuantityResult(parsingAPhrase, index, t, " [convert api:" + checkForTranslation.getMultiplier() + " " + checkForTranslation.getTargetAmountType() + "]");
-                    addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index));
+                    addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index),PhraseFoundDataSource.ConvertApi);
                     return true;
                 }
             }
@@ -1178,14 +1181,14 @@ public class WordClasifier {
         parsingAPhrase.addResult(index, result);
     }
 
-    private void addFoundSingleWordPhrase(AbstractParsingObject parsingAPhrase, QualifiedToken result) {
-        PhraseFound pf = new PhraseFound(result.getLemma(), result.getWordType(), result.getReasoning());
+    private void addFoundSingleWordPhrase(AbstractParsingObject parsingAPhrase, QualifiedToken result, PhraseFoundDataSource phraseFoundDataSource) {
+        PhraseFound pf = new PhraseFound(result.getLemma(), result.getWordType(), result.getReasoning(),phraseFoundDataSource);
         parsingAPhrase.addPhraseFound(pf);
         //	this.phrasesRepo.save(pf);
     }
 
-    private void addFoundLongPhrase(AbstractParsingObject parsingAPhrase, String phrase, WordType wordType, String reasoning) {
-        PhraseFound pf = new PhraseFound(phrase, wordType, reasoning);
+    private void addFoundLongPhrase(AbstractParsingObject parsingAPhrase, String phrase, WordType wordType, String reasoning, PhraseFoundDataSource phraseFoundDataSource) {
+        PhraseFound pf = new PhraseFound(phrase, wordType, reasoning,phraseFoundDataSource);
         parsingAPhrase.addPhraseFound(pf);
         //	this.phrasesRepo.save(pf);
     }
@@ -1541,7 +1544,7 @@ public class WordClasifier {
 
                 if (byPhrase != null && !byPhrase.isEmpty()) {
                     for (PhraseFound pf : byPhrase) {
-                        if (pf.getWordType().equals(WordType)) {
+                        if (pf.getWordType().equals(WordType)&&PhraseFoundDataSource.WordsApi.equals(pf.getSource())) {
                             war1.setReasoningForFound("[WordsApi transitive, subtype of:'" + pf.getPhrase() + "']");
 
                             return war1;

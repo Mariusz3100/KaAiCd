@@ -107,7 +107,7 @@ public class TestController {
 		IngredientPhraseParsingResult x=new IngredientPhraseParsingResult("test",12, AmountTypes.pcs, ProductType.fresh,"test","Test",ProductType.unknown);
 		x.setParsingBatch(new ParsingBatch());
 
-		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,"test",x,null);
+		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,"test",x,null,null);
 
 		this.ingredientParsingRepo.save(x);
 		this.phraseFoundRepo.saveIfNew(phrase);
@@ -120,7 +120,7 @@ public class TestController {
 		IngredientPhraseParsingResult x=new IngredientPhraseParsingResult("test",12, AmountTypes.pcs, ProductType.fresh,"test","Test",ProductType.unknown);
 		x.setParsingBatch(new ParsingBatch());
 
-		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,"test",x,null);
+		PhraseFound phrase=new PhraseFound("test", WordType.ProductElement,"test",x,null,null);
 
 		PhraseFoundProductType y=new PhraseFoundProductType(ProductType.unknown,x,null,phrase);
 		phraseFoundProductTypeRepository.save(y);
