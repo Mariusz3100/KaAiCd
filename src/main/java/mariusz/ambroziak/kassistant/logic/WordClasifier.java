@@ -162,6 +162,8 @@ public class WordClasifier {
 
         impromperProductPropertyKeywords=new ArrayList<>();
         impromperProductPropertyKeywords.add("organic");
+        impromperProductPropertyKeywords.add("grated");
+        impromperProductPropertyKeywords.add("ground");
 
         impromperQuantityKeywords=new ArrayList<>();
         impromperQuantityKeywords.add("medium");
@@ -267,7 +269,10 @@ public class WordClasifier {
             try {
                 QualifiedToken qt = parsingAPhrase.getFinalResults().get(i);
                 if(qt.getWordType()==null) {
-                    searchDbAndApis(parsingAPhrase, i, qt);
+                    boolean found=checkAndMarkForKeywords(qt);
+                    if(!found) {
+                        searchDbAndApis(parsingAPhrase, i, qt);
+                    }
                 }
             } catch (WordNotFoundException e) {
                 e.printStackTrace();
@@ -275,6 +280,19 @@ public class WordClasifier {
 
         }
     }
+
+    private boolean checkAndMarkForKeywords(QualifiedToken qt) {
+
+        for(String keyword:freshFoodKeywords){
+            if(qt.getText().equalsIgnoreCase(keyword)||qt.getLemma().equalsIgnoreCase(keyword)){
+                qt.setWordType(WordType.ProductPropertyElement);
+                return true;
+            }
+        }
+        return false;
+
+    }
+
     protected void emptyProductTokensAndPhrases(AbstractParsingObject parsingAPhrase) {
         parsingAPhrase.getFinalResults().stream().filter(qt -> qt.getWordType() == WordType.ProductElement).forEach(qt -> qt.setWordType(null));
         parsingAPhrase.setPhrasesFound(new ArrayList<>());
@@ -350,7 +368,7 @@ public class WordClasifier {
         for (QualifiedToken qt : parsingAPhrase.getFinalResults()) {
             for (String keyword : freshFoodKeywords) {
                 if (keyword.equals(qt.getText())) {
-                    //qt.setWordType(WordType.ProductPropertyElement);
+                    qt.setWordType(WordType.ProductPropertyElement);
                     //parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.fresh);
                 }
@@ -358,7 +376,7 @@ public class WordClasifier {
 
             for (String keyword : juiceKeywords) {
                 if (keyword.equals(qt.getText())) {
-                    //qt.setWordType(WordType.ProductPropertyElement);
+                    qt.setWordType(WordType.ProductPropertyElement);
                    // parsingAPhrase.setFoodTypeClassified(ProductType.juice);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.juice);
 
@@ -367,7 +385,7 @@ public class WordClasifier {
 
             for (String keyword : pureeFoodKeywords) {
                 if (keyword.equals(qt.getText())) {
-                   // qt.setWordType(WordType.ProductPropertyElement);
+                    qt.setWordType(WordType.ProductPropertyElement);
                     //parsingAPhrase.setFoodTypeClassified(ProductType.puree);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.puree);
 
@@ -377,7 +395,7 @@ public class WordClasifier {
 
             for (String keyword : foodFlavouredKeywords) {
                 if (keyword.equals(qt.getText())||keyword.equals(qt.getLemma())) {
-                    // qt.setWordType(WordType.ProductPropertyElement);
+                    qt.setWordType(WordType.ProductPropertyElement);
                     //parsingAPhrase.setFoodTypeClassified(ProductType.puree);
                     parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.flavoured);
 
