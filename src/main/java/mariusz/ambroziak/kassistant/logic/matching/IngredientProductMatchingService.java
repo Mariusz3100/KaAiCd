@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 public class IngredientProductMatchingService extends AbstractParser {
 
-    public static final int productsToBeParsedCutout = 5;
+    public static final int productsToBeParsedCutout = 30;
     @Autowired
 	IngredientPhraseParser ingredientPhraseParser;
 	@Autowired
@@ -199,15 +199,11 @@ public class IngredientProductMatchingService extends AbstractParser {
                             ingredientPhraseParsingResult = parseSingleProduct(saveInDb, batchObject, parsingAPhrase, ingredientPhraseParsingResult, match, product);
                         }
                     }
-                }else {
-
-                    List<ProductData> candidateProducts = retrieveCandidateProducts(parsingAPhrase);
-
-                    for (ProductData product : candidateProducts) {
-                        ingredientPhraseParsingResult = parseSingleProduct(saveInDb, batchObject, parsingAPhrase, ingredientPhraseParsingResult, match, product);
-
-                    }
                 }
+
+                List<ProductData> productsConsidered = parsingResultList.stream().map(productParsingResult -> productParsingResult.getProduct()).collect(Collectors.toList());
+
+                ifEmptyProductsUpdateForUnparsedProducts(saveInDb, batchObject, parsingAPhrase, ingredientPhraseParsingResult, match,productsConsidered);
                 retValue.add(match);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -217,12 +213,54 @@ public class IngredientProductMatchingService extends AbstractParser {
         return retValue;
     }
 
+    private void ifEmptyProductsUpdateForUnparsedProducts(boolean saveInDb, ParsingBatch batchObject,
+         IngredientPhraseParsingProcessObject parsingAPhrase, IngredientPhraseParsingResult ingredientPhraseParsingResult, MatchingProcessResult match,
+        List<ProductData> productsAlreadyConsidered ) {
+
+    //    while(!match.getProductsConsideredParsingResults().stream().anyMatch(productMatchingResult -> productMatchingResult.isCalculatedVerdict())){
+
+            if(match.getProductsConsideredParsingResults().size()>=productsToBeParsedCutout) {
+                throwOutNotMatched(match);
+            }
+
+            List<ProductData> curentCandidateProducts = retrieveNewCandidateProducts(parsingAPhrase,productsAlreadyConsidered);
+            if(curentCandidateProducts.isEmpty()){
+                return;
+            }else {
+                productsAlreadyConsidered.addAll(curentCandidateProducts);
+                for (ProductData product : curentCandidateProducts) {
+                    ingredientPhraseParsingResult = parseSingleProduct(saveInDb, batchObject, parsingAPhrase, ingredientPhraseParsingResult, match, product);
+
+                }
+            }
+       // }
+    }
+
+    private void throwOutNotMatched(MatchingProcessResult match) {
+        List<ProductMatchingResult> productsConsideredParsingResults = match.getProductsConsideredParsingResults();
+
+        List<ProductMatchingResult> result=productsConsideredParsingResults.stream()
+                .filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict())
+                .collect(Collectors.toList());
+
+        if(result.size()<productsToBeParsedCutout){
+            Set<ProductMatchingResult> collect = productsConsideredParsingResults
+                    .stream().filter(productMatchingResult -> !productMatchingResult.isCalculatedVerdict())
+                    .limit(productsToBeParsedCutout - result.size()).collect(Collectors.toSet());
+
+            result.addAll(collect);
+        }
+        match.setProductsConsideredParsingResults(result);
+
+    }
+
     private IngredientPhraseParsingResult parseSingleProduct(boolean saveInDb, ParsingBatch batchObject, IngredientPhraseParsingProcessObject parsingAPhrase, IngredientPhraseParsingResult ingredientPhraseParsingResult, MatchingProcessResult match, ProductData product) {
         ProductParsingProcessObject pppo = new ProductParsingProcessObject(product, new ProductLearningCase());
         this.shopProductParser.parseProductParsingObjectWithNamesComparison(pppo);
         ParsingResult ppr = this.shopProductParser.createResultObject(pppo);
         ProductMatchingResult pmr = calculateMatchingResult(parsingAPhrase, pppo, ppr);
-        match.addProductsConsideredParsingResults(pmr);
+        if(!ProductType.notFood.equals(pmr.getBaseResult().getProductTypeFound()))
+            match.addProductsConsideredParsingResults(pmr);
 
         if(saveInDb) {
             if (ingredientPhraseParsingResult == null)
@@ -255,17 +293,22 @@ public class IngredientProductMatchingService extends AbstractParser {
         return parsingResultList;
     }
 
-    private List<ProductData> retrieveCandidateProducts(IngredientPhraseParsingProcessObject parsingAPhrase) {
+    private List<ProductData> retrieveNewCandidateProducts(IngredientPhraseParsingProcessObject parsingAPhrase, List<ProductData> allCandidateProductsConsidered) {
         String markedWords = parsingAPhrase.getFinalResults().stream().filter(s -> s.getWordType() == WordType.ProductElement).map(s -> s.getLemma()).collect(Collectors.joining(" "));//ingredientResult.getRestrictivelyCalculatedResult().getMarkedWords().stream().collect(Collectors.joining(" "));
 
         List<ProductData> retValue=new ArrayList<>();
         if(markedWords!=null&&!markedWords.isEmpty()){
             List<String> wordsToFind = Arrays.asList(markedWords.split(" "));
 
-            List<Morrisons_Product> productsConsidered = this.morrisonProductRepository.findByNameContaining(wordsToFind.get(0));
+            List<Morrisons_Product> productsConsidered = this.morrisonProductRepository.findByNameContainingIgnoreCase(wordsToFind.get(0));
+            productsConsidered=productsConsidered.stream()
+                    .filter(morrisons_product ->
+                        !allCandidateProductsConsidered.stream().anyMatch(allProduct->allProduct.getPd_id().equals(morrisons_product.getPd_id())))
+                    .collect(Collectors.toList());
+
 
             productsConsidered= productsConsidered.stream()
-                    .filter(morrisons_product ->wordsToFind.stream().allMatch(word->morrisons_product.getName().contains(word)))
+                    .filter(morrisons_product ->wordsToFind.stream().allMatch(word->morrisons_product.getName().toLowerCase().contains(word.toLowerCase())))
                     .collect(Collectors.toList());
 
 
