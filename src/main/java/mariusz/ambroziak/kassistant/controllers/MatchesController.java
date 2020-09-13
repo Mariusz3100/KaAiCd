@@ -4,11 +4,13 @@ import mariusz.ambroziak.kassistant.hibernate.parsing.repository.MatchExpectedRe
 import mariusz.ambroziak.kassistant.logic.matching.ExpectedMatchesService;
 import mariusz.ambroziak.kassistant.logic.matching.IngredientProductMatchingService;
 import mariusz.ambroziak.kassistant.pojos.matching.InputCases;
+import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResultList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @RestController
 public class MatchesController {
@@ -27,10 +29,34 @@ public class MatchesController {
 	@ResponseBody
 	public MatchingProcessResultList findMatchesForIngredients() throws IOException{
 
-		MatchingProcessResultList retValue=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases(true));
+		MatchingProcessResultList calculated=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases(true));
 
-		return retValue;
 
+
+		int ingredientsMatched=0;
+		int productsTotal=0;
+		int productsMatched=0;
+
+		for(MatchingProcessResult mpr:calculated.getResults()){
+			long matched=mpr.getProductsConsideredParsingResults().stream().filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()).count();
+
+			if(matched>0){
+				ingredientsMatched++;
+			}
+			productsMatched+=matched;
+			productsTotal+=mpr.getProductsConsideredParsingResults().size();
+		}
+		calculated.setIngredientsCovered(ingredientsMatched);
+		calculated.setProductsFound(productsMatched);
+		calculated.setIngredientsTotal(calculated.getResults().size());
+		calculated.setProductsTotal(productsTotal);
+
+		int sum = calculated.getResults().stream().mapToInt(matchingProcessResult -> matchingProcessResult.getIncorrectProductsConsideredParsingResults().size()).sum();
+
+		calculated.setImproperProductsFound(sum);
+
+
+		return calculated;
 	}
 
 
@@ -40,12 +66,34 @@ public class MatchesController {
 	public MatchingProcessResultList checkMatchesFound() throws IOException{
 
 		MatchingProcessResultList calculated=new MatchingProcessResultList(matchingService.parseMatchAndJudgeResultsFromDbMatches(true));
+//		MatchingProcessResultList calculated=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases(true));
+
+		int ingredientsMatched=0;
+		int productsTotal=0;
+		int productsMatched=0;
+
+		for(MatchingProcessResult mpr:calculated.getResults()){
+			//long matched=mpr.getProductsConsideredParsingResults().stream().filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()==productMatchingResult.isExpectedVerdict()).count();
+			long found=mpr.getProductsConsideredParsingResults().stream().filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()).count();
+			long wrongMatched=mpr.getProductsConsideredParsingResults().stream().filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()!=productMatchingResult.isExpectedVerdict()).count();
+
+			if(wrongMatched==0){
+				ingredientsMatched++;
+			}
+			productsMatched+=found;
+			productsTotal+=mpr.getProductsConsideredParsingResults().size();
+		}
+		calculated.setIngredientsCovered(ingredientsMatched);
+		calculated.setProductsFound(productsMatched);
+		calculated.setIngredientsTotal(calculated.getResults().size());
+		calculated.setProductsTotal(productsTotal);
+
+		int sum = calculated.getResults().stream().mapToInt(matchingProcessResult -> matchingProcessResult.getIncorrectProductsConsideredParsingResults().size()).sum();
+
+		calculated.setImproperProductsFound(sum);
 
 
 		return calculated;
-//		MatchingProcessResultList retValue=new MatchingProcessResultList(matchingService.parseMatchAndGetResultsFromDbAllCases(true));
-//
-//		return retValue;
 
 	}
 

@@ -11,6 +11,7 @@ public class MatchingProcessResultList {
     private int ingredientsCovered;
     private int ingredientsTotal;
     private int productsFound;
+    private int improperProductsFound;
     private int productsTotal;
 
     public List<MatchingProcessResult> getResults() {
@@ -62,5 +63,13 @@ public class MatchingProcessResultList {
 
     public void setProductsTotal(int productsTotal) {
         this.productsTotal = productsTotal;
+    }
+
+    public int getImproperProductsFound() {
+        return improperProductsFound;
+    }
+
+    public void setImproperProductsFound(int improperProductsFound) {
+        this.improperProductsFound = improperProductsFound;
     }
 }
