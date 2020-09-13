@@ -36,7 +36,10 @@ public class PhraseDependenciesComparator {
             return false;
         }else{
             List<ConnectionEntry> allTwoWordDependenciesOfFirst= firstTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e)).collect(Collectors.toList());
-            List<ConnectionEntry> allTwoWordDependenciesOfSecond= secondTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e)).collect(Collectors.toList());
+            List<ConnectionEntry> allTwoWordDependenciesOfSecond= secondTokenized.getAllTwoWordDependencies()
+                    .stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e))
+                    .filter(connectionEntry ->! connectionEntry.getHead().getText().equalsIgnoreCase(connectionEntry.getChild().getText()))
+                    .collect(Collectors.toList());
             if(firstTokenized.getTokens().size()==1&&secondTokenized.getTokens().size()==1){
                 return firstTokenized.getTokens().get(0).getText().equals(secondTokenized.getTokens().get(0))
                         ||firstTokenized.getTokens().get(0).getLemma().equals(secondTokenized.getTokens().get(0).getLemma());
