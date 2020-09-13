@@ -218,6 +218,13 @@ public class WordClasifier {
 
         if(checkifAreUnclassifiedTokesLeft(parsingAPhrase)) {
             emptyProductTokensAndPhrases(parsingAPhrase);
+            categorizeFromWholePhrase(parsingAPhrase);
+
+        }
+
+
+        if(checkifAreUnclassifiedTokesLeft(parsingAPhrase)) {
+            emptyProductTokensAndPhrases(parsingAPhrase);
             //lookForWholePhrasesInDb(parsingAPhrase);
 
             categorizationFromConnotations(parsingAPhrase);
@@ -231,6 +238,24 @@ public class WordClasifier {
         calculateProductType(parsingAPhrase);
 
         categorizeAllElseAsProducts(parsingAPhrase);
+
+    }
+
+    private void categorizeFromWholePhrase(AbstractParsingObject parsingAPhrase) {
+        String quantitylessPhrase = parsingAPhrase.getQuantitylessPhrase();
+
+        UsdaResponse inUsdaApiAllTypes = this.findInUsdaApi(quantitylessPhrase, 10);
+
+        for(SingleResult sr:inUsdaApiAllTypes.getFoods()){
+            boolean isSame = this.usdaPhraseComparator.comparePhrases(quantitylessPhrase, sr.getDescription());
+
+           if(isSame){
+               markFoundDependencyResults(parsingAPhrase, sr);
+               return;
+           }
+
+
+        }
 
     }
 
