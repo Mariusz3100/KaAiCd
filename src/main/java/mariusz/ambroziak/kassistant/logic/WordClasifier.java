@@ -4,7 +4,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import mariusz.ambroziak.kassistant.constants.LearningConstants;
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
+import mariusz.ambroziak.kassistant.enums.PhraseFoundDataSource;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFoundProductType;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.CustomPhraseFoundRepository;
