@@ -36,6 +36,7 @@ public abstract class AbstractParsingObject {
 	private List<QualifiedToken> permissiveFinalResults;
 	private ProductType foodTypeClassified;
 	private Map<String,ProductType> productTypeReasoning;
+	private Map<String,Token> productTypeReasoningFromSingleWord;
 	List<ConnectionEntry> entitylessConotations;
 	List<ConnectionEntry> correctedConotations;
 	List<ConnectionEntry> quantitylessConnotations;
@@ -55,6 +56,17 @@ public abstract class AbstractParsingObject {
 		if(productTypeReasoning==null)
 			productTypeReasoning=new HashMap<>();
 		return productTypeReasoning;
+	}
+
+	public Map<String, Token> getProductTypeReasoningFromSingleWord() {
+		if(productTypeReasoningFromSingleWord==null)
+			productTypeReasoningFromSingleWord=new HashMap<>();
+
+		return productTypeReasoningFromSingleWord;
+	}
+
+	public void setProductTypeReasoningFromSingleWord(Map<String, Token> productTypeReasoningFromSingleWord) {
+		this.productTypeReasoningFromSingleWord = productTypeReasoningFromSingleWord;
 	}
 
 	public void setProductTypeReasoning(Map<String, ProductType> productTypeReasoning) {

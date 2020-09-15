@@ -1,11 +1,13 @@
 package mariusz.ambroziak.kassistant.logic;
 
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
+import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.ConnectionEntry;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationClientService;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
+import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +22,19 @@ public class PhraseDependenciesComparator {
     @Autowired
     private TokenizationClientService tokenizer;
 
-
-
-
     public boolean comparePhrases(String searched,String description){
+        return extendedComparePhrases(searched,description).isComparisonResults();
+    }
+
+    public PhraseDependenciesComparatotionResult extendedComparePhrases(String searched, SingleResult sr){
+        PhraseDependenciesComparatotionResult result = extendedComparePhrases(searched, sr.getDescription());
+        result.setSingleResult(sr);
+        return result;
+    }
+
+    public PhraseDependenciesComparatotionResult extendedComparePhrases(String searched,String description){
         if(searched.equals(description))
-            return true;
+            return new PhraseDependenciesComparatotionResult(true);
 
         TokenizationResults firstTokenized = tokenizer.parse(searched.toLowerCase());
         TokenizationResults secondTokenized = tokenizer.parse(description.toLowerCase());
@@ -33,7 +42,7 @@ public class PhraseDependenciesComparator {
 
         if(!isSecondOneAtMostOneLonger(firstTokenized, secondTokenized))
         {
-            return false;
+            return new PhraseDependenciesComparatotionResult(false);
         }else{
             List<ConnectionEntry> allTwoWordDependenciesOfFirst= firstTokenized.getAllTwoWordDependencies().stream().filter(e->!checkifHeadOrChildIsPunctationOrOfWord(e)).collect(Collectors.toList());
             List<ConnectionEntry> allTwoWordDependenciesOfSecond= secondTokenized.getAllTwoWordDependencies()
@@ -41,8 +50,9 @@ public class PhraseDependenciesComparator {
                     .filter(connectionEntry ->! connectionEntry.getHead().getText().equalsIgnoreCase(connectionEntry.getChild().getText()))
                     .collect(Collectors.toList());
             if(firstTokenized.getTokens().size()==1&&secondTokenized.getTokens().size()==1){
-                return firstTokenized.getTokens().get(0).getText().equals(secondTokenized.getTokens().get(0))
+                boolean onlyTokenequal= firstTokenized.getTokens().get(0).getText().equals(secondTokenized.getTokens().get(0))
                         ||firstTokenized.getTokens().get(0).getLemma().equals(secondTokenized.getTokens().get(0).getLemma());
+                return new PhraseDependenciesComparatotionResult(onlyTokenequal);
             }
 
 
@@ -52,12 +62,12 @@ public class PhraseDependenciesComparator {
                 if(allTwoWordDependenciesOfSecond.stream().filter(e->e.permissiveEquals(searchFor)).count()>0){
                     allTwoWordDependenciesOfSecond.removeIf(e->e.permissiveEquals(searchFor));
                 }else{
-                    return false;
+                    return new PhraseDependenciesComparatotionResult(false) ;
                 }
             }
             if(allTwoWordDependenciesOfSecond.isEmpty()){
              //     if(allTwoWordDependenciesOfSecond.isEmpty()){
-                return true;
+                return  new PhraseDependenciesComparatotionResult(true);
             }else{
                 String missingMessage=allTwoWordDependenciesOfSecond.stream().map(e->e.getHead().getText()+" "+e.getChild().getText()).collect(Collectors.joining(","));
 
@@ -68,24 +78,22 @@ public class PhraseDependenciesComparator {
                 List<Token> missingWords = secondTokenized.getTokens().stream().filter(st -> !st.getPos().equals(PythonSpacyLabels.punctPos) && firstTokenized.getTokens().stream().filter(ft -> ft.getLemma().equals(st.getLemma())).count() == 0).collect(Collectors.toList());
 
                 if(missingWords.size()==0){
-                    return true;
+                    return  new PhraseDependenciesComparatotionResult(true);
                 }else if(missingWords.stream().filter(t->!WordClasifier.freshFoodKeywords.contains(t.getText())).count()==0){
 
                     System.out.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word is acceptable: "+missingWords.get(0));
-                    return true;
-
+                    PhraseDependenciesComparatotionResult result = new PhraseDependenciesComparatotionResult(true);
+                    result.setKeywordFound(ProductType.fresh);
+                    return result;
                 }else{
                     String missingWordsString=missingWords.stream().map(t->t.getText()).collect(Collectors.joining(", "));
                     System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: ["+missingWordsString+"]");
-                    return false;
+                    return  new PhraseDependenciesComparatotionResult(false);
                 }
 
 
             }
-//            }else{
-//                System.err.println("USDA api covers all phrase dependencies, but has additional ones.");
-//                return false;
-//            }
+
 
         }
 

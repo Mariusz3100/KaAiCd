@@ -378,44 +378,48 @@ public class WordClasifier {
 
     protected void extractAndMarkProductPropertyWords(AbstractParsingObject parsingAPhrase) {
         for (QualifiedToken qt : parsingAPhrase.getFinalResults()) {
-            for (String keyword : freshFoodKeywords) {
-                if (keyword.equals(qt.getText())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
-                    //parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
-                    parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.fresh);
-                }
-            }
-
-            for (String keyword : juiceKeywords) {
-                if (keyword.equals(qt.getText())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
-                   // parsingAPhrase.setFoodTypeClassified(ProductType.juice);
-                    parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.juice);
-
-                }
-            }
-
-            for (String keyword : pureeFoodKeywords) {
-                if (keyword.equals(qt.getText())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
-                    //parsingAPhrase.setFoodTypeClassified(ProductType.puree);
-                    parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.puree);
-
-                }
-            }
-
-
-            for (String keyword : foodFlavouredKeywords) {
-                if (keyword.equals(qt.getText())||keyword.equals(qt.getLemma())) {
-                    qt.setWordType(WordType.ProductPropertyElement);
-                    //parsingAPhrase.setFoodTypeClassified(ProductType.puree);
-                    parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.flavoured);
-
-                }
+            ProductType productType = checkForPropertyKeywords(parsingAPhrase, qt);
+            if(productType!=null&&!productType.equals(ProductType.unknown)){
+                qt.setWordType(WordType.ProductPropertyElement);
             }
         }
 
     }
+
+    private ProductType checkForPropertyKeywords(AbstractParsingObject parsingAPhrase, Token qt) {
+        for (String keyword : freshFoodKeywords) {
+            if (keyword.equals(qt.getText())) {
+                parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.fresh);
+                return ProductType.fresh;
+            }
+        }
+
+        for (String keyword : juiceKeywords) {
+            if (keyword.equals(qt.getText())) {
+                parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.juice);
+                return ProductType.juice;
+
+
+            }
+        }
+
+        for (String keyword : pureeFoodKeywords) {
+            if (keyword.equals(qt.getText())) {
+                parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.puree);
+                return ProductType.puree;
+            }
+        }
+
+
+        for (String keyword : foodFlavouredKeywords) {
+            if (keyword.equals(qt.getText())||keyword.equals(qt.getLemma())) {
+                parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.flavoured);
+                return ProductType.flavoured;
+            }
+        }
+        return ProductType.unknown;
+    }
+
     protected void categorizationFromConnotations(AbstractParsingObject parsingAPhrase) {
         checkAllTokensForAdjacencyPhrases(parsingAPhrase);
         if(checkifAreUnclassifiedTokesLeft(parsingAPhrase)) {
@@ -472,11 +476,12 @@ public class WordClasifier {
         String quantitylessTokensWithPluses = "+" + quantitylessDependenciesConnotation.getHead().getText() + " +" + quantitylessDependenciesConnotation.getChild().getText();
         List<String> words= Arrays.asList(quantitylessDependenciesConnotation.getHead().getText(),quantitylessDependenciesConnotation.getChild().getText());
 
-        SingleResult singleResult = checkUsdaApiForStrings(words);
+        PhraseDependenciesComparatotionResult result = checkUsdaApiForStrings(words);
 
 
-        if(singleResult!=null){
-            return markFoundDependencyResults(parsingAPhrase, singleResult);
+        if(result!=null&&result.isComparisonResults()){
+            return markFoundDependencyResults(parsingAPhrase, result.getSingleResult());
+            //parsingAPhrase.getProductTypeReasoningFromSingleWord().put("api keyword for fresh found in usda api: ",found.get());
 
         }
 //        Collections.reverse(words);
@@ -490,7 +495,7 @@ public class WordClasifier {
 
         return false;
     }
-    public SingleResult checkUsdaApiForStrings(List<String> words) {
+    public PhraseDependenciesComparatotionResult checkUsdaApiForStrings(List<String> words) {
         //TODO right now we do not consider shorter search phrases, to be thought about
         String quantitylessTokens =words.stream().collect(Collectors.joining(" "));
         String quantitylessTokensWithPluses =words.stream().map(s -> "+"+s).collect(Collectors.joining(" "));
@@ -499,10 +504,10 @@ public class WordClasifier {
         UsdaResponse inApi = findInUsdaApiWithRespectForTypes(quantitylessTokensWithPluses, 20);
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
-            boolean isSame = this.dependenciesComparator.comparePhrases(quantitylessTokens, desc);
+            PhraseDependenciesComparatotionResult result = this.dependenciesComparator.extendedComparePhrases(quantitylessTokens, sp);
 
-            if(isSame)
-                return sp;
+            if(result.isComparisonResults())
+                return result;
         }
 
         return null;
@@ -511,7 +516,8 @@ public class WordClasifier {
         if(phrase!=null&&!phrase.isEmpty()){
             return null;
         }else {
-            return checkUsdaApiForStrings(Arrays.asList(phrase.split(" ")));
+            PhraseDependenciesComparatotionResult result = checkUsdaApiForStrings(Arrays.asList(phrase.split(" ")));
+            return result.getSingleResult();
         }
 
     }
@@ -543,7 +549,7 @@ public class WordClasifier {
 
         return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i,types);
     }
-    protected UsdaResponse findInUsdaApiExceptBranded(String quantitylessTokensWithPluses, int i) {
+    protected UsdaResponse findInUsdaApiExceptBranded(String phrase, int i) {
         List<String> types = new ArrayList<>();
         types.add("Survey (FNDDS)");
         types.add("SR Legacy");
@@ -553,7 +559,7 @@ public class WordClasifier {
 
 
 
-        return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i,types);
+        return this.usdaApiClient.findInApi(phrase, i,types);
     }
 
     protected UsdaResponse findInUsdaApi(String quantitylessTokensWithPluses, int i) {
@@ -581,11 +587,11 @@ public class WordClasifier {
         String quantitylessTokensWithPluses = parsingAPhrase.getQuantitylessTokenized().getTokens().stream().filter(t -> !t.getText().equals(NlpConstants.of_Word)).map(t -> "+" + t.getText().toLowerCase()).collect(Collectors.joining(" "));
         UsdaResponse inApi = findInUsdaApiWithRespectForTypes(quantitylessTokensWithPluses, 20);
         for (SingleResult sp : inApi.getFoods()) {
-            String desc = sp.getDescription();
-            boolean isSame = this.dependenciesComparator.comparePhrases(quantitylessTokens, desc);
+
+            PhraseDependenciesComparatotionResult result = this.dependenciesComparator.extendedComparePhrases(quantitylessTokens, sp);
             //		System.out.println(desc+" : "+quantitylessTokens+" : "+isSame);
 
-            if (isSame) {
+            if (result!=null&&result.isComparisonResults()) {
                 return markFoundDependencyResults(parsingAPhrase, sp);
             }
         }
@@ -611,6 +617,11 @@ public class WordClasifier {
             if (found.isPresent()) {
                 found.get().setWordType(WordType.ProductElement);
                 found.get().setReasoning("[usda api: " + sp.getFdcId() + "]");
+
+                if(freshFoodKeywords.stream().anyMatch(keyword->sp.getDescription().contains(keyword))){
+                    parsingAPhrase.getProductTypeReasoningFromSingleWord().put("api keyword for fresh found in usda api: ",found.get());
+
+                }
             } else {
                 if (!Pattern.matches(WordClasifier.punctuationRegex, t.getText())) {
                     System.err.println(t.getText() + " from " + sp.getFdcId() + " has no matching tokens in '" + parsingAPhrase.getOriginalPhrase() + "'");
@@ -624,7 +635,7 @@ public class WordClasifier {
     }
 
     protected boolean checkUsdaApiForAdjacencyEntry(AbstractParsingObject parsingAPhrase, int index, String entry) {
-        UsdaResponse inApi = findInUsdaApiAllTypes(entry, 10);
+        UsdaResponse inApi = findInUsdaApiWithRespectForTypes(entry, 10);
 
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
@@ -702,7 +713,7 @@ public class WordClasifier {
         ArrayList<WordsApiResult> wordsApiResults = wordsApiClient.searchFor(entry);
         WordsApiResult wordsApiResult = checkProductTypesForWordObject(wordsApiResults);
         if (wordsApiResult != null) {
-            checkForProductTypeProperties(parsingAPhrase, wordsApiResult);
+            checkForProductTypeProperties(parsingAPhrase, wordsApiResult,parsingAPhrase.getFinalResults().get(index));
 
             String[] x = entry.split(" ");
             if (!(parsingAPhrase.getFinalResults().get(index).getText().equals(x[0]) || parsingAPhrase.getFinalResults().get(index + 1).getText().equals(x[1]))) {
@@ -716,14 +727,17 @@ public class WordClasifier {
         }
         return false;
     }
-    private void checkForProductTypeProperties(AbstractParsingObject parsingAPhrase, WordsApiResult wordsApiResult) {
+    private void checkForProductTypeProperties(AbstractParsingObject parsingAPhrase, WordsApiResult wordsApiResult,Token t) {
         ArrayList<String> typeOf = wordsApiResult.getTypeOf();
 
         for (String keyword : freshTypeKeywords) {
             for (String type : typeOf) {
                 if (type.indexOf(keyword) >= 0) {
-                    parsingAPhrase.getProductTypeReasoning().put("api keyword for fresh found: " + keyword, ProductType.fresh);
-      //              parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
+                    String key = "api keyword for fresh found: " + keyword;
+                    parsingAPhrase.getProductTypeReasoning().put(key, ProductType.fresh);
+                    parsingAPhrase.getProductTypeReasoningFromSingleWord().put(key,t);
+                  //  Map.Entry<String, ProductType> entry = Map.entry("api keyword for fresh found: " + keyword, ProductType.fresh);
+                 //   parsingAPhrase.getProductTypeReasoningFromSingleWord().put("api keyword for fresh found: " + keyword, );
                 }
             }
 
@@ -732,7 +746,10 @@ public class WordClasifier {
         for (String keyword : readyDishKeywords) {
             for (String type : typeOf) {
                 if (type.indexOf(keyword) > 0) {
-                    parsingAPhrase.getProductTypeReasoning().put("api keyword for ready dish found: " + keyword, ProductType.meal);
+                    String key = "api keyword for meal found: " + keyword;
+                    parsingAPhrase.getProductTypeReasoning().put(key, ProductType.meal);
+                    parsingAPhrase.getProductTypeReasoningFromSingleWord().put(key,t);
+
                     //              parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
                 }
             }
@@ -741,10 +758,9 @@ public class WordClasifier {
 
         for (String keyword : driedFoodtypeKeywords) {
             for (String type : typeOf) {
-                if (type.indexOf(keyword) >= 0) {
-                    parsingAPhrase.getProductTypeReasoning().put("api keyword for dried food found: " + keyword, ProductType.dried);
-                    //              parsingAPhrase.setFoodTypeClassified(ProductType.fresh);
-                }
+                String key = "api keyword for dried found: " + keyword;
+                parsingAPhrase.getProductTypeReasoning().put(key, ProductType.dried);
+                parsingAPhrase.getProductTypeReasoningFromSingleWord().put(key,t);
             }
 
         }
@@ -939,8 +955,14 @@ public class WordClasifier {
 
             return;
         }
-		searchDbAndApis(parsingAPhrase, index, t);
+        ProductType productTypeFound = checkForPropertyKeywords(parsingAPhrase, t);
 
+        if(productTypeFound!=null&&!productTypeFound.equals(ProductType.unknown)){
+            parsingAPhrase.addResult(index, new QualifiedToken(t, WordType.ProductPropertyElement));
+
+        }else {
+            searchDbAndApis(parsingAPhrase, index, t);
+        }
 	}
 
 	private void searchDbAndApis(AbstractParsingObject parsingAPhrase, int index, Token t) throws WordNotFoundException {
@@ -1049,10 +1071,11 @@ public class WordClasifier {
 
         for (SingleResult sp : inApi.getFoods()) {
             String desc = sp.getDescription();
-            if (dependenciesComparator.comparePhrases(t.getText().toLowerCase(),desc.toLowerCase())) {
+            PhraseDependenciesComparatotionResult result = dependenciesComparator.extendedComparePhrases(t.getText().toLowerCase(), desc.toLowerCase());
+            if (result!=null&&result.isComparisonResults()) {
                 addProductResult(parsingAPhrase, index, t, "[usda api: " + sp.getFdcId() + "]");
                 addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index),sp.calculateType());
-
+                
                 return true;
             }
         }
@@ -1076,7 +1099,7 @@ public class WordClasifier {
                 } else {
                     WordsApiResult productTypeRecognized = checkProductTypesForWordObject(wordResults);
                     if (productTypeRecognized != null) {
-                        checkForProductTypeProperties(parsingAPhrase, productTypeRecognized);
+                        checkForProductTypeProperties(parsingAPhrase, productTypeRecognized,t);
 
 
                         addProductResult(parsingAPhrase, index, t, productTypeRecognized);

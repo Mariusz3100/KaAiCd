@@ -347,7 +347,7 @@ public class PhrasesCalculatingService {
         }else if(phraseConsidered instanceof DependencyPhraseConsidered){
             DependencyPhraseConsidered dependencyPhraseConsidered = (DependencyPhraseConsidered) phraseConsidered;
             List<String> strings = Arrays.asList(((DependencyPhraseConsidered) phraseConsidered).getHead().getText(), ((DependencyPhraseConsidered) phraseConsidered).getChild().getText());
-            SingleResult singleResult = wordClasifier.checkUsdaApiForStrings(strings);
+            SingleResult singleResult = wordClasifier.checkUsdaApiForStrings(strings).getSingleResult();
 
             if(singleResult!=null){
                 return singleResult;
