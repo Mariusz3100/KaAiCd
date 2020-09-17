@@ -84,6 +84,7 @@ public class PhraseDependenciesComparator {
                     System.out.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word is acceptable: "+missingWords.get(0));
                     PhraseDependenciesComparatotionResult result = new PhraseDependenciesComparatotionResult(true);
                     result.setKeywordFound(ProductType.fresh);
+                    result.setResultingPhrase(searched.toLowerCase());
                     return result;
                 }else{
                     String missingWordsString=missingWords.stream().map(t->t.getText()).collect(Collectors.joining(", "));
