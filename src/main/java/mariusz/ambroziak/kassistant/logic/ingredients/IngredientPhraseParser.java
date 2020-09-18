@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -141,11 +142,26 @@ public class IngredientPhraseParser extends AbstractParser {
 		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 		phrasesFound.forEach(pf->pf.setRelatedIngredientResult(ingredientPhraseParsingResult));
+		Map<String, PhraseFoundProductType> productTypeReasoningFromSinglePhrase = parsingAPhrase.getProductTypeReasoningFromSinglePhrase();
 
 		if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)){
 			parsingAPhrase.getPhrasesFound().stream()
 					//   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
-					.forEach(pf->pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),ingredientPhraseParsingResult,null,pf)));
+					.forEach(pf->
+					{
+						pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),ingredientPhraseParsingResult,null,pf));
+						productTypeReasoningFromSinglePhrase.entrySet().stream()
+								.filter(e -> e.getValue().getBasePhrase().getPhrase().equals(pf.getPhrase()))
+								.forEach(stringPhraseFoundProductTypeEntry ->
+										{
+											stringPhraseFoundProductTypeEntry.getValue().setRelatedIngredientResult(ingredientPhraseParsingResult);
+											pf.getPhraseFoundProductType().add(stringPhraseFoundProductTypeEntry.getValue());
+										}
+
+								);
+
+
+					});
 
 		}
 

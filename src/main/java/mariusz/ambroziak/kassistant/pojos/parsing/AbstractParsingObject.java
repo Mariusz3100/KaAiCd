@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
+import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFoundProductType;
 import mariusz.ambroziak.kassistant.pojos.QualifiedToken;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.webclients.spacy.PythonSpacyLabels;
@@ -36,7 +37,7 @@ public abstract class AbstractParsingObject {
 	private List<QualifiedToken> permissiveFinalResults;
 	private ProductType foodTypeClassified;
 	private Map<String,ProductType> productTypeReasoning;
-	private Map<String,Token> productTypeReasoningFromSingleWord;
+	private Map<String, PhraseFoundProductType> productTypeReasoningFromSinglePhrase;
 	List<ConnectionEntry> entitylessConotations;
 	List<ConnectionEntry> correctedConotations;
 	List<ConnectionEntry> quantitylessConnotations;
@@ -50,7 +51,8 @@ public abstract class AbstractParsingObject {
 	private ProductNamesComparison finalNames;
 
 	private List<PhraseFound> phrasesFound;
-
+	private String quantityPhrase;
+	private String quantitylessPhrase;
 
 	public Map<String, ProductType> getProductTypeReasoning() {
 		if(productTypeReasoning==null)
@@ -58,16 +60,7 @@ public abstract class AbstractParsingObject {
 		return productTypeReasoning;
 	}
 
-	public Map<String, Token> getProductTypeReasoningFromSingleWord() {
-		if(productTypeReasoningFromSingleWord==null)
-			productTypeReasoningFromSingleWord=new HashMap<>();
 
-		return productTypeReasoningFromSingleWord;
-	}
-
-	public void setProductTypeReasoningFromSingleWord(Map<String, Token> productTypeReasoningFromSingleWord) {
-		this.productTypeReasoningFromSingleWord = productTypeReasoningFromSingleWord;
-	}
 
 	public void setProductTypeReasoning(Map<String, ProductType> productTypeReasoning) {
 		this.productTypeReasoning = productTypeReasoning;
@@ -90,6 +83,17 @@ public abstract class AbstractParsingObject {
 
 
 		return dependencyConotationsFound;
+	}
+
+	public Map<String, PhraseFoundProductType> getProductTypeReasoningFromSinglePhrase() {
+		if(this.productTypeReasoningFromSinglePhrase==null)
+			productTypeReasoningFromSinglePhrase=new HashMap<>();
+
+		return productTypeReasoningFromSinglePhrase;
+	}
+
+	public void setProductTypeReasoningFromSinglePhrase(Map<String, PhraseFoundProductType> productTypeReasoningFromSinglePhrase) {
+		this.productTypeReasoningFromSinglePhrase = productTypeReasoningFromSinglePhrase;
 	}
 
 	public void setConotationsFound(List<ConnectionEntry> conotationsFound) {
@@ -134,8 +138,7 @@ public abstract class AbstractParsingObject {
 		this.quantitylessConnotations = quantitylessConnotations;
 	}
 
-	private String quantityPhrase;
-	private String quantitylessPhrase;
+
 
 	public TokenizationResults getCorrectedToknized() {
 		return correctedToknized;

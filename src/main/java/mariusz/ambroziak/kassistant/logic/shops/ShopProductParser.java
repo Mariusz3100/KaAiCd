@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -136,13 +137,25 @@ public class ShopProductParser  extends AbstractParser {
 		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
 		phrasesFound.forEach(pf->pf.setRelatedProductResult(productParsingResult));
+		Map<String, PhraseFoundProductType> productTypeReasoningFromSinglePhrase = parsingAPhrase.getProductTypeReasoningFromSinglePhrase();
 
 		if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)){
 //			phrasesFound.forEach(pf->pf.getPhraseFoundProductType().forEach(pfpt -> {if(pfpt.getPfpt_id()==null)pfpt.setRelatedProductResult(productParsingResult);}));
 
 			parsingAPhrase.getPhrasesFound().stream()
 					//   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
-					.forEach(pf->pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),null,productParsingResult,pf)));
+					.forEach(pf->{
+						pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),null,productParsingResult,pf));
+						productTypeReasoningFromSinglePhrase.entrySet().stream()
+								.filter(e -> e.getValue().getBasePhrase().getPhrase().equals(pf.getPhrase()))
+								.forEach(stringPhraseFoundProductTypeEntry ->
+										{
+											stringPhraseFoundProductTypeEntry.getValue().setRelatedProductResult(productParsingResult);
+											pf.getPhraseFoundProductType().add(stringPhraseFoundProductTypeEntry.getValue());
+										}
+
+								);
+					});
 
 		}
 
