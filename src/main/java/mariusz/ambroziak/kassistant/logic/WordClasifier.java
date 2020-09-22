@@ -80,6 +80,7 @@ public class WordClasifier {
 
 	public static ArrayList<String> freshFoodKeywords;
     public static ArrayList<String> foodFlavouredKeywords;
+    public static ArrayList<String> driedFoodKeywords;
     public static ArrayList<String> driedFoodtypeKeywords;
     public static ArrayList<String> readyDishKeywords;
 
@@ -184,6 +185,10 @@ public class WordClasifier {
         driedFoodtypeKeywords.add("spice");
         productTypeKeywords.addAll(driedFoodtypeKeywords);
 
+        driedFoodKeywords=new ArrayList<>();
+        driedFoodKeywords.add("dried");
+
+
         readyDishKeywords =new ArrayList<>();
         readyDishKeywords.add("snack");
         readyDishKeywords.add("dish");
@@ -204,7 +209,9 @@ public class WordClasifier {
         anyFoodDepartmentPrefix.add("vegan");
         anyFoodDepartmentPrefix.add("frozen");
         anyFoodDepartmentPrefix.add("drinks");
+        anyFoodDepartmentPrefix.add("Inspiration");
         anyFoodDepartmentPrefix.add("beer, wines & spirits");
+        anyFoodDepartmentPrefix.add("bigger pack, better Value /cooking ingredients");
     }
 
 
@@ -415,6 +422,13 @@ public class WordClasifier {
             if (keyword.equals(qt.getText())||keyword.equals(qt.getLemma())) {
                 parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.flavoured);
                 return ProductType.flavoured;
+            }
+        }
+
+        for (String keyword : driedFoodKeywords) {
+            if (keyword.equals(qt.getText())||keyword.equals(qt.getLemma())) {
+                parsingAPhrase.getProductTypeReasoning().put("keyword: " + keyword, ProductType.dried);
+                return ProductType.dried;
             }
         }
         return ProductType.unknown;
