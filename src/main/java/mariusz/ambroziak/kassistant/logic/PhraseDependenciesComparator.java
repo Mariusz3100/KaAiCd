@@ -81,14 +81,15 @@ public class PhraseDependenciesComparator {
                     return  new PhraseDependenciesComparatotionResult(true);
                 }else if(missingWords.stream().filter(t->!WordClasifier.freshFoodKeywords.contains(t.getText())).count()==0){
 
-                    System.out.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word is acceptable: "+missingWords.get(0));
+              //      System.out.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word is acceptable: "+missingWords.get(0));
                     PhraseDependenciesComparatotionResult result = new PhraseDependenciesComparatotionResult(true);
-                    result.setKeywordFound(ProductType.fresh);
+                    result.setTypeDeduced(ProductType.fresh);
+                    result.setKeywordsFound(missingWords.stream().map(token -> token.getText()).collect(Collectors.toList()));
                     result.setResultingPhrase(searched.toLowerCase());
                     return result;
                 }else{
                     String missingWordsString=missingWords.stream().map(t->t.getText()).collect(Collectors.joining(", "));
-                    System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: ["+missingWordsString+"]");
+               //     System.err.println("searching for "+searched+", found "+description+", extra: "+missingMessage+", extra word: ["+missingWordsString+"]");
                     return  new PhraseDependenciesComparatotionResult(false);
                 }
 

@@ -3,9 +3,13 @@ package mariusz.ambroziak.kassistant.logic;
 import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PhraseDependenciesComparatotionResult {
     private boolean comparisonResults;
-    private ProductType keywordFound;
+    private List<String> keywordsFound;
+    private ProductType typeDeduced;
     private String resultingPhrase;
 
     SingleResult singleResult;
@@ -18,12 +22,23 @@ public class PhraseDependenciesComparatotionResult {
         this.comparisonResults = comparisonResults;
     }
 
-    public ProductType getKeywordFound() {
-        return keywordFound;
+    public List<String> getKeywordsFound() {
+        if(keywordsFound==null)
+            keywordsFound=new ArrayList<>();
+
+        return keywordsFound;
     }
 
-    public void setKeywordFound(ProductType keywordFound) {
-        this.keywordFound = keywordFound;
+    public void setKeywordsFound(List<String> keywordsFound) {
+        this.keywordsFound = keywordsFound;
+    }
+
+    public ProductType getTypeDeduced() {
+        return typeDeduced;
+    }
+
+    public void setTypeDeduced(ProductType typeDeduced) {
+        this.typeDeduced = typeDeduced;
     }
 
     public SingleResult getSingleResult() {
