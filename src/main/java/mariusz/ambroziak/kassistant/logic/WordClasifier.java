@@ -589,12 +589,12 @@ public class WordClasifier {
     }
 
     protected UsdaResponse findInUsdaApiWithRespectForTypes(String quantitylessTokensWithPluses, int i) {
-        return this.findInUsdaApiExceptLegacy(quantitylessTokensWithPluses,i);
+        return this.findInUsdaApiExceptBranded(quantitylessTokensWithPluses,i);
     }
     protected UsdaResponse findInUsdaApiExceptBrandedOrLegacy(String quantitylessTokensWithPluses, int i) {
         List<String> types = new ArrayList<>();
         types.add("Survey (FNDDS)");
-    //    types.add("SR Legacy");
+        types.add("SR Legacy");
         types.add("Foundation");
 
 

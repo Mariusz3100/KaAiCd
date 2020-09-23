@@ -4,6 +4,7 @@ import mariusz.ambroziak.kassistant.enums.ProductType;
 import mariusz.ambroziak.kassistant.enums.WordType;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
 import mariusz.ambroziak.kassistant.pojos.parsing.AbstractParsingObject;
+import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,7 +34,7 @@ public class IngredientWordsClasifier extends WordClasifier {
         for(String keyword:processedPackagingKeywords){
             if(parsingAPhrase.getFinalResults().stream()
                     .anyMatch(qualifiedToken -> WordType.QuantityElement.equals(qualifiedToken.getWordType())&&qualifiedToken.getText().equals(keyword))){
-                parsingAPhrase.getProductTypeReasoning().put("Processed keyword: "+keyword+"]", ProductType.processed);
+                parsingAPhrase.getProductTypeReasoning().put("Processed (packaging) keyword: "+keyword+"]", ProductType.processed);
 
             }
         }
@@ -42,5 +43,15 @@ public class IngredientWordsClasifier extends WordClasifier {
 
     }
 
+    @Override
+    protected UsdaResponse findInUsdaApiAllTypes(String phrases, int i) {
+        return super.findInUsdaApi(phrases, i);
 
+    }
+
+
+    @Override
+    protected UsdaResponse findInUsdaApiWithRespectForTypes(String quantitylessTokensWithPluses, int i) {
+        return super.findInUsdaApiExceptBranded(quantitylessTokensWithPluses, i);
+    }
 }
