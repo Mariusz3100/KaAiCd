@@ -1,7 +1,5 @@
 package mariusz.ambroziak.kassistant.pojos.matching;
 
-import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +7,7 @@ public class MatchingProcessResultList {
     private List<MatchingProcessResult> results;
 
     private int ingredientsCovered;
+    private int ingredientsCorrectlyGuessedAsEmpty;
     private int ingredientsTotal;
     private int productsFound;
     private int improperProductsFound;
@@ -71,5 +70,13 @@ public class MatchingProcessResultList {
 
     public void setImproperProductsFound(int improperProductsFound) {
         this.improperProductsFound = improperProductsFound;
+    }
+
+    public int getIngredientsCorrectlyGuessedAsEmpty() {
+        return ingredientsCorrectlyGuessedAsEmpty;
+    }
+
+    public void setIngredientsCorrectlyGuessedAsEmpty(int ingredientsCorrectlyGuessedAsEmpty) {
+        this.ingredientsCorrectlyGuessedAsEmpty = ingredientsCorrectlyGuessedAsEmpty;
     }
 }

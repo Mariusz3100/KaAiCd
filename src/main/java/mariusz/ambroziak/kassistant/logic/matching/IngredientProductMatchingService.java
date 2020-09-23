@@ -77,6 +77,7 @@ public class IngredientProductMatchingService extends AbstractParser {
             return new ArrayList<>();
         }else{
             List<MatchingProcessResult> matchingProcessResults = parseMatchList(andSaveIngredientsForRecipe, true);
+            judgeResultsBasesOnExpectedMatches(matchingProcessResults);
             return matchingProcessResults;
         }
 
@@ -104,11 +105,18 @@ public class IngredientProductMatchingService extends AbstractParser {
         List<MatchingProcessResult> matchingProcessResults = parseMatchList(ingredientLearningCases,saveInDb);
 
        // List<MatchingProcessResult> matchingProcessResults = parseMatchAndGetResultsFromDbAllCases(saveInDb);
+        judgeResultsBasesOnExpectedMatches(matchingProcessResults);
+
+        return matchingProcessResults;
+    }
+
+    private void judgeResultsBasesOnExpectedMatches(List<MatchingProcessResult> matchingProcessResults) {
         for(MatchingProcessResult mpr:matchingProcessResults){
             ParsingResult ingredientParsingDetails = mpr.getIngredientParsingDetails();
             String ingredientPhrase=ingredientParsingDetails.getOriginalPhrase();
 
             List<MatchExpected> expectedForIngredient = this.matchExpectedRepository.findByIngredient(ingredientPhrase);
+            List<MatchExpected> missingForIngredient = expectedForIngredient.stream().collect(Collectors.toList());
 
             if(expectedForIngredient==null||expectedForIngredient.isEmpty()){
                 System.err.println("Ingredient not in db");
@@ -124,7 +132,7 @@ public class IngredientProductMatchingService extends AbstractParser {
                         if (collect.size() > 0) {
                             if (collect.get(0).isExpectedVerdict()) {
                                 pmr.setExpectedVerdict(true);
-                                expectedForIngredient = expectedForIngredient.stream().filter(me -> !me.getProduct().equals(productName)).collect(Collectors.toList());
+                                missingForIngredient = missingForIngredient.stream().filter(me -> !me.getProduct().equals(productName)).collect(Collectors.toList());
 
                             }
                         } else {
@@ -136,16 +144,11 @@ public class IngredientProductMatchingService extends AbstractParser {
           //      mpr.setProductsNotFound(missing);
 
             }
-            List<String> missing = expectedForIngredient.stream().map(me -> me.getProduct()).filter(s -> !s.equals("")).collect(Collectors.toList());
-
-            if(missing.isEmpty())
-                missing.add("test");
+            List<String> missing = missingForIngredient.stream().map(me -> me.getProduct()).filter(s -> !s.equals("")).collect(Collectors.toList());
 
             mpr.setProductNamesNotFound(missing);
             mpr.setIncorrectProductsConsideredParsingResults(mpr.getProductsConsideredParsingResults().stream().filter(result->result.isCalculatedVerdict()!=result.isExpectedVerdict()).collect(Collectors.toList()));
         }
-
-        return matchingProcessResults;
     }
 
     public List<MatchingProcessResult> parseMatchAndGetResultsFromDbAllCases(boolean saveInDb) {

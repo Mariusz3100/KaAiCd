@@ -6,7 +6,6 @@ import java.util.Map;
 
 import mariusz.ambroziak.kassistant.hibernate.cache.repositories.WebknoxResponseRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
-import mariusz.ambroziak.kassistant.logic.ingredients.SimplerIngredientParser;
 import mariusz.ambroziak.kassistant.logic.matching.IngredientProductMatchingService;
 import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
@@ -60,25 +59,33 @@ public class LogicController {
 		List<MatchingProcessResult> results = ingredientProductMatchingService.parseMatchAndJudgeResultsFromDbMatches(param);
 		MatchingProcessResultList calculated=new MatchingProcessResultList(results);
 
-		int ingredientsMatched=0;
+		int ingredientsCorrectlyMatched=0;
+		int ingredientsCorrectlyGuessedAsEmpty=0;
 		int productsTotal=0;
+		int productsIncorrectlyMatched=0;
 		int productsMatched=0;
 
 		for(MatchingProcessResult mpr:calculated.getResults()){
-			long matched=mpr.getProductsConsideredParsingResults().stream().filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()).count();
+			long matched=mpr.getProductsConsideredParsingResults().stream()
+					.filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()==productMatchingResult.isExpectedVerdict())
+					.count();
 
-			if(matched>0){
-				ingredientsMatched++;
+			if(matched>0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
+				ingredientsCorrectlyMatched++;
+			}
+			if(matched==0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
+				ingredientsCorrectlyGuessedAsEmpty++;
 			}
 			productsMatched+=matched;
 			productsTotal+=mpr.getProductsConsideredParsingResults().size();
+			productsIncorrectlyMatched+=mpr.getIncorrectProductsConsideredParsingResults().size()+mpr.getProductNamesNotFound().size();
 		}
-		calculated.setIngredientsCovered(ingredientsMatched);
+		calculated.setIngredientsCovered(ingredientsCorrectlyMatched);
 		calculated.setProductsFound(productsMatched);
 		calculated.setIngredientsTotal(calculated.getResults().size());
 		calculated.setProductsTotal(productsTotal);
-
-
+		calculated.setIngredientsCorrectlyGuessedAsEmpty(ingredientsCorrectlyGuessedAsEmpty);
+		calculated.setImproperProductsFound(productsIncorrectlyMatched);
 		return calculated;
 
 	}
