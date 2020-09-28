@@ -48,7 +48,7 @@ public class ProductWordsClassifier extends WordClasifier {
 
     public void calculateProductType(AbstractParsingObject parsingAPhrase) {
         super.calculateProductType(parsingAPhrase);
-
+        checkForNotFoodDepartments(parsingAPhrase);
         if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
             calculateReasoningsBaseOnPackagingAndPrepInstructions(parsingAPhrase);
             calculateTypeFromReasonings(parsingAPhrase);
@@ -76,6 +76,14 @@ public class ProductWordsClassifier extends WordClasifier {
             calculateTypeFromReasonings(parsingAPhrase);
         }
 
+    }
+
+    private void checkForNotFoodDepartments(AbstractParsingObject parsingAPhrase) {
+        if(!anyFoodDepartmentPrefix.stream().anyMatch(s -> ((ProductParsingProcessObject)parsingAPhrase).getProduct().getDepartmentList().toLowerCase().startsWith(s.toLowerCase()))){
+            parsingAPhrase.getProductTypeReasoning().put("not food department", ProductType.notFood);
+            parsingAPhrase.setFoodTypeClassified(ProductType.notFood);
+
+        }
     }
 
     private void calculateReasoningBasedOnIngredients(AbstractParsingObject parsingAPhrase) {
@@ -167,10 +175,7 @@ public class ProductWordsClassifier extends WordClasifier {
                 //  return ProductType.fresh;
             }
         }
-        if(!anyFoodDepartmentPrefix.stream().anyMatch(s -> departmentList.toLowerCase().startsWith(s.toLowerCase()))){
-            parsingAPhrase.getProductTypeReasoning().put("not food department", ProductType.notFood);
 
-        }
 
 
     }
