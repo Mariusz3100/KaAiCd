@@ -101,6 +101,22 @@ public class PhraseDependenciesComparator {
 
     }
 
+    public boolean isSecondDerivativeOfFirst(String original,String derivative){
+        if(derivative.indexOf(original)>0)
+            return true;
+
+        TokenizationResults originalTokenized = tokenizer.parse(original.toLowerCase());
+        TokenizationResults derivativeTokenized = tokenizer.parse(derivative.toLowerCase());
+
+        if(originalTokenized.getTokens().stream()
+                .filter(originalT-> derivativeTokenized.getTokens().stream().noneMatch(derivativeT -> derivativeT.getLemma().equals(originalT.getLemma())))
+                .count()==0)
+            return true;
+        else
+            return false;
+
+    }
+
     private boolean isSecondOneAtMostOneLonger(TokenizationResults firstTokenized, TokenizationResults secondTokenized) {
         List<Token> firstCollected = firstTokenized.getTokens().stream().filter(s -> !checkifPunctation(s)&&!isOfWord(s)).collect(Collectors.toList());
 

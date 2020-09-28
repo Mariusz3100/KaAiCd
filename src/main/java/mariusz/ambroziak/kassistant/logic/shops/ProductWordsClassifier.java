@@ -68,6 +68,7 @@ public class ProductWordsClassifier extends WordClasifier {
             calculateReasoningBasedOnIngredients(parsingAPhrase);
             calculateTypeFromReasonings(parsingAPhrase);
         }
+        considerCompoundProductType(parsingAPhrase);
 
         if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
 

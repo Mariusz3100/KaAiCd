@@ -19,7 +19,7 @@ public class IngredientWordsClasifier extends WordClasifier {
             calculateReasoningsBaseOnQuantityTokens(parsingAPhrase);
             calculateTypeFromReasonings(parsingAPhrase);
         }
-
+        considerCompoundProductType(parsingAPhrase);
         if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
 
             calculateReasoningsBaseOnClassifiedPhrases(parsingAPhrase);

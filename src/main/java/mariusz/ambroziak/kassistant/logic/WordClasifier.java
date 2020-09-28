@@ -335,6 +335,48 @@ public class WordClasifier {
         calculateTypeFromReasonings(parsingAPhrase);
     }
 
+
+    public void considerCompoundProductType(AbstractParsingObject parsingAPhrase){
+        List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
+
+        List<PhraseFound> independentPhrases=new ArrayList<>();
+        phrasesFound.stream().sorted(Comparator.comparingInt(o -> o.getPhrase().length())).collect(Collectors.toList());
+        for(PhraseFound newPf:phrasesFound){
+            boolean newOne=true;
+            for(PhraseFound currPfPhraseFound:independentPhrases){
+                if(isSecondDerivativeOfFirst(currPfPhraseFound,newPf)){
+                    newOne=false;
+                }
+            }
+            if(newOne)
+                independentPhrases.add(newPf);
+        }
+
+
+
+        if(independentPhrases.size()>1){
+            ProductType foodTypeClassified = parsingAPhrase.getFoodTypeClassified();
+
+            if(foodTypeClassified.equals(ProductType.unknown)||
+                    foodTypeClassified.equals(ProductType.fresh)||
+                    foodTypeClassified.equals(ProductType.dried)||
+                    foodTypeClassified.equals(ProductType.juice)||
+                    foodTypeClassified.equals(ProductType.puree)){
+                String collected = phrasesFound.stream().map(phraseFound -> phraseFound.getPhrase()).collect(Collectors.joining(":"));
+                parsingAPhrase.getProductTypeReasoning().put("Final reasoning overriden because of two phrases:\""+collected,ProductType.compound);
+                parsingAPhrase.setFoodTypeClassified(ProductType.compound);
+
+            }
+
+        }
+    }
+
+    private boolean isSecondDerivativeOfFirst(PhraseFound currPfPhraseFound, PhraseFound newPf) {
+        return  this.dependenciesComparator.isSecondDerivativeOfFirst(currPfPhraseFound.getPhrase(),newPf.getPhrase());
+
+
+    }
+
     protected boolean calculateTypeFromReasonings(AbstractParsingObject parsingAPhrase) {
         List<ProductType> foundTypes=parsingAPhrase.getProductTypeReasoning().values().stream().filter(pt->!pt.equals(ProductType.unknown)).distinct().collect(Collectors.toList());
         if(foundTypes.size()==1){
