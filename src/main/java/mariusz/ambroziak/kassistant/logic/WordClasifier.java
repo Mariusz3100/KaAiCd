@@ -418,9 +418,43 @@ public class WordClasifier {
     protected void calculateReasoningsBaseOnClassifiedPhrases(AbstractParsingObject parsingAPhrase) {
         List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
 
+        ProductType found = calculateBasedOnPhraseScope(parsingAPhrase, phrasesFound);
+        if(!found.equals(ProductType.unknown)) {
+            String phrasesString=phrasesFound.stream().map(phraseFound -> "\""+phraseFound.getPhrase()+"\"").collect(Collectors.joining(","));
+            parsingAPhrase.getProductTypeReasoning().put("[Phrases in db "+phrasesString+" have api information resulting in: "+found.getName()+"]", found);
+            System.out.println("[Phrases in db "+phrasesString+" have api information resulting in: "+found.getName()+"]");
+
+
+        }else {
+         //   calculateBasedOnResults(parsingAPhrase, phrasesFound);
+        }
+
+    }
+
+    private void calculateBasedOnResults(AbstractParsingObject parsingAPhrase, List<PhraseFound> phrasesFound) {
+        for (PhraseFound pf : phrasesFound) {
+            if (pf.getPf_id() != null && pf.getTypesFoundForPhraseAndBase() != null) {
+                Set<PhraseFoundProductType> typesFoundForPhraseAndBase = pf.getTypesFoundForPhraseAndBase();
+                typesFoundForPhraseAndBase = typesFoundForPhraseAndBase.stream()
+                        .filter(phraseFoundProductType -> !ProductType.unknown.equals(phraseFoundProductType.getProductType()))
+                        .filter(phraseFoundProductType -> !ProductType.notFood.equals(phraseFoundProductType.getProductType()))
+                        .collect(Collectors.toSet());
+
+                ProductType calculatedType = PhraseFound.getWeightedLeadingProductTypeFromResults(typesFoundForPhraseAndBase);
+
+                if (!ProductType.unknown.equals(calculatedType)) {
+                    parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: " + pf.getPhrase() + "]", calculatedType);
+                }
+
+
+            }
+        }
+    }
+
+    private ProductType calculateBasedOnPhraseScope(AbstractParsingObject parsingAPhrase, List<PhraseFound> phrasesFound) {
         ProductType found=ProductType.unknown;
         boolean noOther=parsingAPhrase.getFinalResults().stream()
-                .filter(qualifiedToken ->WordType.ProductElement.equals(qualifiedToken.getWordType()))
+                .filter(qualifiedToken -> WordType.ProductElement.equals(qualifiedToken.getWordType()))
                 .filter(qualifiedToken ->
                         !phrasesFound.stream().anyMatch(phraseFound -> phraseFound.getPhrase().contains(qualifiedToken.getText())||phraseFound.getPhrase().contains(qualifiedToken.getLemma())))
                 .count()==0;
@@ -435,32 +469,7 @@ public class WordClasifier {
                 }
             }
         }
-        if(!found.equals(ProductType.unknown)) {
-            String phrasesString=phrasesFound.stream().map(phraseFound -> "\""+phraseFound.getPhrase()+"\"").collect(Collectors.joining(","));
-            parsingAPhrase.getProductTypeReasoning().put("[Phrases in db "+phrasesString+" have api information resulting in: "+found.getName()+"]", found);
-            System.out.println("[Phrases in db "+phrasesString+" have api information resulting in: "+found.getName()+"]");
-
-
-        }else {
-            for (PhraseFound pf : phrasesFound) {
-                if (pf.getPf_id() != null && pf.getTypesFoundForPhraseAndBase() != null) {
-                    Set<PhraseFoundProductType> typesFoundForPhraseAndBase = pf.getTypesFoundForPhraseAndBase();
-                    typesFoundForPhraseAndBase = typesFoundForPhraseAndBase.stream()
-                            .filter(phraseFoundProductType -> !ProductType.unknown.equals(phraseFoundProductType.getProductType()))
-                            .filter(phraseFoundProductType -> !ProductType.notFood.equals(phraseFoundProductType.getProductType()))
-                            .collect(Collectors.toSet());
-
-                    ProductType calculatedType = PhraseFound.getWeightedLeadingProductTypeFromResults(typesFoundForPhraseAndBase);
-
-                    if (!ProductType.unknown.equals(calculatedType)) {
-                        parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: " + pf.getPhrase() + "]", calculatedType);
-                    }
-
-
-                }
-            }
-        }
-
+        return found;
     }
 
     protected void extractAndMarkProductPropertyWords(AbstractParsingObject parsingAPhrase) {
@@ -1224,7 +1233,7 @@ public class WordClasifier {
             if (result!=null&&result.isComparisonResults()) {
                 addProductResult(parsingAPhrase, index, t, "[usda api: " + sp.getFdcId() + "]");
                 addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index),result);
-                
+
                 return true;
             }
         }
@@ -1388,12 +1397,16 @@ public class WordClasifier {
         return pf;
     }
     private PhraseFound addFoundSingleWordPhrase(AbstractParsingObject parsingAPhrase, QualifiedToken qt, PhraseDependenciesComparatotionResult result) {
-        PhraseFoundProductType phraseFoundProductType=new PhraseFoundProductType();
-        phraseFoundProductType.setProductType(result.getTypeDeduced());
-        phraseFoundProductType.setKeywords(result.getKeywordsFound().stream().collect(Collectors.joining(" ")));
         PhraseFound pf = new PhraseFound(qt.getLemma(), qt.getWordType(), qt.getReasoning(),result.getSingleResult().calculateType());
-        pf.addPhraseFoundProductType(phraseFoundProductType);
-        phraseFoundProductType.setBasePhrase(pf);
+        if(result.getKeywordsFound()!=null&&!result.getKeywordsFound().isEmpty()) {
+            PhraseFoundProductType phraseFoundProductType = new PhraseFoundProductType();
+            phraseFoundProductType.setProductType(result.getTypeDeduced());
+            phraseFoundProductType.setKeywords(result.getKeywordsFound().stream().collect(Collectors.joining(" ")));
+            phraseFoundProductType.setApiSource(result.getSingleResult().calculateType());
+            phraseFoundProductType.setScope(PhraseFoundProductType_Scope.Phrase);
+            pf.addPhraseFoundProductType(phraseFoundProductType);
+            phraseFoundProductType.setBasePhrase(pf);
+        }
         parsingAPhrase.addPhraseFound(pf);
         return pf;
     }
