@@ -405,7 +405,7 @@ public class IngredientProductMatchingService extends AbstractParser {
 
     private boolean checkTypesCompatibility(ProductType typeSearched, ProductType productParsingResult) {
         return productParsingResult.equals(typeSearched)
-                ||ProductType.unknown.equals(typeSearched)
+                ||(ProductType.unknown.equals(typeSearched)&&!ProductType.notFood.equals(productParsingResult))
                 ||ProductType.unknown.equals(productParsingResult);
     }
 
