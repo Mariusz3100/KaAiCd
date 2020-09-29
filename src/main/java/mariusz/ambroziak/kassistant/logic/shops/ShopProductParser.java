@@ -1,10 +1,7 @@
 package mariusz.ambroziak.kassistant.logic.shops;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -142,12 +139,13 @@ public class ShopProductParser  extends AbstractParser {
 		if(parsingAPhrase.getFoodTypeClassified()!=null&&!parsingAPhrase.getFoodTypeClassified().equals(ProductType.unknown)){
 //			phrasesFound.forEach(pf->pf.getPhraseFoundProductType().forEach(pfpt -> {if(pfpt.getPfpt_id()==null)pfpt.setRelatedProductResult(productParsingResult);}));
 
-			parsingAPhrase.getPhrasesFound().stream()
+			phrasesFound.stream()
 					//   .filter(phraseFound -> phraseFound.getPhraseFoundProductType().isEmpty()) as of now, it doesn't have to be empty
 					.forEach(pf->{
 						pf.addPhraseFoundProductType(new PhraseFoundProductType(parsingAPhrase.getFoodTypeClassified(),null,productParsingResult,pf));
 						productTypeReasoningFromSinglePhrase.entrySet().stream()
 								.filter(e -> e.getValue().getBasePhrase().getPhrase().equals(pf.getPhrase()))
+								.filter(e -> e.getValue().getProductType()!=null&&!e.getValue().getProductType().equals(ProductType.unknown))
 								.forEach(stringPhraseFoundProductTypeEntry ->
 										{
 											stringPhraseFoundProductTypeEntry.getValue().setRelatedProductResult(productParsingResult);
@@ -161,6 +159,13 @@ public class ShopProductParser  extends AbstractParser {
 
 		addLemmatizedVersions(phrasesFound);
 		//phrasesFound.forEach(pf->pf.prepareNewTypesForSave(productParsingResult));
+
+		for(PhraseFound pf:phrasesFound){
+			Set<PhraseFoundProductType> phraseFoundProductType = pf.getPhraseFoundProductType();
+			pf.setPhraseFoundProductType(phraseFoundProductType.stream()
+					.filter(phraseFoundProductType1 -> phraseFoundProductType1.getProductType()!=null).collect(Collectors.toSet()));
+
+		}
 
 		phraseFoundRepo.saveAllIfNew(phrasesFound);
 
