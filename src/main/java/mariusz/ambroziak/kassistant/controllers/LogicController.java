@@ -8,6 +8,7 @@ import mariusz.ambroziak.kassistant.hibernate.cache.repositories.WebknoxResponse
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseConsidered;
 import mariusz.ambroziak.kassistant.logic.matching.IngredientProductMatchingService;
 import mariusz.ambroziak.kassistant.logic.matching.PhrasesCalculatingService;
+import mariusz.ambroziak.kassistant.logic.usda.UsdaWordsClasifierService;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResult;
 import mariusz.ambroziak.kassistant.pojos.matching.MatchingProcessResultList;
 import mariusz.ambroziak.kassistant.pojos.phrasefinding.PhraseFindingResults;
@@ -41,6 +42,9 @@ public class LogicController {
 
 	@Autowired
 	PhrasesCalculatingService phrasesCalculatingService;
+
+	@Autowired
+	UsdaWordsClasifierService usdaWordsClasifierService;
 
 	@Autowired
 	public LogicController(IngredientPhraseParser ingredientPhraseParser,EdamanRecipeSearchService searchSevice, EdamanIngredientParsingService edamanNlpService) {
@@ -120,6 +124,17 @@ public class LogicController {
 		Map<String, List<PhraseConsidered>> phrasesCalculated = this.phrasesCalculatingService.getProductPhrasesCalculated();
 
 		return phrasesCalculated;
+
+
+	}
+
+	@CrossOrigin
+	@ResponseBody
+	@RequestMapping("/usdaParsing")
+	public String  usdaParsing() throws IOException{
+		this.usdaWordsClasifierService.parseUsdaData();
+
+		return "Done";
 
 
 	}
