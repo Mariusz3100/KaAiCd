@@ -69,6 +69,9 @@ public class LogicController {
 			long matched=mpr.getProductsConsideredParsingResults().stream()
 					.filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()==productMatchingResult.isExpectedVerdict())
 					.count();
+			long correctlyFound=mpr.getProductsConsideredParsingResults().stream()
+					.filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()&&productMatchingResult.isExpectedVerdict())
+					.count();
 
 			if(matched>0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
 				ingredientsCorrectlyMatched++;
@@ -76,7 +79,7 @@ public class LogicController {
 			if(matched==0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
 				ingredientsCorrectlyGuessedAsEmpty++;
 			}
-			productsMatched+=matched;
+			productsMatched+=correctlyFound;
 			productsTotal+=mpr.getProductsConsideredParsingResults().size();
 			productsIncorrectlyMatched+=mpr.getIncorrectProductsConsideredParsingResults().size()+mpr.getProductNamesNotFound().size();
 		}
