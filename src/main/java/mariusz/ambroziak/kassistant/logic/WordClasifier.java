@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import mariusz.ambroziak.kassistant.constants.LearningConstants;
 import mariusz.ambroziak.kassistant.constants.NlpConstants;
-import mariusz.ambroziak.kassistant.enums.PhraseFoundDataSource;
+import mariusz.ambroziak.kassistant.enums.*;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
 import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFoundProductType;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.CustomPhraseFoundRepository;
@@ -87,6 +87,7 @@ public class WordClasifier {
 	public static ArrayList<String> pureeFoodKeywords;
 	public static ArrayList<String> juiceKeywords;
 	public static ArrayList<String> anyFoodDepartmentPrefix;
+	public static ArrayList<String> anyFoodDepartmentKeyword;
 	public static ArrayList<String> processedPackagingKeywords;
     public static ArrayList<String> usdaIgnoreKeywords;
 
@@ -118,6 +119,7 @@ public class WordClasifier {
         productTypeKeywords.add("dairy");
 //        productTypeKeywords.add("fruit");
         productTypeKeywords.add("food");
+        productTypeKeywords.add("herb");
         productTypeKeywords.add("baked goods");
 
 
@@ -210,8 +212,18 @@ public class WordClasifier {
         anyFoodDepartmentPrefix.add("frozen");
         anyFoodDepartmentPrefix.add("drinks");
         anyFoodDepartmentPrefix.add("Inspiration");
+        anyFoodDepartmentPrefix.add("World Foods");
         anyFoodDepartmentPrefix.add("beer, wines & spirits");
         anyFoodDepartmentPrefix.add("bigger pack, better Value /cooking ingredients");
+        anyFoodDepartmentPrefix.add("free from/gluten free/food Cupboard");
+        anyFoodDepartmentPrefix.add("Summer Event/BBQ/Sauces, Relish & Marinades");
+        anyFoodDepartmentPrefix.add("Summer Event/BBQ/Cheese");
+        anyFoodDepartmentPrefix.add("Summer Event/Summer Drinks");
+        anyFoodDepartmentPrefix.add("Summer Event/Summer Eating");
+        anyFoodDepartmentPrefix.add("Summer Event/Picnic");
+
+        anyFoodDepartmentKeyword =new ArrayList<>();
+        anyFoodDepartmentKeyword.add("Food Cupboard");
     }
 
 
