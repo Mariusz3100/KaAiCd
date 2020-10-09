@@ -156,6 +156,11 @@ public class IngredientPhraseParser extends AbstractParser {
 										{
 											stringPhraseFoundProductTypeEntry.getValue().setRelatedIngredientResult(ingredientPhraseParsingResult);
 											pf.getPhraseFoundProductType().add(stringPhraseFoundProductTypeEntry.getValue());
+											pf.getPhraseFoundProductType().stream()
+													.filter(phraseFoundProductType ->
+															phraseFoundProductType.getRelatedProductResult()==null&&phraseFoundProductType.getRelatedIngredientResult()==null)
+													.forEach(phraseFoundProductType -> phraseFoundProductType.setRelatedIngredientResult(ingredientPhraseParsingResult));
+
 										}
 
 								);
