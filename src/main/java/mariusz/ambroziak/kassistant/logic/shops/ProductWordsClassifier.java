@@ -79,7 +79,9 @@ public class ProductWordsClassifier extends WordClasifier {
     }
 
     private void checkForNotFoodDepartments(AbstractParsingObject parsingAPhrase) {
-        if(!anyFoodDepartmentPrefix.stream().anyMatch(s -> ((ProductParsingProcessObject)parsingAPhrase).getProduct().getDepartmentList().toLowerCase().startsWith(s.toLowerCase()))){
+        if(!anyFoodDepartmentPrefix.stream().anyMatch(s -> ((ProductParsingProcessObject)parsingAPhrase).getProduct().getDepartmentList().toLowerCase().startsWith(s.toLowerCase()))&&
+                !anyFoodDepartmentKeyword.stream().anyMatch(s -> ((ProductParsingProcessObject)parsingAPhrase).getProduct().getDepartmentList().toLowerCase().contains(s.toLowerCase()))
+        ){
             parsingAPhrase.getProductTypeReasoning().put("not food department", ProductType.notFood);
             parsingAPhrase.setFoodTypeClassified(ProductType.notFood);
 

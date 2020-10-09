@@ -77,10 +77,10 @@ public class LogicController {
 					.filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()&&productMatchingResult.isExpectedVerdict())
 					.count();
 
-			if(matched>0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
+			if(correctlyFound>0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
 				ingredientsCorrectlyMatched++;
 			}
-			if(matched==0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
+			if(correctlyFound==0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
 				ingredientsCorrectlyGuessedAsEmpty++;
 			}
 			productsMatched+=correctlyFound;

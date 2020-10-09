@@ -971,8 +971,8 @@ public class WordClasifier {
             for (String keyword : freshTypeKeywords) {
                 for (String type : typeOf) {
                     if (type.equals(keyword)) {
-                     //   addProductResult(parsingAPhrase, index,t, singleWordsApiResult);
                         markSingleWordResultWithProductTypeFound(parsingAPhrase, index, singleWordsApiResult,ProductType.fresh, keyword);
+
                         return true;
                     }
                 }
@@ -1385,7 +1385,7 @@ public class WordClasifier {
 
                             if (wordResults.size() < LearningConstants.tooMuchWordsApiResultsToSaveAsPhrase) {
                                 PhraseFound phraseFound = addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index), PhraseFoundDataSource.WordsApi);
-                          //      checkForProductTypeProperties(parsingAPhrase, productTypeRecognized, t, phraseFound);
+                    //            checkForProductTypeProperties(parsingAPhrase, productTypeRecognized, t, phraseFound);
 
                             }
                             return true;
