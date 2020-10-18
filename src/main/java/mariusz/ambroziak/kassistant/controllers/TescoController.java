@@ -57,6 +57,20 @@ public class TescoController {
 
 	@CrossOrigin
 	@ResponseBody
+	@RequestMapping("/morrisonsParse")
+	public ParsingResultList morrisonsParse(@RequestParam(value="param", required = false) String param) throws IOException{
+		ParsingResultList retValue=null;
+		if(param==null||param.isEmpty()){
+			retValue=this.shopProductParser.parseAllTestCasesAndSaveResults();
+		}else{
+			retValue=this.shopProductParser.morrisonsSearchForAndSaveResults(param);
+		}
+		return retValue;
+
+	}
+
+	@CrossOrigin
+	@ResponseBody
 	@RequestMapping("/tescoParseFromFile")
     public ParsingResultList tescoParseFromFile() throws IOException{
     	ParsingResultList retValue=this.shopProductParser.parseAllTestCases();

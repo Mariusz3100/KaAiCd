@@ -21,6 +21,7 @@ import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResult;
 import mariusz.ambroziak.kassistant.pojos.parsing.ParsingResultList;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductNamesComparison;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
+import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
@@ -103,6 +104,23 @@ public class ShopProductParser  extends AbstractParser {
 
 	}
 
+
+	public ParsingResultList morrisonsSearchForAndSaveResults(String phrase) {
+		List<Morrisons_Product> inputs= this.morrisonProductRepository.findByNameContainingIgnoreCase(phrase);
+
+		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
+				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
+
+		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
+		ParsingBatch batchObject=new ParsingBatch();
+		parsingBatchRepository.save(batchObject);
+		parsingProcessObjects.forEach(parsingProcessObject->saveResultInDb(parsingProcessObject,batchObject));
+
+
+		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
+		return retValue;
+
+	}
 
 
 	public ParsingResultList tescoSearchForResults(String phrase) {
