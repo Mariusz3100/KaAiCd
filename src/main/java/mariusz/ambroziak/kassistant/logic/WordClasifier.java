@@ -92,6 +92,7 @@ public class WordClasifier {
     public static ArrayList<String> usdaIgnoreKeywords;
 
     public static ArrayList<String> impromperProductPropertyKeywords;
+    public static ArrayList<String> impromperProductKeywords;
     public static ArrayList<String> impromperQuantityKeywords;
 
     static {
@@ -170,12 +171,16 @@ public class WordClasifier {
         impromperProductPropertyKeywords.add("grated");
         impromperProductPropertyKeywords.add("ground");
 
+        impromperProductKeywords=new ArrayList<>();
+        impromperProductKeywords.add("chilli");
+
         impromperQuantityKeywords=new ArrayList<>();
         impromperQuantityKeywords.add("medium");
         impromperQuantityKeywords.add("clove");
 
         usdaIgnoreKeywords=new ArrayList<>();
         usdaIgnoreKeywords.add("slices");
+        usdaIgnoreKeywords.add("regular");
 
         foodFlavouredKeywords=new ArrayList<>();
         foodFlavouredKeywords.add("flavoured");
@@ -224,6 +229,7 @@ public class WordClasifier {
 
         anyFoodDepartmentKeyword =new ArrayList<>();
         anyFoodDepartmentKeyword.add("Food Cupboard");
+        anyFoodDepartmentKeyword.add("Food & Groceries");
     }
 
 
@@ -286,7 +292,15 @@ public class WordClasifier {
     protected void categorizeSingleTokens(AbstractParsingObject parsingAPhrase) {
 
         for (int i = 0; i < parsingAPhrase.getFinalResults().size(); i++) {
+            WordType improperlyFoundType = improperlyFindType(parsingAPhrase, i, parsingAPhrase.getFutureTokens());
 
+            if (improperlyFoundType!= null){
+                QualifiedToken qt = parsingAPhrase.getFinalResults().get(i);
+                qt.setWordType(improperlyFoundType);
+                qt.setReasoning("[improperly found, for now]");
+                parsingAPhrase.addResult(i, qt);
+
+            }else{
                 try {
                     QualifiedToken qt = parsingAPhrase.getFinalResults().get(i);
                     if (qt.getWordType() == null) {
@@ -297,6 +311,7 @@ public class WordClasifier {
                     }
                 } catch (WordNotFoundException e) {
                     e.printStackTrace();
+                }
             }
 
         }
@@ -1413,6 +1428,9 @@ public class WordClasifier {
 
          if (impromperProductPropertyKeywords.contains(t.getText().toLowerCase()))
             return WordType.ProductPropertyElement;
+
+        if (impromperProductKeywords.contains(t.getText().toLowerCase()))
+            return WordType.ProductElement;
 
         return null;
     }
