@@ -11,6 +11,7 @@ public class MatchingProcessResultList {
     private int ingredientsTotal;
     private int productsFound;
     private int improperProductsFound;
+    private int productsMissing;
     private int productsTotal;
 
     public List<MatchingProcessResult> getResults() {
@@ -78,5 +79,14 @@ public class MatchingProcessResultList {
 
     public void setIngredientsCorrectlyGuessedAsEmpty(int ingredientsCorrectlyGuessedAsEmpty) {
         this.ingredientsCorrectlyGuessedAsEmpty = ingredientsCorrectlyGuessedAsEmpty;
+    }
+
+
+    public int getProductsMissing() {
+        return productsMissing;
+    }
+
+    public void setProductsMissing(int productsMissing) {
+        this.productsMissing = productsMissing;
     }
 }

@@ -86,11 +86,19 @@ public class AbstractParser {
             phrase=phrase.replaceAll("&", " and ").replaceAll("  "," ");
         }
 
+        if(phrase.toLowerCase().indexOf("mayo")>0) {
+            //in case we have both mayonnaise and mayo
+            phrase=phrase.replaceAll("mayonnaise", " mayo ").replaceAll("  "," ");
+
+            phrase=phrase.replaceAll("mayo", " mayonnaise ").replaceAll("  "," ");
+            phrase=phrase.replaceAll("Mayo", " mayonnaise ").replaceAll("  "," ");
+        }
+
         if(phrase.indexOf("w/ ")>0) {
             phrase=phrase.replaceAll("w/ ", "with ");
         }
 
 
-        return phrase;
+        return phrase.trim();
     }
 }
