@@ -75,7 +75,10 @@ public class PhraseDependenciesComparator {
                 String missingOne="";
 
 
-                List<Token> missingWords = secondTokenized.getTokens().stream().filter(st -> !st.getPos().equals(PythonSpacyLabels.punctPos) && firstTokenized.getTokens().stream().filter(ft -> ft.getLemma().equals(st.getLemma())).count() == 0).collect(Collectors.toList());
+                List<Token> missingWords = secondTokenized.getTokens().stream()
+                        .filter(st -> !st.getPos().equals(PythonSpacyLabels.punctPos) && firstTokenized.getTokens().stream().filter(ft -> ft.getLemma().equals(st.getLemma())).count() == 0)
+                        .filter(st-> !WordClasifier.usdaIgnoreKeywords.stream().anyMatch(s -> s.equals(st.getText())))
+                        .collect(Collectors.toList());
 
                 if(missingWords.size()==0){
                     return  new PhraseDependenciesComparatotionResult(true);
