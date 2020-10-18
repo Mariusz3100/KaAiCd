@@ -33,8 +33,6 @@ public class LogicController {
 	@Autowired
 	TescoFromFileService fileTescoService;
 	@Autowired
-	IngredientProductMatchingService ingredientProductMatchingService;
-	@Autowired
 	RecipeSearchApiClient recipeSearchApiClient;
 
 	@Autowired
@@ -55,47 +53,7 @@ public class LogicController {
 
 	}
 
-	@CrossOrigin
-	@RequestMapping("/parseRecipe")
-	@ResponseBody
-	public MatchingProcessResultList parseRecipe(@RequestParam(value="param", defaultValue="") String param) throws IOException{
 
-		List<MatchingProcessResult> results = ingredientProductMatchingService.parseMatchAndJudgeResultsFromDbMatches(param);
-		MatchingProcessResultList calculated=new MatchingProcessResultList(results);
-
-		int ingredientsCorrectlyMatched=0;
-		int ingredientsCorrectlyGuessedAsEmpty=0;
-		int productsTotal=0;
-		int productsIncorrectlyMatched=0;
-		int productsMatched=0;
-
-		for(MatchingProcessResult mpr:calculated.getResults()){
-			long matched=mpr.getProductsConsideredParsingResults().stream()
-					.filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()==productMatchingResult.isExpectedVerdict())
-					.count();
-			long correctlyFound=mpr.getProductsConsideredParsingResults().stream()
-					.filter(productMatchingResult -> productMatchingResult.isCalculatedVerdict()&&productMatchingResult.isExpectedVerdict())
-					.count();
-
-			if(correctlyFound>0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
-				ingredientsCorrectlyMatched++;
-			}
-			if(correctlyFound==0&&mpr.getIncorrectProductsConsideredParsingResults().isEmpty()&&mpr.getProductNamesNotFound().isEmpty()){
-				ingredientsCorrectlyGuessedAsEmpty++;
-			}
-			productsMatched+=correctlyFound;
-			productsTotal+=mpr.getProductsConsideredParsingResults().size();
-			productsIncorrectlyMatched+=mpr.getIncorrectProductsConsideredParsingResults().size()+mpr.getProductNamesNotFound().size();
-		}
-		calculated.setIngredientsCovered(ingredientsCorrectlyMatched);
-		calculated.setProductsFound(productsMatched);
-		calculated.setIngredientsTotal(calculated.getResults().size());
-		calculated.setProductsTotal(productsTotal);
-		calculated.setIngredientsCorrectlyGuessedAsEmpty(ingredientsCorrectlyGuessedAsEmpty);
-		calculated.setImproperProductsFound(productsIncorrectlyMatched);
-		return calculated;
-
-	}
 
 
 	@CrossOrigin
