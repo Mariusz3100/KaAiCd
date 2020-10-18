@@ -287,16 +287,16 @@ public class WordClasifier {
 
         for (int i = 0; i < parsingAPhrase.getFinalResults().size(); i++) {
 
-            try {
-                QualifiedToken qt = parsingAPhrase.getFinalResults().get(i);
-                if(qt.getWordType()==null) {
-                    boolean found=checkAndMarkForKeywords(qt);
-                    if(!found) {
-                        searchDbAndApis(parsingAPhrase, i, qt);
+                try {
+                    QualifiedToken qt = parsingAPhrase.getFinalResults().get(i);
+                    if (qt.getWordType() == null) {
+                        boolean found = checkAndMarkForKeywords(qt);
+                        if (!found) {
+                            searchDbAndApis(parsingAPhrase, i, qt);
+                        }
                     }
-                }
-            } catch (WordNotFoundException e) {
-                e.printStackTrace();
+                } catch (WordNotFoundException e) {
+                    e.printStackTrace();
             }
 
         }
@@ -434,13 +434,7 @@ public class WordClasifier {
     private void calculateBasedOnResults(AbstractParsingObject parsingAPhrase, List<PhraseFound> phrasesFound) {
         for (PhraseFound pf : phrasesFound) {
             if (pf.getPf_id() != null && pf.getTypesFoundForPhraseAndBase() != null) {
-                Set<PhraseFoundProductType> typesFoundForPhraseAndBase = pf.getTypesFoundForPhraseAndBase();
-                typesFoundForPhraseAndBase = typesFoundForPhraseAndBase.stream()
-                        .filter(phraseFoundProductType -> !ProductType.unknown.equals(phraseFoundProductType.getProductType()))
-                        .filter(phraseFoundProductType -> !ProductType.notFood.equals(phraseFoundProductType.getProductType()))
-                        .collect(Collectors.toSet());
-
-                ProductType calculatedType = PhraseFound.getWeightedLeadingProductTypeFromResults(typesFoundForPhraseAndBase);
+                ProductType calculatedType = pf.getWeightedNonEmptyLeadingProductTypeFromResults();
 
                 if (!ProductType.unknown.equals(calculatedType)) {
                     parsingAPhrase.getProductTypeReasoning().put("[DB from a phrase: " + pf.getPhrase() + "]", calculatedType);
@@ -462,7 +456,7 @@ public class WordClasifier {
         if(noOther){
 
             for (PhraseFound pf:phrasesFound){
-                ProductType weightedLeadingProductTypeFromApis = pf.getWeightedLeadingProductTypeFromApis();
+                ProductType weightedLeadingProductTypeFromApis = pf.getWeightedNonEmptyLeadingProductTypeFromApis();
 
                 if(weightedLeadingProductTypeFromApis!=null&&found.getPriority()<weightedLeadingProductTypeFromApis.getPriority()){
                     found=weightedLeadingProductTypeFromApis;
@@ -669,7 +663,7 @@ public class WordClasifier {
     protected UsdaResponse findInUsdaApiExceptLegacy(String quantitylessTokensWithPluses, int i) {
         List<String> types = new ArrayList<>();
         types.add("Survey (FNDDS)");
-     //   types.add("SR Legacy");
+//        types.add("SR Legacy");
         types.add("Foundation");
         types.add("Branded");
 
@@ -1417,7 +1411,7 @@ public class WordClasifier {
         if (impromperQuantityKeywords.contains(t.getText().toLowerCase()))
             return WordType.QuantityElement;
 
-        if (impromperProductPropertyKeywords.contains(t.getText().toLowerCase()))
+         if (impromperProductPropertyKeywords.contains(t.getText().toLowerCase()))
             return WordType.ProductPropertyElement;
 
         return null;
