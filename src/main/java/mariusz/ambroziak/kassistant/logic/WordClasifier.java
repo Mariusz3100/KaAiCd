@@ -663,30 +663,30 @@ public class WordClasifier {
     protected UsdaResponse findInUsdaApiWithRespectForTypes(String quantitylessTokensWithPluses, int i) {
         return this.findInUsdaApiExceptBranded(quantitylessTokensWithPluses,i);
     }
-    protected UsdaResponse findInUsdaApiExceptBrandedOrLegacy(String quantitylessTokensWithPluses, int i) {
-        List<String> types = new ArrayList<>();
-        types.add("Survey (FNDDS)");
-        types.add("SR Legacy");
-        types.add("Foundation");
-
-
-
-
-        return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i,types);
-    }
-
-    protected UsdaResponse findInUsdaApiExceptLegacy(String quantitylessTokensWithPluses, int i) {
-        List<String> types = new ArrayList<>();
-        types.add("Survey (FNDDS)");
+//    protected UsdaResponse findInUsdaApiExceptBrandedOrLegacy(String quantitylessTokensWithPluses, int i) {
+//        List<String> types = new ArrayList<>();
+//        types.add("Survey (FNDDS)");
 //        types.add("SR Legacy");
-        types.add("Foundation");
-        types.add("Branded");
-
-
-
-
-        return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i,types);
-    }
+//        types.add("Foundation");
+//
+//
+//
+//
+//        return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i,types);
+//    }
+//
+//    protected UsdaResponse findInUsdaApiExceptLegacy(String quantitylessTokensWithPluses, int i) {
+//        List<String> types = new ArrayList<>();
+//        types.add("Survey (FNDDS)");
+//     //   types.add("SR Legacy");
+//        types.add("Foundation");
+//        types.add("Branded");
+//
+//
+//
+//
+//        return this.usdaApiClient.findInApi(quantitylessTokensWithPluses, i,types);
+//    }
     protected UsdaResponse findInUsdaApiExceptBranded(String phrase, int i) {
         List<String> types = new ArrayList<>();
         types.add("Survey (FNDDS)");
@@ -979,7 +979,7 @@ public class WordClasifier {
             ArrayList<String> typeOf = singleWordsApiResult.getTypeOf();
             for (String keyword : freshTypeKeywords) {
                 for (String type : typeOf) {
-                    if (type.equals(keyword)) {
+                    if (type.equals(keyword)||type.endsWith(keyword)) {
                         markSingleWordResultWithProductTypeFound(parsingAPhrase, index, singleWordsApiResult,ProductType.fresh, keyword);
 
                         return true;
@@ -1274,6 +1274,17 @@ public class WordClasifier {
             PhraseFound phraseFound = dbResults.get(0);
             addExistingInDbPhrase(parsingAPhrase, phraseFound);
 
+            ProductType leadingProductType= phraseFound.getWeightedNonEmptyLeadingProductTypeFromApis();
+
+            if(!leadingProductType.equals(ProductType.unknown)){
+                String key="[DB leading type from api: "+leadingProductType+"]";
+              //  parsingAPhrase.getProductTypeReasoningFromSinglePhrase().put(key,leadingProductType);
+            }else{
+                leadingProductType=phraseFound.getWeightedNonEmptyLeadingProductTypeFromResults();
+
+            }
+
+
 
 
             QualifiedToken qualifiedToken = new QualifiedToken(t,phraseFound.getWordType());
@@ -1377,7 +1388,7 @@ public class WordClasifier {
         ArrayList<WordsApiResult> wordResults = new ArrayList<WordsApiResult>();
         boolean found = searchForAllPossibleMeaningsInWordsApi(parsingAPhrase, wordResults, index, t);
         if (!found) {
-            if (wordResults != null && !wordResults.isEmpty()) {
+            if (wordResults != null && !wordResults.isEmpty()&&wordResults.size() < LearningConstants.tooMuchWordsApiResultsToSaveAsPhrase) {
                 WordsApiResult quantityTypeRecognized = checkQuantityTypesForWordObject(wordResults);
                 if (quantityTypeRecognized != null) {
                     addQuantityResult(parsingAPhrase, index, t, quantityTypeRecognized);
@@ -1392,11 +1403,11 @@ public class WordClasifier {
                         if (productTypeRecognized != null) {
                             addProductResult(parsingAPhrase, index, t, productTypeRecognized);
 
-                            if (wordResults.size() < LearningConstants.tooMuchWordsApiResultsToSaveAsPhrase) {
+
                                 PhraseFound phraseFound = addFoundSingleWordPhrase(parsingAPhrase, parsingAPhrase.getFinalResults().get(index), PhraseFoundDataSource.WordsApi);
                     //            checkForProductTypeProperties(parsingAPhrase, productTypeRecognized, t, phraseFound);
 
-                            }
+
                             return true;
                         } else {
                             //	parsingAPhrase.addResult(index, new QualifiedToken(t,null));
