@@ -173,6 +173,8 @@ public class WordClasifier {
 
         impromperProductKeywords=new ArrayList<>();
         impromperProductKeywords.add("chilli");
+        impromperProductKeywords.add("pea");
+        impromperProductKeywords.add("sugar");
 
         impromperQuantityKeywords=new ArrayList<>();
         impromperQuantityKeywords.add("medium");
@@ -441,7 +443,7 @@ public class WordClasifier {
 
 
         }else {
-         //   calculateBasedOnResults(parsingAPhrase, phrasesFound);
+            calculateBasedOnResults(parsingAPhrase, phrasesFound);
         }
 
     }
@@ -1396,7 +1398,9 @@ public class WordClasifier {
                 } else {
 
 
-                    if(!checkAndMarkSingleWordResultWithProductTypeProperties(parsingAPhrase, wordResults,index,t)) {
+                    if(checkAndMarkSingleWordResultWithProductTypeProperties(parsingAPhrase, wordResults,index,t)) {
+                        return true;
+                    }else {
 
 
                         WordsApiResult productTypeRecognized = checkProductTypesForWordObject(wordResults);
