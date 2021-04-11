@@ -6,7 +6,6 @@ import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductLearningCase;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.ProductLearningCaseRepository;
 import mariusz.ambroziak.kassistant.hibernate.parsing.repository.TescoProductRepository;
 import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
-import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ public class TescoDetailsTestCases {
 
 	private ResourceLoader resourceLoader;
 	private Resource inputFileResource;
-	private TescoDetailsApiClientService tescoDetailsService;
+//	private TescoDetailsApiClientService tescoDetailsService;
 	private ProductLearningCaseRepository learningCaseRepository;
 
 	@Autowired
@@ -40,10 +39,10 @@ public class TescoDetailsTestCases {
 	private TescoProductRepository productRepository;
 
 	@Autowired
-	public TescoDetailsTestCases(ResourceLoader resourceLoader, TescoDetailsApiClientService searchService,ProductLearningCaseRepository learningCaseRepository) {
+	public TescoDetailsTestCases(ResourceLoader resourceLoader, /*TescoDetailsApiClientService searchService,*/ProductLearningCaseRepository learningCaseRepository) {
 		this.resourceLoader = resourceLoader;
 		this.inputFileResource = this.resourceLoader.getResource("classpath:/teachingResources/tomatoProducts");
-		this.tescoDetailsService = searchService;
+	//	this.tescoDetailsService = searchService;
 		this.learningCaseRepository=learningCaseRepository;
 
 

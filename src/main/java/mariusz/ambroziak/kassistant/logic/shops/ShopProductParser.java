@@ -24,7 +24,6 @@ import mariusz.ambroziak.kassistant.pojos.shop.ProductParsingProcessObject;
 import mariusz.ambroziak.kassistant.webclients.morrisons.Morrisons_Product;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
 import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.WordComparisonResult;
-import mariusz.ambroziak.kassistant.webclients.tesco.TescoDetailsApiClientService;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoFromFileService;
 import mariusz.ambroziak.kassistant.webclients.tesco.Tesco_Product;
 import mariusz.ambroziak.kassistant.webclients.tesco.TescoApiClientService;
@@ -48,8 +47,8 @@ public class ShopProductParser  extends AbstractParser {
 	@Autowired
 	private TescoApiClientService tescoApiClientService;
 
-	@Autowired
-	private TescoDetailsApiClientService tescoDetailsApiClientService;
+//	@Autowired
+//	private TescoDetailsApiClientService tescoDetailsApiClientService;
 	@Autowired
 	private TescoDetailsTestCases tescoTestCases;
 	@Autowired
@@ -87,29 +86,29 @@ public class ShopProductParser  extends AbstractParser {
 
 
 
-	public ParsingResultList tescoSearchForAndSaveResults(String phrase) {
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
-
-		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
-				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
-
-		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
-		ParsingBatch batchObject=new ParsingBatch();
-		parsingBatchRepository.save(batchObject);
-		parsingProcessObjects.forEach(parsingProcessObject->saveResultInDb(parsingProcessObject,batchObject));
-
-
-		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
-		return retValue;
-
-	}
+//	public ParsingResultList tescoSearchForAndSaveResults(String phrase) {
+//		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
+//
+//		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
+//				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
+//
+//		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
+//		ParsingBatch batchObject=new ParsingBatch();
+//		parsingBatchRepository.save(batchObject);
+//		parsingProcessObjects.forEach(parsingProcessObject->saveResultInDb(parsingProcessObject,batchObject));
+//
+//
+//		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
+//		return retValue;
+//
+//	}
 
 
 	public ParsingResultList morrisonsSearchForAndSaveResults(String phrase) {
 		List<Morrisons_Product> inputs= this.morrisonProductRepository.findByNameContainingIgnoreCase(phrase);
 
 		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
-				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
+				.map(s->new ProductParsingProcessObject(s,new ProductLearningCase())).collect(Collectors.toList());
 
 		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
 		ParsingBatch batchObject=new ParsingBatch();
@@ -123,30 +122,7 @@ public class ShopProductParser  extends AbstractParser {
 	}
 
 
-	public ParsingResultList tescoSearchForResults(String phrase) {
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
 
-		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
-				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
-
-		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
-
-		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
-		return retValue;
-
-	}
-
-	public List<ProductParsingProcessObject> tescoSearchForParsings(String phrase) {
-		List<Tesco_Product> inputs= this.tescoApiClientService.getProduktsFor(phrase,5);
-
-		List<ProductParsingProcessObject> parsingProcessObjects=inputs.stream()
-				.map(s->new ProductParsingProcessObject(tescoDetailsApiClientService.getFullDataFromDbOrApi(s.getUrl()),new ProductLearningCase())).collect(Collectors.toList());
-		ParsingResultList retValue = parseListOfCases(parsingProcessObjects);
-
-		retValue.getResults().forEach(pr->pr.setExpectedResult(null));
-		return parsingProcessObjects;
-
-	}
 
 	private void saveFoundPhrasesInDb(ProductParsingProcessObject parsingAPhrase, ProductParsingResult productParsingResult) {
 		List<PhraseFound> phrasesFound = parsingAPhrase.getPhrasesFound();
