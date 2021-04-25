@@ -27,10 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -54,8 +51,8 @@ public class UsdaWordsClasifierService extends WordClasifier {
     @Autowired
     public UsdaWordsClasifierService(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
-        this.surveyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/surveyFood.csv");
-        this.legacyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/sr_legacy_food.csv");
+        this.surveyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/usdaInputs/surveyFood.csv");
+        this.legacyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/usdaInputs/sr_legacy_food.csv");
 
     }
 
@@ -69,6 +66,9 @@ public class UsdaWordsClasifierService extends WordClasifier {
         String line=br.readLine();
 
         while(line!=null) {
+            if(line.startsWith("#"))
+                line=br.readLine();
+
             if(line.startsWith("\""))
                 line=line.substring(1);
 
@@ -90,11 +90,7 @@ public class UsdaWordsClasifierService extends WordClasifier {
                     try {
                         ArrayList<String> typesOf = wordsApiClient.getTypesOf(productNamePart);
 
-
-
-
-
-                    } catch (WordNotFoundException e) {
+                   } catch (WordNotFoundException e) {
                         e.printStackTrace();
                     }
                 }
@@ -108,7 +104,30 @@ public class UsdaWordsClasifierService extends WordClasifier {
         }
 
 
+    public List<List<String>> getUsdaData() throws IOException {
+        List<List<String>> retValue=new ArrayList<>();
+        InputStream inputStream = surveyFoodFileResource.getInputStream();
+        BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
+        String line=br.readLine();
 
+        while(line!=null) {
+            if(line.startsWith("#"))
+                line=br.readLine();
+
+            if(line.startsWith("\""))
+                line=line.substring(1);
+
+            if(line.endsWith("\""))
+                line=line.substring(0,line.length()-1);
+
+            String[] split = line.split("\",\"");
+            retValue.add(Arrays.asList(split));
+            line=br.readLine();
+        }
+
+        return retValue;
+
+    }
 
 
 
