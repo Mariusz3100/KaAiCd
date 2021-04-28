@@ -1,23 +1,13 @@
 package mariusz.ambroziak.kassistant.logic.usda;
 
-import mariusz.ambroziak.kassistant.enums.StatsWordType;
-import mariusz.ambroziak.kassistant.hibernate.parsing.model.IngredientLearningCase;
-import mariusz.ambroziak.kassistant.hibernate.parsing.model.PhraseFound;
-import mariusz.ambroziak.kassistant.hibernate.parsing.model.ProductParsingResult;
-import mariusz.ambroziak.kassistant.hibernate.statistical.model.ProductWordOccurence;
-import mariusz.ambroziak.kassistant.hibernate.statistical.model.Word;
 import mariusz.ambroziak.kassistant.hibernate.statistical.repository.WordRepository;
 import mariusz.ambroziak.kassistant.logic.WordClasifier;
-import mariusz.ambroziak.kassistant.pojos.words.WordAssociacion;
-import mariusz.ambroziak.kassistant.pojos.words.WordStatData;
-import mariusz.ambroziak.kassistant.pojos.words.WordStatParsingResult;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.Token;
-import mariusz.ambroziak.kassistant.webclients.spacy.tokenization.TokenizationResults;
-import mariusz.ambroziak.kassistant.webclients.usda.SingleResult;
-import mariusz.ambroziak.kassistant.webclients.usda.UsdaResponse;
+import mariusz.ambroziak.kassistant.pojos.usda.Classification;
+import mariusz.ambroziak.kassistant.pojos.usda.ParsingFromUsdaResult;
+import mariusz.ambroziak.kassistant.pojos.usda.UsdaElementParsed;
+import mariusz.ambroziak.kassistant.pojos.usda.UsdaLineParsed;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordNotFoundException;
 import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiClient;
-import mariusz.ambroziak.kassistant.webclients.wordsapi.WordsApiResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -42,17 +32,21 @@ public class UsdaWordsClasifierService extends WordClasifier {
 
     @Autowired
     private ResourceLoader resourceLoader;
-    private Resource surveyFoodFileResource;
+//    private Resource surveyFoodFileResource;
     private Resource legacyFoodFileResource;
     //private Resource outputFileResource;
     @Autowired
     protected WordsApiClient wordsApiClient;
 
+
+    public static String alphanumericPattern="([a-zA-Z]*)";
+
+
     @Autowired
     public UsdaWordsClasifierService(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
-        this.surveyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/usdaInputs/surveyFood.csv");
-        this.legacyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/usdaInputs/sr_legacy_food.csv");
+//        this.surveyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/usdaInputs/surveyFood.csv");
+        this.legacyFoodFileResource=this.resourceLoader.getResource("classpath:/teachingResources/usdaInputs/legacy_food_sorted.csv");
 
     }
 
@@ -61,7 +55,7 @@ public class UsdaWordsClasifierService extends WordClasifier {
         ArrayList<Map<String,Integer>> resultsMapList=new ArrayList<>();
 
 
-        InputStream inputStream = surveyFoodFileResource.getInputStream();
+        InputStream inputStream = legacyFoodFileResource.getInputStream();
         BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
         String line=br.readLine();
 
@@ -104,9 +98,9 @@ public class UsdaWordsClasifierService extends WordClasifier {
         }
 
 
-    public List<List<String>> getUsdaData() throws IOException {
+    public List<List<String>> getUsdaLegacyData() throws IOException {
         List<List<String>> retValue=new ArrayList<>();
-        InputStream inputStream = surveyFoodFileResource.getInputStream();
+        InputStream inputStream = legacyFoodFileResource.getInputStream();
         BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
         String line=br.readLine();
 
@@ -120,7 +114,7 @@ public class UsdaWordsClasifierService extends WordClasifier {
             if(line.endsWith("\""))
                 line=line.substring(0,line.length()-1);
 
-            String[] split = line.split("\",\"");
+            String[] split = line.split(",");
             retValue.add(Arrays.asList(split));
             line=br.readLine();
         }
@@ -128,6 +122,31 @@ public class UsdaWordsClasifierService extends WordClasifier {
         return retValue;
 
     }
+
+
+    public ParsingFromUsdaResult getUsdaLegacyDataWithTypes() throws IOException {
+        List<List<String>> usdaData = getUsdaLegacyData();
+        ParsingFromUsdaResult retValue=new ParsingFromUsdaResult();
+        TreeMap<String,UsdaElementParsed> productWordsFound=new TreeMap<>();
+
+
+
+        for(List<String> line:usdaData){
+
+            if(line.size()==1&&Pattern.matches(alphanumericPattern,line.get(0))){
+                String word = line.get(0);
+                UsdaElementParsed element=new UsdaElementParsed(word, Classification.FOOD);
+                UsdaLineParsed usdaLineParsed=new UsdaLineParsed(word,element);
+                retValue.getLines().add(usdaLineParsed);
+                productWordsFound.put(word,element);
+
+            }
+
+        }
+        retValue.setProductWords(productWordsFound.values().stream().collect(Collectors.toList()));
+        return retValue;
+    }
+
 
 
 
