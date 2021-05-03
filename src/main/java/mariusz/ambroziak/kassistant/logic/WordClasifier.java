@@ -1385,7 +1385,7 @@ public class WordClasifier {
         return findInUsdaApiWithRespectForTypes(text,10);
     }
 
-    private boolean checkWithResultsFromWordsApi(AbstractParsingObject parsingAPhrase, int index, Token t)
+    public boolean checkWithResultsFromWordsApi(AbstractParsingObject parsingAPhrase, int index, Token t)
             throws WordNotFoundException {
         ArrayList<WordsApiResult> wordResults = new ArrayList<WordsApiResult>();
         boolean found = searchForAllPossibleMeaningsInWordsApi(parsingAPhrase, wordResults, index, t);

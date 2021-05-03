@@ -2,9 +2,9 @@ package mariusz.ambroziak.kassistant.pojos.usda;
 
 public class UsdaElementParsed {
     private String text;
-    private Classification classification;
-
-
+    //private Classification classification;
+    private Classification classificationCalculated;
+    private Classification classificationExpected;
 
     public String getText() {
         return text;
@@ -14,21 +14,36 @@ public class UsdaElementParsed {
         this.text = text;
     }
 
-    public Classification getClassification() {
-        return classification;
+    public Classification getClassificationCalculated() {
+        return classificationCalculated;
     }
 
-    public void setClassification(Classification classification) {
-        this.classification = classification;
+    public void setClassificationCalculated(Classification classificationCalculated) {
+        this.classificationCalculated = classificationCalculated;
     }
+
+    public Classification getClassificationExpected() {
+        return classificationExpected;
+    }
+
+    public void setClassificationExpected(Classification classificationExpected) {
+        this.classificationExpected = classificationExpected;
+    }
+
 
     public UsdaElementParsed(String text) {
         this.text = text;
-        this.classification = Classification.NONE;
+        this.classificationCalculated = Classification.NONE;
+        this.classificationExpected = Classification.NONE;
+
     }
 
-    public UsdaElementParsed(String text, Classification classification) {
+
+    public UsdaElementParsed(String text, Classification classificationCalculated, Classification classificationExpected) {
         this.text = text;
-        this.classification = classification;
+        this.classificationCalculated = classificationCalculated;
+        this.classificationExpected = classificationExpected;
     }
+
+
 }

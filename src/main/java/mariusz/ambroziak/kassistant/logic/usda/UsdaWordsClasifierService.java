@@ -22,13 +22,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class UsdaWordsClasifierService extends WordClasifier {
+public class UsdaWordsClasifierService {
 
     @Autowired
     WordRepository wordRepository;
 
-    @Autowired
-    UsdaPhrasesClasifier usdaPhrasesClasifier;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -124,7 +122,8 @@ public class UsdaWordsClasifierService extends WordClasifier {
     }
 
 
-    public ParsingFromUsdaResult getUsdaLegacyDataWithTypes() throws IOException {
+
+        public ParsingFromUsdaResult getUsdaLegacyDataWithTypes() throws IOException {
         List<List<String>> usdaData = getUsdaLegacyData();
         ParsingFromUsdaResult retValue=new ParsingFromUsdaResult();
         TreeMap<String,UsdaElementParsed> productWordsFound=new TreeMap<>();
@@ -135,7 +134,8 @@ public class UsdaWordsClasifierService extends WordClasifier {
 
             if(line.size()==1&&Pattern.matches(alphanumericPattern,line.get(0))){
                 String word = line.get(0);
-                UsdaElementParsed element=new UsdaElementParsed(word, Classification.FOOD);
+                UsdaElementParsed element=new UsdaElementParsed(word);
+                element.setClassificationCalculated(Classification.FOOD);
                 UsdaLineParsed usdaLineParsed=new UsdaLineParsed(word,element);
                 retValue.getLines().add(usdaLineParsed);
                 productWordsFound.put(word,element);

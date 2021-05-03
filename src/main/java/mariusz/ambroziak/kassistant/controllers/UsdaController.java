@@ -1,5 +1,6 @@
 package mariusz.ambroziak.kassistant.controllers;
 
+import mariusz.ambroziak.kassistant.logic.usda.UsdaClasifierJudgeService;
 import mariusz.ambroziak.kassistant.logic.usda.UsdaWordsClasifierService;
 import mariusz.ambroziak.kassistant.pojos.usda.ParsingFromUsdaResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ import java.util.List;
 public class UsdaController {
     @Autowired
     UsdaWordsClasifierService usdaWordsClasifierService;
+
+    @Autowired
+    UsdaClasifierJudgeService usdaClasifierJudgeService;
 
     @CrossOrigin
     @ResponseBody
@@ -35,7 +39,7 @@ public class UsdaController {
 //
 //
 //		return parseFromFile;
-        return this.usdaWordsClasifierService.getUsdaLegacyDataWithTypes();
+        return this.usdaClasifierJudgeService.getUsdaAndJudgeLegacyDataWithTypes();
 
     }
 

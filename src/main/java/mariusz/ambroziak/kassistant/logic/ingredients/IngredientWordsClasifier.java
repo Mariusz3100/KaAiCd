@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class IngredientWordsClasifier extends WordClasifier {
 
     @Override
-    protected void calculateProductType(AbstractParsingObject parsingAPhrase) {
+    public void calculateProductType(AbstractParsingObject parsingAPhrase) {
         super.calculateProductType(parsingAPhrase);
 
         if(parsingAPhrase.getFoodTypeClassified()==null||parsingAPhrase.getFoodTypeClassified()==ProductType.unknown) {
