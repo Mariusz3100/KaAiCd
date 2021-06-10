@@ -34,7 +34,8 @@ public class UsdaClasifierJudgeService {
             System.out.println(parseObj.getFoodTypeClassified());
             String productWordText=productWord.getText();
             for(int i=0;i<parseObj.getFinalResults().size();i++){
-                if(parseObj.getFinalResults().get(i).getText().equals(productWordText)){
+                if(parseObj.getFinalResults().get(i).getText().equals(productWordText)
+                        &&WordType.ProductElement.equals(parseObj.getFinalResults().get(i).getWordType())){
                     productWord.setClassificationExpected(Classification.FOOD);
                 }
 
