@@ -1,10 +1,15 @@
 package mariusz.ambroziak.kassistant.pojos.usda;
 
+import java.util.List;
+
 public class UsdaElementParsed {
     private String text;
     //private Classification classification;
     private Classification classificationCalculated;
     private Classification classificationExpected;
+
+    private List<String> typeOfList;
+
 
     public String getText() {
         return text;
@@ -20,6 +25,14 @@ public class UsdaElementParsed {
 
     public void setClassificationCalculated(Classification classificationCalculated) {
         this.classificationCalculated = classificationCalculated;
+    }
+
+    public List<String> getTypeOfList() {
+        return typeOfList;
+    }
+
+    public void setTypeOfList(List<String> typeOfList) {
+        this.typeOfList = typeOfList;
     }
 
     public Classification getClassificationExpected() {

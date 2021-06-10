@@ -1484,6 +1484,34 @@ public class WordClasifier {
         }
     }
 
+    public ArrayList<WordsApiResult> searchForAllPossibleMeaningsInWordsApi(String word) {
+
+        if (word == null||word.replaceAll(" ", "").equals("")) {
+            return new ArrayList<>();
+        } else {
+
+
+            ArrayList<WordsApiResult> wordResults=new ArrayList<>();
+            wordResults.addAll(wordsApiClient.searchFor(word));
+
+            TokenizationResults parse = this.tokenizator.parse(word);
+            String lemma=parse.getTokens().get(0).getLemma();
+            ifEmptyUpdateForLemma(lemma, wordResults);
+
+//            not needed
+//            if (canWeFindQuantityInConvertApi(parsingAPhrase, index, t, token, lemma, wordResults))
+//                return true;
+
+            try {
+                ifEmptyUpdateForWikipediaBaseWord(wordResults, word);
+            } catch (WordNotFoundException e) {
+                e.printStackTrace();
+            }
+            return wordResults;
+        }
+    }
+
+
     private void ifEmptyUpdateForWikipediaBaseWord(ArrayList<WordsApiResult> wordResults, String token)
             throws WordNotFoundException {
         if (wordResults == null || wordResults.isEmpty()) {

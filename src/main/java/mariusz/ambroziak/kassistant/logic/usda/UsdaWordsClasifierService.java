@@ -113,7 +113,9 @@ public class UsdaWordsClasifierService {
                 line=line.substring(0,line.length()-1);
 
             String[] split = line.split(",");
-            retValue.add(Arrays.asList(split));
+
+
+            retValue.add( Arrays.asList(split).stream().map(s -> s.trim()).collect(Collectors.toList()));
             line=br.readLine();
         }
 
@@ -141,6 +143,19 @@ public class UsdaWordsClasifierService {
                 productWordsFound.put(word,element);
 
             }
+
+//            if(line.size()==2&&Pattern.matches(alphanumericPattern,line.get(0))&&Pattern.matches(alphanumericPattern,line.get(1))){
+//                String word = line.get(0);
+//                UsdaElementParsed element=new UsdaElementParsed(word);
+//
+//
+//
+//                element.setClassificationCalculated(Classification.FOOD);
+//                UsdaLineParsed usdaLineParsed=new UsdaLineParsed(word,element);
+//                retValue.getLines().add(usdaLineParsed);
+//                productWordsFound.put(word,element);
+//
+//            }
 
         }
         retValue.setProductWords(productWordsFound.values().stream().collect(Collectors.toList()));
